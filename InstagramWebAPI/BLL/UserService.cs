@@ -105,6 +105,11 @@ namespace InstagramWebAPI.BLL
             }
         }
 
+        /// <summary>
+        /// Retrieves a user asynchronously based on provided reset password data.
+        /// </summary>
+        /// <param name="model">The data containing email, mobile number, or username for user retrieval.</param>
+        /// <returns>A <see cref="Task{TResult}"/> representing the asynchronous operation. The task result is the <see cref="User"/> entity.</returns>
         public async Task<User> GetUser(ResetPasswordDTO model)
         {
             User? user = await _dbcontext.Users.FirstOrDefaultAsync(m => (m.Email == model.Email 
@@ -117,20 +122,29 @@ namespace InstagramWebAPI.BLL
              throw new Exception(CustomErrorMessage.ExitsUser);
         }
 
+        /// <summary>
+        /// Updates the password for a user who has forgotten their password.
+        /// </summary>
+        /// <param name="model">The data containing the user ID and new password.</param>
+        /// <returns>A <see cref="Task{TResult}"/> representing the asynchronous operation. The task result indicates if the password was successfully updated.</returns>
         public async Task<bool> ForgotPasswordData(ResetPasswordDTO model)
         {
-            User? user=await _dbcontext.Users.FirstOrDefaultAsync(m=>m.UserId == model.UserId && m.IsDeleted != true);
-            if (user != null)
+            try
             {
-                user.Password = model.Password ?? string.Empty;
-                user.ModifiedDate = DateTime.Now;
+                User? user = await _dbcontext.Users.FirstOrDefaultAsync(m => m.UserId == model.UserId && m.IsDeleted != true);
+                if (user != null)
+                {
+                    user.Password = model.Password ?? string.Empty;
+                    user.ModifiedDate = DateTime.Now;
 
-                _dbcontext.Users.Update(user);
-                await _dbcontext.SaveChangesAsync();
+                    _dbcontext.Users.Update(user);
+                    await _dbcontext.SaveChangesAsync();
 
-                return true;
+                    return true;
+                }
+                return false;
             }
-             return false;
+            catch { return false; }
         }
 
 
