@@ -29,7 +29,7 @@ namespace InstagramWebAPI.BLL
         /// <returns>True if the username is unique; false otherwise.</returns>
         public async Task<bool> IsUniqueUserName(string userName)
         {
-            User? user = await _dbcontext.Users.FirstOrDefaultAsync(m => m.UserName == userName);
+            User? user = await _dbcontext.Users.FirstOrDefaultAsync(m => m.UserName == userName && m.IsDeleted != true);
             if (user == null) return false;
 
             return true;
@@ -77,18 +77,29 @@ namespace InstagramWebAPI.BLL
             try
             {
                 User? user = await _dbcontext.Users.FirstOrDefaultAsync(m =>
-                                       ((m.UserName ?? string.Empty).ToLower() == (model.UserName ?? string.Empty).ToLower()
-                                       || (m.Email ?? string.Empty).ToLower() == (model.UserName ?? string.Empty).ToLower()
-                                       || m.ContactNumber == model.MobileNumber)
+                                       ((m.UserName ?? string.Empty).ToLower() == (model.UserName ?? string.Empty).ToLower() && !string.IsNullOrWhiteSpace(m.UserName)
+                                       || (m.Email ?? string.Empty).ToLower() == (model.UserName ?? string.Empty).ToLower() && !string.IsNullOrWhiteSpace(m.Email)
+                                       || m.ContactNumber == model.MobileNumber && !string.IsNullOrWhiteSpace(m.ContactNumber))
                                        && m.IsDeleted != true);
 
-                if (!BCrypt.Net.BCrypt.Verify(model.Password, user.Password) && user == null)
+                if (user == null)
                 {
                     return new LoginResponseDTO
                     {
                         Token = "",
                         User = null,
                     };
+                }
+                else
+                {
+                    if (!BCrypt.Net.BCrypt.Verify(model.Password, user.Password))
+                    {
+                        return new LoginResponseDTO
+                        {
+                            Token = "",
+                            User = null,
+                        };
+                    }
                 }
                 user.Password = "";
                 LoginResponseDTO loginResponceDTO = new()
@@ -112,14 +123,14 @@ namespace InstagramWebAPI.BLL
         /// <returns>A <see cref="Task{TResult}"/> representing the asynchronous operation. The task result is the <see cref="User"/> entity.</returns>
         public async Task<User> GetUser(ResetPasswordDTO model)
         {
-            User? user = await _dbcontext.Users.FirstOrDefaultAsync(m => (m.Email == model.Email 
-                                                                      || m.ContactNumber == model.MobileNumber && !string.IsNullOrWhiteSpace(m.ContactNumber) 
-                                                                      || m.UserName == model.UserName) 
+            User? user = await _dbcontext.Users.FirstOrDefaultAsync(m => (m.Email == model.Email && !string.IsNullOrWhiteSpace(m.Email)
+                                                                      || m.ContactNumber == model.MobileNumber && !string.IsNullOrWhiteSpace(m.ContactNumber)
+                                                                      || m.UserName == model.UserName && !string.IsNullOrWhiteSpace(m.UserName))
                                                                       && m.IsDeleted != true);
-            if (user != null) 
+            if (user != null)
                 return user;
 
-             throw new Exception(CustomErrorMessage.ExitsUser);
+            throw new Exception(CustomErrorMessage.ExitsUser);
         }
 
         /// <summary>
