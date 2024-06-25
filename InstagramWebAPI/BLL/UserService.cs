@@ -36,7 +36,7 @@ namespace InstagramWebAPI.BLL
 
                 string userId = model.UserId.ToString();
 
-                string path = Path.Combine(Directory.GetCurrentDirectory(), "wwwroot", "content", "User", userId, "ProfilePhoto");
+                string path = Path.Combine(Directory.GetCurrentDirectory(), "wwwroot", "content", "User",userId, "ProfilePhoto");
 
                 if (!Directory.Exists(path))
                 {
@@ -48,9 +48,10 @@ namespace InstagramWebAPI.BLL
 
 
                 string currentFilePath = user.ProfilePictureUrl ?? string.Empty;
+                string oldFileName=user.ProfilePictureName ?? string.Empty;
                 if (System.IO.File.Exists(currentFilePath))
                 {
-                    System.IO.File.Delete(currentFilePath);
+                    System.IO.File.Delete(oldFileName);
                 }
 
                 using (var fileStream = new FileStream(filePath, FileMode.Create))
@@ -64,7 +65,7 @@ namespace InstagramWebAPI.BLL
                 _dbcontext.Users.Update(user);
                 await _dbcontext.SaveChangesAsync();
 
-                ProfilePhotoResponseDTO photoResponseDTO = new ProfilePhotoResponseDTO()
+                ProfilePhotoResponseDTO photoResponseDTO = new()
                 {
                     ProfilePhotoName = user.ProfilePictureName,
                     ProfilePhotoUrl = user.ProfilePictureUrl,
@@ -110,42 +111,45 @@ namespace InstagramWebAPI.BLL
             }
         }
 
-        //public async Task<bool> FollowRequestAsync(FollowRequestDTO model)
-        //{
-        //    try
-        //    {
-        //        if(!await _dbcontext.Users.AnyAsync(m=> m.UserId == model.ToUserId) || 
-        //            !await _dbcontext.Users.AnyAsync(m => m.UserId == model.FromUserId))
-        //        {
-        //            throw new CustomException(CustomErrorMessage.ExitsUser);
-        //        }
+        public async Task<bool> FollowRequestAsync(FollowRequestDTO model)
+        {
+            try
+            {
+                if (!await _dbcontext.Users.AnyAsync(m => m.UserId == model.ToUserId) ||
+                    !await _dbcontext.Users.AnyAsync(m => m.UserId == model.FromUserId))
+                {
+                    throw new CustomException(CustomErrorMessage.ExitsUser);
+                }
 
-        //        Request data = await _dbcontext.Requests.FirstOrDefaultAsync(m => m.FromUserId == model.FromUserId && m.ToUserId == model.ToUserId) 
-        //                     ?? new Request();
-                
-        //        data.FromUserId = model.FromUserId;
-        //        data.ToUserId = model.ToUserId;
+                Request data = await _dbcontext.Requests.FirstOrDefaultAsync(m => m.FromUserId == model.FromUserId && m.ToUserId == model.ToUserId)
+                             ?? new ();
 
-        //        if(data == null)
-        //        {
-        //            data.CreatedDate = DateTime.Now;
-        //            await _dbcontext.Requests.AddAsync(data);
-        //        }
-        //        else
-        //        {
-        //            data.ModifiedDate = DateTime.Now;
-                    
-        //        }
-            
-        //    }
-        //    catch (CustomException ex)
-        //    {
-        //        throw new CustomException(ex.ErrorMessage);
-        //    }
-        //    catch (Exception)
-        //    {
-        //        throw new Exception(CustomErrorMessage.UpdateProfile);
-        //    }
-        //}
+                data.FromUserId = model.FromUserId;
+                data.ToUserId = model.ToUserId;
+
+                if (data.RequestId > 0 )
+                {
+                    data.ModifiedDate = DateTime.Now;
+                    data.IsDeleted = !(data.IsDeleted);
+
+                    _dbcontext.Requests.Update(data);
+                }
+                else
+                {
+                    data.CreatedDate = DateTime.Now;
+                    await _dbcontext.Requests.AddAsync(data);
+                }
+                await _dbcontext.SaveChangesAsync();
+                return true;    
+            }
+            catch (CustomException ex)
+            {
+                throw new CustomException(ex.ErrorMessage);
+            }
+            catch 
+            {
+                return false;
+            }
+        }
     }
 }

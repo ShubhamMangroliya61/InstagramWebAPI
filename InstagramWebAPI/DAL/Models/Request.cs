@@ -26,6 +26,8 @@ public partial class Request
     [Column(TypeName = "datetime")]
     public DateTime? ModifiedDate { get; set; }
 
+    public bool IsDeleted { get; set; }
+
     [ForeignKey("FromUserId")]
     [InverseProperty("RequestFromUsers")]
     public virtual User FromUser { get; set; } = null!;

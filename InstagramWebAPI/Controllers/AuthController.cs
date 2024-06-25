@@ -34,8 +34,6 @@ namespace InstagramWebAPI.Controllers
         /// <response code="200">Returns when the registration is successful.</response>
         /// <response code="400">Returns when there are validation errors or registration fails.</response>
         [HttpPost("Register")]
-        [ProducesResponseType(typeof(ResponseModel), StatusCodes.Status200OK)]
-        [ProducesResponseType(typeof(ResponseModel), StatusCodes.Status400BadRequest)]
         public async Task<ActionResult<ResponseModel>> UserRegisterAsync([FromBody] RegistrationRequestDTO model)
         {
             try
@@ -46,7 +44,7 @@ namespace InstagramWebAPI.Controllers
                     return BadRequest(_responseHandler.BadRequest(CustomErrorCode.IsValid, CustomErrorMessage.ValidationRegistrtion, errors));
                 }
 
-                if (await _authService.IsUniqueUserName(model.UserName ?? string.Empty))
+                if (await _authService.IsUniqueUserNameEmailPhoneNumber(model))
                 {
                     return BadRequest(_responseHandler.BadRequest(CustomErrorCode.IsUserName, CustomErrorMessage.DuplicateUsername, model));
                 }
@@ -74,8 +72,6 @@ namespace InstagramWebAPI.Controllers
         /// <response code="200">Returns when the login is successful.</response>
         /// <response code="400">Returns when there are validation errors or login fails.</response>
         [HttpPost("Login")]
-        [ProducesResponseType(typeof(ResponseModel), StatusCodes.Status200OK)]
-        [ProducesResponseType(typeof(ResponseModel), StatusCodes.Status400BadRequest)]
         public async Task<ActionResult<ResponseModel>> UserLoginAsync([FromBody] LoginRequestDTO model)
         {
             try

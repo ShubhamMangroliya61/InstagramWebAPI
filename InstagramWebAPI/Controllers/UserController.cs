@@ -1,4 +1,5 @@
 ﻿using InstagramWebAPI.Common;
+using InstagramWebAPI.DAL.Models;
 using InstagramWebAPI.DTO;
 using InstagramWebAPI.Helpers;
 using InstagramWebAPI.Interface;
@@ -67,6 +68,7 @@ namespace InstagramWebAPI.Controllers
                 {
                     return BadRequest(_responseHandler.BadRequest(CustomErrorCode.IsUserName, CustomErrorMessage.DuplicateUsername, model));
                 }
+
                 UserDTO? user = await _userService.UpdateProfileAsync(model);
                 if (user == null)
                 {
@@ -84,26 +86,32 @@ namespace InstagramWebAPI.Controllers
             }
         }
 
-        //[HttpPost]
-        //public async Task<ActionResult<ResponseModel>> FollowRequestAsync(FollowRequestDTO model)
-        //{
-        //    try
-        //    {
-        //        List<ValidationError> errors = _validationService.ValidateFollowRequest(model);
-        //        if (errors.Any())
-        //        {
-        //            return BadRequest(_responseHandler.BadRequest(CustomErrorCode.IsValid, CustomErrorMessage.ValidationRequest, errors));
-        //        }
+        [HttpPost]
+        public async Task<ActionResult<ResponseModel>> FollowRequestAsync(FollowRequestDTO model)
+        {
+            try
+            {
+                List<ValidationError> errors = _validationService.ValidateFollowRequest(model);
+                if (errors.Any())
+                {
+                    return BadRequest(_responseHandler.BadRequest(CustomErrorCode.IsValid, CustomErrorMessage.ValidationRequest, errors));
+                }
+                bool isFollow =await _userService.FollowRequestAsync(model);
+                if (!isFollow)
+                {
+                    return BadRequest(_responseHandler.BadRequest(CustomErrorCode.IsRequest, CustomErrorMessage.RequestError, errors));
+                }
+                return Ok(_responseHandler.Success(CustomErrorMessage.RequestSuccess, model));
+            }
+            catch (CustomException ex)
+            {
+                return NotFound(_responseHandler.NotFoundRequest(CustomErrorCode.IsNotExits, ex.Message, model));
+            }
+            catch (Exception ex)
+            {
+                return BadRequest(_responseHandler.BadRequest(CustomErrorCode.IsRequest, ex.Message, model));
+            }
+        }
 
-        //    }
-        //    catch (CustomException ex)
-        //    {
-        //        return NotFound(_responseHandler.NotFoundRequest(CustomErrorCode.IsNotExits, ex.Message, model));
-        //    }
-        //    catch (Exception ex)
-        //    {
-        //        return BadRequest(_responseHandler.BadRequest(CustomErrorCode.IsUpdate, ex.Message, model));
-        //    }
-        //}
     }
 }

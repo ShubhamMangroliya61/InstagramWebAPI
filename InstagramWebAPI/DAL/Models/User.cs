@@ -24,9 +24,9 @@ public partial class User
     [Unicode(false)]
     public string Password { get; set; } = null!;
 
-    [StringLength(10)]
+    [StringLength(15)]
     [Unicode(false)]
-    public string Gender { get; set; } = null!;
+    public string? Gender { get; set; }
 
     [StringLength(15)]
     [Unicode(false)]

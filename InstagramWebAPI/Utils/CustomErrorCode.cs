@@ -15,6 +15,7 @@
         public const string PasswordNOTMatch = "PASSWORD_NOT_MATCH";
         public const string NullConfirmPassword = "NULL_CONFIRMPASSWORD";
         public const string InvalidPasswordFormat = "INVALID_PASSWORD_FORMAT";
+        public const string InvalidUserNameFormat = "INVALID_USERNAME_FORMAT";
         public const string NullUserName = "NULL_USERNAME";
         public const string NullEmailOrMobileNumberOrUsername = "NULL_EMAIL_OR_MOBILENUMBER_OR_USERNAME";
         public const string IsNotExits = "USER_NOT_EXITS";
@@ -27,6 +28,7 @@
         public const string IsUpdate = "UPDATE_PROFILE_ERROR";
         public const string InvalidFromUserId = "INVALID_FROM_USERID";
         public const string InvalidToUserId = "INVALID_TO_USERID";
+        public const string IsRequest = "FOLLOW_REQUEST_ERROR";
 
 
 

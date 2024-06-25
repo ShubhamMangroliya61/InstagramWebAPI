@@ -38,6 +38,22 @@ namespace InstagramWebAPI.BLL
         }
 
         /// <summary>
+        /// Checks if the given username is unique.
+        /// </summary>
+        /// <param name="userName">The username to check.</param>
+        /// <returns>True if the username is unique; false otherwise.</returns>
+        public async Task<bool> IsUniqueUserNameEmailPhoneNumber(RegistrationRequestDTO model)
+        {
+            User? user = await _dbcontext.Users.FirstOrDefaultAsync(m => ((m.UserName ?? string.Empty).ToLower() == (model.UserName ?? string.Empty).ToLower() && !string.IsNullOrWhiteSpace(m.UserName)
+                                       || (m.Email ?? string.Empty).ToLower() == (model.EmailOrNumber ?? string.Empty).ToLower() && !string.IsNullOrWhiteSpace(m.Email)
+                                       || m.ContactNumber == model.EmailOrNumber && !string.IsNullOrWhiteSpace(m.ContactNumber))
+                                       && m.IsDeleted != true);
+            if (user == null) return false;
+
+            return true;
+        }
+
+        /// <summary>
         /// Registers a new user asynchronously.
         /// </summary>
         /// <param name="model">The registration details.</param>
@@ -54,6 +70,7 @@ namespace InstagramWebAPI.BLL
                     Password = BCrypt.Net.BCrypt.HashPassword(model.Password),
                     UserName = model.UserName ?? string.Empty,
                     CreatedDate = DateTime.Now,
+                    DateOfBirth= model.DateOfBirth,
                 };
                 await _dbcontext.Users.AddAsync(user);
                 await _dbcontext.SaveChangesAsync();
@@ -77,9 +94,9 @@ namespace InstagramWebAPI.BLL
             try
             {
                 User? user = await _dbcontext.Users.FirstOrDefaultAsync(m =>
-                                       ((m.UserName ?? string.Empty).ToLower() == (model.UserName ?? string.Empty).ToLower() && !string.IsNullOrWhiteSpace(m.UserName)
-                                       || (m.Email ?? string.Empty).ToLower() == (model.UserName ?? string.Empty).ToLower() && !string.IsNullOrWhiteSpace(m.Email)
-                                       || m.ContactNumber == model.MobileNumber && !string.IsNullOrWhiteSpace(m.ContactNumber))
+                                       ((m.UserName ?? string.Empty).ToLower() == (model.UserID ?? string.Empty).ToLower() && !string.IsNullOrWhiteSpace(m.UserName)
+                                       || (m.Email ?? string.Empty).ToLower() == (model.UserID ?? string.Empty).ToLower() && !string.IsNullOrWhiteSpace(m.Email)
+                                       || m.ContactNumber == model.UserID && !string.IsNullOrWhiteSpace(m.ContactNumber))
                                        && m.IsDeleted != true);
 
                 if (user == null)
@@ -129,8 +146,8 @@ namespace InstagramWebAPI.BLL
                                                                       && m.IsDeleted != true);
             if (user != null)
                 return user;
-
-            throw new Exception(CustomErrorMessage.ExitsUser);
+            
+            throw new  CustomException(CustomErrorMessage.ExitsUser);
         }
 
         /// <summary>

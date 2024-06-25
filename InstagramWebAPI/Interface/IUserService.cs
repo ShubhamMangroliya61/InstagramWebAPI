@@ -6,5 +6,6 @@ namespace InstagramWebAPI.Interface
     {
         Task<ProfilePhotoResponseDTO> UploadProfilePhotoAsync(UploadProfilePhotoDTO model);
         Task<UserDTO> UpdateProfileAsync(UserDTO model);
+        Task<bool> FollowRequestAsync(FollowRequestDTO model);
     }
 }

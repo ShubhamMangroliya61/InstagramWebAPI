@@ -26,6 +26,7 @@ namespace InstagramWebAPI.BLL
             const string EmailRegex = @"^[\w\-\.]+@([\w-]+\.)+[\w-]{2,4}$";
             const string MobileRegex = @"^[6-9]{1}[0-9]{9}$";
             const string PasswordRegex = @"^(?=.*[A-Z])(?=.*\d)(?=.*[a-z])(?=.*\W).{7,15}$";
+            const string UserNameRegex = @"^[a-zA-Z0-9][a-zA-Z0-9_.]{7,17}$";
 
             if (model == null)
             {
@@ -39,7 +40,7 @@ namespace InstagramWebAPI.BLL
             }
             else
             {
-                if (string.IsNullOrWhiteSpace(model.Email) && string.IsNullOrWhiteSpace(model.MobileNumber))
+                if (string.IsNullOrWhiteSpace(model.EmailOrNumber))
                 {
                     errors.Add(new ValidationError
                     {
@@ -51,23 +52,23 @@ namespace InstagramWebAPI.BLL
                 }
                 else
                 {
-                    if (!string.IsNullOrWhiteSpace(model.Email) && !Regex.IsMatch(model.Email, EmailRegex))
+                    if (model.Type == "email" && !Regex.IsMatch(model.EmailOrNumber, EmailRegex))
                     {
                         errors.Add(new ValidationError
                         {
                             message = CustomErrorMessage.InvalidEmailFormat,
                             reference = "Email",
-                            parameter = model.Email,
+                            parameter = model.EmailOrNumber,
                             errorCode = CustomErrorCode.InvalidEmailFormat
                         });
                     }
-                    if (!string.IsNullOrWhiteSpace(model.MobileNumber) && !Regex.IsMatch(model.MobileNumber, MobileRegex))
+                    else if (model.Type == "phone" && !Regex.IsMatch(model.EmailOrNumber, MobileRegex))
                     {
                         errors.Add(new ValidationError
                         {
                             message = CustomErrorMessage.InvalidMobileNumberFormat,
                             reference = "MobileNumber",
-                            parameter = model.MobileNumber,
+                            parameter = model.EmailOrNumber,
                             errorCode = CustomErrorCode.InvalidMobileNumberFormat
                         });
                     }
@@ -104,8 +105,17 @@ namespace InstagramWebAPI.BLL
                         errorCode = CustomErrorCode.NullUserName
                     });
                 }
+                else if (!Regex.IsMatch(model.UserName, UserNameRegex))
+                {
+                    errors.Add(new ValidationError
+                    {
+                        message = CustomErrorMessage.InvalidUserNameFormat,
+                        reference = "Password",
+                        parameter = "Password",
+                        errorCode = CustomErrorCode.InvalidUserNameFormat
+                    });
+                }
             }
-
             return errors;
         }
 
@@ -121,6 +131,8 @@ namespace InstagramWebAPI.BLL
             const string EmailRegex = @"^[\w\-\.]+@([\w-]+\.)+[\w-]{2,4}$";
             const string MobileRegex = @"^[6-9]{1}[0-9]{9}$";
             const string PasswordRegex = @"^(?=.*[A-Z])(?=.*\d)(?=.*[a-z])(?=.*\W).{7,15}$";
+            const string UserNameRegex = @"^[a-zA-Z0-9][a-zA-Z0-9_.]{7,17}$";
+
 
             if (model == null)
             {
@@ -134,7 +146,7 @@ namespace InstagramWebAPI.BLL
             }
             else
             {
-                if (string.IsNullOrWhiteSpace(model.Email) && string.IsNullOrWhiteSpace(model.MobileNumber) && string.IsNullOrWhiteSpace(model.UserName))
+                if (string.IsNullOrWhiteSpace(model.UserID))
                 {
                     errors.Add(new ValidationError
                     {
@@ -146,27 +158,36 @@ namespace InstagramWebAPI.BLL
                 }
                 else
                 {
-                    if (!string.IsNullOrWhiteSpace(model.Email) && !Regex.IsMatch(model.Email, EmailRegex))
+                    if (model.TypeUserId == "email" && !Regex.IsMatch(model.UserID, EmailRegex))
                     {
                         errors.Add(new ValidationError
                         {
                             message = CustomErrorMessage.InvalidEmailFormat,
                             reference = "Email",
-                            parameter = model.Email,
+                            parameter = model.UserID,
                             errorCode = CustomErrorCode.InvalidEmailFormat
                         });
                     }
-                    else if (!string.IsNullOrWhiteSpace(model.MobileNumber) && !Regex.IsMatch(model.MobileNumber, MobileRegex))
+                    else if (model.TypeUserId == "phone" && !Regex.IsMatch(model.UserID, MobileRegex))
                     {
                         errors.Add(new ValidationError
                         {
                             message = CustomErrorMessage.InvalidMobileNumberFormat,
                             reference = "MobileNumber",
-                            parameter = model.MobileNumber,
+                            parameter = model.UserID,
                             errorCode = CustomErrorCode.InvalidMobileNumberFormat
                         });
                     }
-
+                    else if(model.TypeUserId == "username" && !Regex.IsMatch(model.UserID, UserNameRegex))
+                    {
+                        errors.Add(new ValidationError
+                        {
+                            message = CustomErrorMessage.InvalidUserNameFormat,
+                            reference = "Password",
+                            parameter = "Password",
+                            errorCode = CustomErrorCode.InvalidUserNameFormat
+                        });
+                    }
 
                     if (string.IsNullOrWhiteSpace(model.Password))
                     {
@@ -348,6 +369,8 @@ namespace InstagramWebAPI.BLL
         public List<ValidationError> ValidateProfileData(UserDTO model)
         {
             List<ValidationError> errors = new();
+            const string UserNameRegex = @"^[a-zA-Z0-9][a-zA-Z0-9_.]{7,17}$";
+
 
             if (model.UserId <= 0)
             {
@@ -367,6 +390,16 @@ namespace InstagramWebAPI.BLL
                     reference = "UserName",
                     parameter = "UserName",
                     errorCode = CustomErrorCode.NullUserName
+                });
+            }
+            else if (!Regex.IsMatch(model.UserName, UserNameRegex))
+            {
+                errors.Add(new ValidationError
+                {
+                    message = CustomErrorMessage.InvalidUserNameFormat,
+                    reference = "Password",
+                    parameter = "Password",
+                    errorCode = CustomErrorCode.InvalidUserNameFormat
                 });
             }
             return errors;
