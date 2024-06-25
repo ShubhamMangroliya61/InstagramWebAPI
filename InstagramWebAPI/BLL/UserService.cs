@@ -4,8 +4,6 @@ using InstagramWebAPI.DTO;
 using InstagramWebAPI.Interface;
 using InstagramWebAPI.Utils;
 using Microsoft.EntityFrameworkCore;
-using System.Net.Mail;
-using System.Net;
 
 namespace InstagramWebAPI.BLL
 {
@@ -23,141 +21,131 @@ namespace InstagramWebAPI.BLL
         }
 
         /// <summary>
-        /// Checks if the given username is unique.
+        /// Uploads a profile photo for a user asynchronously.
         /// </summary>
-        /// <param name="userName">The username to check.</param>
-        /// <returns>True if the username is unique; false otherwise.</returns>
-        public async Task<bool> IsUniqueUserName(string userName)
-        {
-            User? user = await _dbcontext.Users.FirstOrDefaultAsync(m => m.UserName == userName && m.IsDeleted != true);
-            if (user == null) return false;
-
-            return true;
-        }
-
-        /// <summary>
-        /// Registers a new user asynchronously.
-        /// </summary>
-        /// <param name="model">The registration details.</param>
-        /// <returns>A task that represents the asynchronous operation. The task result contains the registered User.</returns>
-        public async Task<User> UserRegisterAsync(RegistrationRequestDTO model)
+        /// <param name="model">The model containing UserId and the profile photo to upload.</param>
+        /// <returns>A ProfilePhotoResponseDTO containing the uploaded photo details.</returns>
+        public async Task<ProfilePhotoResponseDTO> UploadProfilePhotoAsync(UploadProfilePhotoDTO model)
         {
             try
             {
-                User user = new()
-                {
-                    Email = model.Email ?? string.Empty,
-                    ContactNumber = model.MobileNumber ?? string.Empty,
-                    Name = model.Name ?? string.Empty,
-                    Password = BCrypt.Net.BCrypt.HashPassword(model.Password),
-                    UserName = model.UserName ?? string.Empty,
-                    CreatedDate = DateTime.Now,
-                    Gender = "male"
+                User user = await _dbcontext.Users.FirstOrDefaultAsync(m => m.UserId == model.UserId && m.IsDeleted != true)
+                            ?? throw new CustomException(CustomErrorMessage.ExitsUser);
 
-                };
-                await _dbcontext.Users.AddAsync(user);
+                IFormFile file = model.ProfilePhoto ?? throw new CustomException(CustomErrorMessage.NullProfilePhoto);
+
+                string userId = model.UserId.ToString();
+
+                string path = Path.Combine(Directory.GetCurrentDirectory(), "wwwroot", "content", "User", userId, "ProfilePhoto");
+
+                if (!Directory.Exists(path))
+                {
+                    Directory.CreateDirectory(path);
+                }
+
+                string fileName = Guid.NewGuid().ToString() + Path.GetExtension(file.FileName);
+                string filePath = Path.Combine(path, fileName);
+
+
+                string currentFilePath = user.ProfilePictureUrl ?? string.Empty;
+                if (System.IO.File.Exists(currentFilePath))
+                {
+                    System.IO.File.Delete(currentFilePath);
+                }
+
+                using (var fileStream = new FileStream(filePath, FileMode.Create))
+                {
+                    await file.CopyToAsync(fileStream);
+                }
+
+                user.ProfilePictureUrl = Path.Combine("content", "User", userId, "ProfilePhoto", fileName);
+                user.ProfilePictureName = fileName;
+
+                _dbcontext.Users.Update(user);
                 await _dbcontext.SaveChangesAsync();
 
-                user.Password = "";
-                return user;
-            }
-            catch
-            {
-                throw new Exception(CustomErrorMessage.RegistrationError);
-            }
-        }
-
-        /// <summary>
-        /// Authenticates a user based on login credentials asynchronously.
-        /// </summary>
-        /// <param name="model">The login credentials.</param>
-        /// <returns>A task that represents the asynchronous operation. The task result contains a LoginResponseDTO.</returns>
-        public async Task<LoginResponseDTO> UserLoginAsync(LoginRequestDTO model)
-        {
-            try
-            {
-                User? user = await _dbcontext.Users.FirstOrDefaultAsync(m =>
-                                       ((m.UserName ?? string.Empty).ToLower() == (model.UserName ?? string.Empty).ToLower() && !string.IsNullOrWhiteSpace(m.UserName)
-                                       || (m.Email ?? string.Empty).ToLower() == (model.UserName ?? string.Empty).ToLower() && !string.IsNullOrWhiteSpace(m.Email)
-                                       || m.ContactNumber == model.MobileNumber && !string.IsNullOrWhiteSpace(m.ContactNumber))
-                                       && m.IsDeleted != true);
-
-                if (user == null)
+                ProfilePhotoResponseDTO photoResponseDTO = new ProfilePhotoResponseDTO()
                 {
-                    return new LoginResponseDTO
-                    {
-                        Token = "",
-                        User = null,
-                    };
-                }
-                else
-                {
-                    if (!BCrypt.Net.BCrypt.Verify(model.Password, user.Password))
-                    {
-                        return new LoginResponseDTO
-                        {
-                            Token = "",
-                            User = null,
-                        };
-                    }
-                }
-                user.Password = "";
-                LoginResponseDTO loginResponceDTO = new()
-                {
-                    Token = _jWTService.GetJWTToken(user),
-                    User = user,
+                    ProfilePhotoName = user.ProfilePictureName,
+                    ProfilePhotoUrl = user.ProfilePictureUrl,
+                    UserId = user.UserId,
                 };
-
-                return loginResponceDTO;
+                return photoResponseDTO;
             }
-            catch
+            catch (CustomException ex)
             {
-                throw new Exception(CustomErrorMessage.LoginError);
+                throw new CustomException(ex.ErrorMessage);
+            }
+            catch (Exception)
+            {
+                throw new Exception(CustomErrorMessage.UploadError);
             }
         }
 
-        /// <summary>
-        /// Retrieves a user asynchronously based on provided reset password data.
-        /// </summary>
-        /// <param name="model">The data containing email, mobile number, or username for user retrieval.</param>
-        /// <returns>A <see cref="Task{TResult}"/> representing the asynchronous operation. The task result is the <see cref="User"/> entity.</returns>
-        public async Task<User> GetUser(ResetPasswordDTO model)
-        {
-            User? user = await _dbcontext.Users.FirstOrDefaultAsync(m => (m.Email == model.Email && !string.IsNullOrWhiteSpace(m.Email)
-                                                                      || m.ContactNumber == model.MobileNumber && !string.IsNullOrWhiteSpace(m.ContactNumber)
-                                                                      || m.UserName == model.UserName && !string.IsNullOrWhiteSpace(m.UserName))
-                                                                      && m.IsDeleted != true);
-            if (user != null)
-                return user;
-
-            throw new Exception(CustomErrorMessage.ExitsUser);
-        }
-
-        /// <summary>
-        /// Updates the password for a user who has forgotten their password.
-        /// </summary>
-        /// <param name="model">The data containing the user ID and new password.</param>
-        /// <returns>A <see cref="Task{TResult}"/> representing the asynchronous operation. The task result indicates if the password was successfully updated.</returns>
-        public async Task<bool> ForgotPasswordData(ResetPasswordDTO model)
+        public async Task<UserDTO> UpdateProfileAsync(UserDTO model)
         {
             try
             {
-                User? user = await _dbcontext.Users.FirstOrDefaultAsync(m => m.UserId == model.UserId && m.IsDeleted != true);
-                if (user != null)
-                {
-                    user.Password = model.Password ?? string.Empty;
-                    user.ModifiedDate = DateTime.Now;
+                User user = await _dbcontext.Users.FirstOrDefaultAsync(m => m.UserId == model.UserId && m.IsDeleted != true)
+                            ?? throw new CustomException(CustomErrorMessage.ExitsUser);
 
-                    _dbcontext.Users.Update(user);
-                    await _dbcontext.SaveChangesAsync();
+                user.Name= model.Name;
+                user.UserName= model.UserName;
+                user.Bio= model.Bio;
+                user.Link= model.Link;
+                user.Gender=model.Gender;
 
-                    return true;
-                }
-                return false;
+                _dbcontext.Users.Update(user);
+                await _dbcontext.SaveChangesAsync();
+
+                return _mapper.Map<UserDTO>(user);
             }
-            catch { return false; }
+            catch (CustomException ex)
+            {
+                throw new CustomException(ex.ErrorMessage);
+            }
+            catch (Exception)
+            {
+                throw new Exception(CustomErrorMessage.UpdateProfile);
+            }
         }
 
+        //public async Task<bool> FollowRequestAsync(FollowRequestDTO model)
+        //{
+        //    try
+        //    {
+        //        if(!await _dbcontext.Users.AnyAsync(m=> m.UserId == model.ToUserId) || 
+        //            !await _dbcontext.Users.AnyAsync(m => m.UserId == model.FromUserId))
+        //        {
+        //            throw new CustomException(CustomErrorMessage.ExitsUser);
+        //        }
 
+        //        Request data = await _dbcontext.Requests.FirstOrDefaultAsync(m => m.FromUserId == model.FromUserId && m.ToUserId == model.ToUserId) 
+        //                     ?? new Request();
+                
+        //        data.FromUserId = model.FromUserId;
+        //        data.ToUserId = model.ToUserId;
+
+        //        if(data == null)
+        //        {
+        //            data.CreatedDate = DateTime.Now;
+        //            await _dbcontext.Requests.AddAsync(data);
+        //        }
+        //        else
+        //        {
+        //            data.ModifiedDate = DateTime.Now;
+                    
+        //        }
+            
+        //    }
+        //    catch (CustomException ex)
+        //    {
+        //        throw new CustomException(ex.ErrorMessage);
+        //    }
+        //    catch (Exception)
+        //    {
+        //        throw new Exception(CustomErrorMessage.UpdateProfile);
+        //    }
+        //}
     }
 }

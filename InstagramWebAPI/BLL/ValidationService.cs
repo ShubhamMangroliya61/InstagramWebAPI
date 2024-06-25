@@ -12,6 +12,8 @@ namespace InstagramWebAPI.BLL
 {
     public class ValidationService : IValidationService
     {
+        private static readonly string[] AllowedExtensions = { ".jpg", ".jpeg", ".png"};
+
         /// <summary>
         /// Validates the registration request DTO.
         /// </summary>
@@ -191,6 +193,11 @@ namespace InstagramWebAPI.BLL
             return errors;
         }
 
+        /// <summary>
+        /// Validates the reset password request DTO.
+        /// </summary>
+        /// <param name="model">The reset password request DTO containing email or mobile number.</param>
+        /// <returns>A list of validation errors, if any.</returns>
         public List<ValidationError> ValidateResetPassword(ResetPasswordDTO model)
         {
             const string EmailRegex = @"^[\w\-\.]+@([\w-]+\.)+[\w-]{2,4}$";
@@ -220,6 +227,11 @@ namespace InstagramWebAPI.BLL
             return errors;
         }
 
+        /// <summary>
+        /// Validates the reset password data including password and confirm password fields.
+        /// </summary>
+        /// <param name="model">The reset password DTO containing password and confirm password fields.</param>
+        /// <returns>A list of validation errors, if any.</returns>
         public List<ValidationError> ValidateResetPasswordData(ResetPasswordDTO model)
         {
             const string PasswordRegex = @"^(?=.*[A-Z])(?=.*\d)(?=.*[a-z])(?=.*\W).{7,15}$";
@@ -264,6 +276,122 @@ namespace InstagramWebAPI.BLL
                     reference = "Password",
                     parameter = "Password",
                     errorCode = CustomErrorCode.PasswordNOTMatch
+                });
+            }
+            return errors;
+        }
+
+        /// <summary>
+        /// Validates the profile photo upload data, including user ID presence and allowed file extensions.
+        /// </summary>
+        /// <param name="model">The upload profile DTO containing user ID and profile photo information.</param>
+        /// <returns>A list of validation errors, if any.</returns>
+        public List<ValidationError> ValidateProfileFile(UploadProfilePhotoDTO model)
+        {
+            List<ValidationError> errors = new ();
+
+            if (model.UserId <= 0)
+            {
+                errors.Add(new ValidationError
+                {
+                    message = CustomErrorMessage.InvalidUserId,
+                    reference = "UserId",
+                    parameter = "UserId",
+                    errorCode = CustomErrorCode.InvalidUserId
+                });
+            }
+
+            if (model.ProfilePhoto == null)
+            {
+                errors.Add(new ValidationError
+                {
+                    message = CustomErrorMessage.NullProfilePhoto,
+                    reference = "ProfilePhoto",
+                    parameter = "ProfilePhoto",
+                    errorCode = CustomErrorCode.NullProfilePhoto
+                });
+            }
+            else
+            {
+                string fileExtension = Path.GetExtension(model.ProfilePhoto.FileName).ToLowerInvariant();
+                if (!AllowedExtensions.Contains(fileExtension))
+                {
+                    errors.Add(new ValidationError
+                    {
+                        message = string.Format(CustomErrorMessage.InvalidPhotoExtension, string.Join(", ", AllowedExtensions)),
+                        reference = "ProfilePhoto",
+                        parameter = "ProfilePhoto",
+                        errorCode = CustomErrorCode.InvalidPhotoExtension
+                    });
+                }
+            }
+            return errors;
+        }
+
+        public List<ValidationError> ValidateUserId(long userId)
+        {
+            List<ValidationError> errors = new();
+
+            if (userId <= 0)
+            {
+                errors.Add(new ValidationError
+                {
+                    message = CustomErrorMessage.InvalidUserId,
+                    reference = "UserId",
+                    parameter = "UserId",
+                    errorCode = CustomErrorCode.InvalidUserId
+                });
+            }
+            return errors;
+        }
+
+        public List<ValidationError> ValidateProfileData(UserDTO model)
+        {
+            List<ValidationError> errors = new();
+
+            if (model.UserId <= 0)
+            {
+                errors.Add(new ValidationError
+                {
+                    message = CustomErrorMessage.InvalidUserId,
+                    reference = "UserId",
+                    parameter = "UserId",
+                    errorCode = CustomErrorCode.InvalidUserId
+                });
+            }
+            if (string.IsNullOrWhiteSpace(model.UserName))
+            {
+                errors.Add(new ValidationError
+                {
+                    message = CustomErrorMessage.UsernameRequired,
+                    reference = "UserName",
+                    parameter = "UserName",
+                    errorCode = CustomErrorCode.NullUserName
+                });
+            }
+            return errors;
+        }
+        public List<ValidationError> ValidateFollowRequest(FollowRequestDTO model)
+        {
+            List<ValidationError> errors = new();
+            if (model.FromUserId <= 0)
+            {
+                errors.Add(new ValidationError
+                {
+                    message = CustomErrorMessage.InvalidUserId,
+                    reference = "UserId",
+                    parameter = "UserId",
+                    errorCode = CustomErrorCode.InvalidFromUserId
+                });
+            }
+            if (model.ToUserId <= 0)
+            {
+                errors.Add(new ValidationError
+                {
+                    message = CustomErrorMessage.InvalidUserId,
+                    reference = "UserId",
+                    parameter = "UserId",
+                    errorCode = CustomErrorCode.InvalidToUserId
                 });
             }
             return errors;

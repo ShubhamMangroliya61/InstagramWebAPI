@@ -20,6 +20,15 @@
         public const string IsNotExits = "USER_NOT_EXITS";
         public const string MailNotSend = "MAIL_NOT_SEND";
         public const string IsReset = "RESET_ERROR";
+        public const string InvalidUserId = "INVALID_USERID";
+        public const string NullProfilePhoto = "NULL_PROFILE_PHOTO";
+        public const string InvalidPhotoExtension = "INVALID_PHOTO_EXTENSION";
+        public const string IsUpload = "UPLOAD_PROFILE_ERROR";
+        public const string IsUpdate = "UPDATE_PROFILE_ERROR";
+        public const string InvalidFromUserId = "INVALID_FROM_USERID";
+        public const string InvalidToUserId = "INVALID_TO_USERID";
+
+
 
     }
 }

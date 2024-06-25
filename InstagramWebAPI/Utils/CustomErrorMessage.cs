@@ -26,6 +26,22 @@
         public const string MailNotSend = "Email Not Send";
         public const string ReserError = "Error occurred while Reset Password the user.";
         public const string ReserPassword = "Reset Password Successfully";
+        public const string ValidationReset = "Validation failed for ResetPassword data.";
+        public const string InvalidUserId = "Invalid UserId. UserId must be greater than zero.";
+        public const string NullProfilePhoto = "Profile photo is required.";
+        public const string InvalidPhotoExtension = "Invalid file extension. Allowed extensions are: {0}";
+        public const string ValidationProfile = "Validation failed for Profile data.";
+        public const string UploadPhoto = "Profile Upload Successfully";
+        public const string UploadError = "Error occurred while Upload ProfilePhoto the user.";
+        public const string UpdateProfile = "Error occurred while Update Profile the user.";
+        public const string ValidationUpdateProfile = "Validation failed for Update Profile data.";
+        public const string UpdateProfileSuccess = "Profile Update Successfully";
+        public const string ValidationRequest = "Validation failed for Follow Request data.";
+
+
+
+
+
 
 
 
