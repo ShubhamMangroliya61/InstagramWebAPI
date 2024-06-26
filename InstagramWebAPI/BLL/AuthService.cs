@@ -1,5 +1,4 @@
-﻿using AutoMapper;
-using InstagramWebAPI.DAL.Models;
+﻿using InstagramWebAPI.DAL.Models;
 using InstagramWebAPI.DTO;
 using InstagramWebAPI.Interface;
 using InstagramWebAPI.Utils;
@@ -8,6 +7,8 @@ using System.Net.Mail;
 using System.Net;
 
 using static System.Runtime.InteropServices.JavaScript.JSType;
+using InstagramWebAPI.Common;
+using System.Globalization;
 
 namespace InstagramWebAPI.BLL
 {
@@ -15,13 +16,11 @@ namespace InstagramWebAPI.BLL
     {
         public readonly ApplicationDbContext _dbcontext;
         public readonly IJWTService _jWTService;
-        private readonly IMapper _mapper;
 
-        public AuthService(ApplicationDbContext db, IConfiguration configuration, IJWTService jWTService, IMapper mapper)
+        public AuthService(ApplicationDbContext db, IConfiguration configuration, IJWTService jWTService)
         {
             _dbcontext = db;
             _jWTService = jWTService;
-            _mapper = mapper;
         }
 
         /// <summary>
@@ -42,11 +41,13 @@ namespace InstagramWebAPI.BLL
         /// </summary>
         /// <param name="userName">The username to check.</param>
         /// <returns>True if the username is unique; false otherwise.</returns>
-        public async Task<bool> IsUniqueUserNameEmailPhoneNumber(RegistrationRequestDTO model)
+        public async Task<bool> IsUniqueUserNameEmailPhoneNumber(UserDTO model)
         {
             User? user = await _dbcontext.Users.FirstOrDefaultAsync(m => ((m.UserName ?? string.Empty).ToLower() == (model.UserName ?? string.Empty).ToLower() && !string.IsNullOrWhiteSpace(m.UserName)
                                        || (m.Email ?? string.Empty).ToLower() == (model.EmailOrNumber ?? string.Empty).ToLower() && !string.IsNullOrWhiteSpace(m.Email)
-                                       || m.ContactNumber == model.EmailOrNumber && !string.IsNullOrWhiteSpace(m.ContactNumber))
+                                       || m.ContactNumber == model.EmailOrNumber && !string.IsNullOrWhiteSpace(m.ContactNumber)
+                                       || (m.Email ?? string.Empty).ToLower() == (model.Email ?? string.Empty).ToLower() && !string.IsNullOrWhiteSpace(m.Email)
+                                       || m.ContactNumber == model.ContactNumber && !string.IsNullOrWhiteSpace(m.ContactNumber))
                                        && m.IsDeleted != true);
             if (user == null) return false;
 
@@ -58,25 +59,52 @@ namespace InstagramWebAPI.BLL
         /// </summary>
         /// <param name="model">The registration details.</param>
         /// <returns>A task that represents the asynchronous operation. The task result contains the registered User.</returns>
-        public async Task<UserDTO> UserRegisterAsync(RegistrationRequestDTO model)
+        public async Task<User> UpSertUserAsync(UserDTO model)
         {
             try
             {
-                User user = new()
+                User user = _dbcontext.Users.FirstOrDefault(m => m.UserId == model.UserId && m.IsDeleted != true) ?? new();
+
+                if (string.IsNullOrWhiteSpace(model.EmailOrNumber))
                 {
-                    Email = model.Email ?? string.Empty,
-                    ContactNumber = model.MobileNumber ?? string.Empty,
-                    Name = model.Name ?? string.Empty,
-                    Password = BCrypt.Net.BCrypt.HashPassword(model.Password),
-                    UserName = model.UserName ?? string.Empty,
-                    CreatedDate = DateTime.Now,
-                    DateOfBirth= model.DateOfBirth,
-                };
-                await _dbcontext.Users.AddAsync(user);
+                    user.Email = model.Email ?? string.Empty;
+                    user.ContactNumber = model.ContactNumber ?? string.Empty;
+                }
+                else
+                {
+                    if (model.EmailOrNumber == "phone")
+                    {
+                        user.ContactNumber = model.EmailOrNumber ?? string.Empty;
+                    }
+                    else
+                    {
+                        user.Email = model.EmailOrNumber ?? string.Empty;
+                    }
+                }
+                user.Name = model.Name ?? string.Empty;
+                user.Password = BCrypt.Net.BCrypt.HashPassword(model.Password);
+                user.UserName = model.UserName ?? string.Empty;
+                user.CreatedDate = DateTime.Now;
+                user.DateOfBirth = DateTime.TryParseExact(model.DateOfBirth, "yyyy-MM-dd", CultureInfo.InvariantCulture, DateTimeStyles.None, out DateTime dob) ? dob : DateTime.MinValue;
+                user.Bio = model.Bio;
+                user.Link = model.Link;
+                user.Gender = model.Gender;
+
+                if (user.UserId > 0)
+                {
+                    user.ModifiedDate = DateTime.Now;
+                    _dbcontext.Users.Update(user);
+                }
+                else
+                {
+                    user.CreatedDate = DateTime.Now;
+                    await _dbcontext.Users.AddAsync(user);
+                }
+
                 await _dbcontext.SaveChangesAsync();
 
                 user.Password = "";
-                return _mapper.Map<UserDTO>(user);
+                return user;
             }
             catch
             {
@@ -122,7 +150,7 @@ namespace InstagramWebAPI.BLL
                 LoginResponseDTO loginResponceDTO = new()
                 {
                     Token = _jWTService.GetJWTToken(user),
-                    User = _mapper.Map<UserDTO>(user),
+                    User = user,
                 };
 
                 return loginResponceDTO;
@@ -138,16 +166,25 @@ namespace InstagramWebAPI.BLL
         /// </summary>
         /// <param name="model">The data containing email, mobile number, or username for user retrieval.</param>
         /// <returns>A <see cref="Task{TResult}"/> representing the asynchronous operation. The task result is the <see cref="User"/> entity.</returns>
-        public async Task<User> GetUser(ResetPasswordDTO model)
+        public async Task<User> GetUser(ForgotPasswordDTO model)
         {
-            User? user = await _dbcontext.Users.FirstOrDefaultAsync(m => (m.Email == model.Email && !string.IsNullOrWhiteSpace(m.Email)
-                                                                      || m.ContactNumber == model.MobileNumber && !string.IsNullOrWhiteSpace(m.ContactNumber)
-                                                                      || m.UserName == model.UserName && !string.IsNullOrWhiteSpace(m.UserName))
+            User? user = await _dbcontext.Users.FirstOrDefaultAsync(m => (m.Email == model.EmailOrNumberOrUserName && !string.IsNullOrWhiteSpace(m.Email)
+                                                                      || m.ContactNumber == model.EmailOrNumberOrUserName && !string.IsNullOrWhiteSpace(m.ContactNumber)
+                                                                      || m.UserName == model.EmailOrNumberOrUserName && !string.IsNullOrWhiteSpace(m.UserName))
                                                                       && m.IsDeleted != true);
             if (user != null)
                 return user;
-            
-            throw new  CustomException(CustomErrorMessage.ExitsUser);
+
+            throw new ValidationException(CustomErrorMessage.ExitsUser, CustomErrorCode.IsNotExits, new List<ValidationError>
+               {
+                       new ValidationError
+                    {
+                        message = CustomErrorMessage.ExitsUser,
+                        reference = "UserName",
+                        parameter = "UserName",
+                        errorCode = CustomErrorCode.IsNotExits
+                    }
+               });
         }
 
         /// <summary>
@@ -155,14 +192,34 @@ namespace InstagramWebAPI.BLL
         /// </summary>
         /// <param name="model">The data containing the user ID and new password.</param>
         /// <returns>A <see cref="Task{TResult}"/> representing the asynchronous operation. The task result indicates if the password was successfully updated.</returns>
-        public async Task<bool> ResetPasswordAsync(ResetPasswordDTO model)
+        public async Task<bool> ForgotPasswordAsync(ForgotPasswordDTO model)
         {
             try
             {
                 User? user = await _dbcontext.Users.FirstOrDefaultAsync(m => m.UserId == model.UserId && m.IsDeleted != true);
                 if (user != null)
                 {
-                    user.Password = model.Password ?? string.Empty;
+                    user.Password = BCrypt.Net.BCrypt.HashPassword(model.Password);
+                    user.ModifiedDate = DateTime.Now;
+
+                    _dbcontext.Users.Update(user);
+                    await _dbcontext.SaveChangesAsync();
+
+                    return true;
+                }
+                return false;
+            }
+            catch { return false; }
+        }
+
+        public async Task<bool> ResetPasswordAsync(ResetPasswordRequestDTO model)
+        {
+            try
+            {
+                User? user = await _dbcontext.Users.FirstOrDefaultAsync(m => m.UserId == model.UserId && m.IsDeleted != true);
+                if (user != null)
+                {
+                    user.Password = BCrypt.Net.BCrypt.HashPassword(model.Password);
                     user.ModifiedDate = DateTime.Now;
 
                     _dbcontext.Users.Update(user);
