@@ -21,7 +21,7 @@ namespace InstagramWebAPI.Interface
         List<ValidationError> ValidateResetPassword(ResetPasswordRequestDTO model);
         List<ValidationError> ValidatePostList(RequestDTO<PostListRequestDTO> model);
         List<ValidationError> ValidateDeletePostId(long postId);
-         List<ValidationError> ValidateLikePost(long userId, long postId)
+        List<ValidationError> ValidateLikePost(long userId, long postId);
 
     }
 }
