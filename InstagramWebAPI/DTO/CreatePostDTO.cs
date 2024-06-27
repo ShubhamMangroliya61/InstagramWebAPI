@@ -8,5 +8,6 @@
         public string? Location { get; set; }
         public string? PostType { get; set; }
         public List<IFormFile>? File { get; set; }
+
     }
 }

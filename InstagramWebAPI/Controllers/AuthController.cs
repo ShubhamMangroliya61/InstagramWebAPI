@@ -165,7 +165,13 @@ namespace InstagramWebAPI.Controllers
             }
         }
 
+        /// <summary>
+        /// Handles the data for resetting password asynchronously.
+        /// </summary>
+        /// <param name="model">The model containing reset password data.</param>
+        /// <returns>An <see cref="ActionResult{T}"/> representing the result of the password reset operation.</returns>
         [HttpPost("ResetPasswordAsync")]
+        [Authorize]
         public async Task<ActionResult<ResponseModel>> ResetPasswordAsync([FromBody] ResetPasswordRequestDTO model)
         {
             try

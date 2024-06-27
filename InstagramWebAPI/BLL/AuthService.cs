@@ -212,6 +212,11 @@ namespace InstagramWebAPI.BLL
             catch { return false; }
         }
 
+        /// <summary>
+        /// Resets the password for a user asynchronously.
+        /// </summary>
+        /// <param name="model">The model containing the user ID and new password.</param>
+        /// <returns>A task representing the asynchronous operation. Returns true if the password was reset successfully, otherwise false.</returns>
         public async Task<bool> ResetPasswordAsync(ResetPasswordRequestDTO model)
         {
             try

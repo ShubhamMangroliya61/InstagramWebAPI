@@ -28,12 +28,16 @@
         public const string RegistrationSucces = "Registration Successfully";
         public const string LoginSucces = "Login Successfully";
         public const string ExitsUser = "User Not Exits";
+        public const string ExitsPost = "Post Not Exits";
         public const string ExitsRequest = "Request Not Exits";
         public const string MailSend = "Email send successfully";
         public const string MailNotSend = "Email Not Send";
         public const string ReserError = "Error occurred while Reset Password the user.";
+        public const string PostError = "Error occurred while Create Post.";
         public const string ReserPassword = "Reset Password Successfully";
         public const string ForgotPassword = "Forgot Password Successfully";
+        public const string CreatePost = "Post Create Successfully";
+        public const string UpdatePost = "Post Update Successfully";
         public const string ValidationReset = "Validation failed for ResetPassword data.";
         public const string InvalidUserId = "Invalid UserId. UserId must be greater than zero.";
         public const string NullUserId = "Userid is required";
@@ -55,15 +59,21 @@
         public const string FutureDateOfBirth = "Please enter valid DateOfBirth";
         public const string InvalidType = "Please enter valid Type of List";
         public const string InvalidReqType = "Please enter valid Type of Request";
+        public const string InvalidPostType = "Please enter valid Type of Post";
         public const string ValidationList = "Validation failed for Get List data.";
         public const string GetFollowerList = "Error occurred while Get List .";
         public const string GetFollowerListSucces = "List Get Successfully";
+        public const string GetPostListSucces = "Post List Get Successfully";
         public const string GetUser = "User Get Successfully";
         public const string NullRequestId = "Requestid is required";
-        public const string InvalidRequestId = "Invalid RequestId. UserId must be greater than zero.";
+        public const string NullPostId = "PostId is required";
+        public const string InvalidRequestId = "Invalid RequestId. requestId must be greater than zero.";
+        public const string InvalidPostId = "Invalid PostId.PostId must be greater than zero.";
         public const string ValidationReqType = "Validation failed for Request  data.";
         public const string AccpteUpdate = "Update Successfully";
+        public const string PostDelete = "Post Delete Successfully";
         public const string CountSucces = "Get Count Successfully";
+        public const string PostDeleteError = "Error occurred while Delete Post.";
 
 
 

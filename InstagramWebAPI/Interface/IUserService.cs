@@ -1,4 +1,5 @@
 ﻿using DataAccess.CustomModel;
+using InstagramWebAPI.Common;
 using InstagramWebAPI.DTO;
 
 namespace InstagramWebAPI.Interface
@@ -13,6 +14,9 @@ namespace InstagramWebAPI.Interface
         Task<PaginationResponceModel<RequestListResponseDTO>> GetRequestListByIdAsync(RequestDTO<FollowRequestDTO> model);
         Task<bool> RequestAcceptOrCancelAsync(long requestId, string acceptType);
         Task<CountResponseDTO> GetFollowerAndFollowingCountByIdAsync(long userId);
-
+        Task<PostResponseDTO> CreatePostAsync(CreatePostDTO model);
+        Task<PaginationResponceModel<PostResponseDTO>> GetPostsByIdAsync(RequestDTO<PostListRequestDTO> model);
+        Task<bool> DetelePostAsync(long postId);
+        List<ValidationError> ValidateLikePost(long userId, long postId);
     }
 }

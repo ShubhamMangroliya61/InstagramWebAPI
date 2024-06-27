@@ -165,7 +165,7 @@ namespace InstagramWebAPI.BLL
                 });
             }
         }
-        public List<ValidationError> ValidateUserId(long userId)
+        public  List<ValidationError> ValidateUserId(long userId)
         {
             if (userId == 0)
             {
@@ -187,13 +187,13 @@ namespace InstagramWebAPI.BLL
                     errorCode = CustomErrorCode.InvalidUserId
                 });
             }
-            else if (!_dbcontext.Users.Any(m => m.UserId == userId && m.IsDeleted != true))
+             if (! _dbcontext.Users.Any(m => m.UserId == userId && m.IsDeleted != true))
             {
                 errors.Add(new ValidationError
                 {
                     message = CustomErrorMessage.ExitsUser,
-                    reference = "UserName",
-                    parameter = "UserName",
+                    reference = "userid",
+                    parameter = "userid",
                     errorCode = CustomErrorCode.IsNotExits
                 });
             }
@@ -229,6 +229,40 @@ namespace InstagramWebAPI.BLL
                     reference = "UserName",
                     parameter = "UserName",
                     errorCode = CustomErrorCode.IsNotRequest
+                });
+            }
+            return errors;
+        }
+       public List<ValidationError> ValidatePostId(long postId)
+        {
+            if (postId == 0)
+            {
+                errors.Add(new ValidationError
+                {
+                    message = CustomErrorMessage.NullPostId,
+                    reference = "postid",
+                    parameter = "postid",
+                    errorCode = CustomErrorCode.NullPostId
+                });
+            }
+            else if (postId < 0)
+            {
+                errors.Add(new ValidationError
+                {
+                    message = CustomErrorMessage.InvalidPostId,
+                    reference = "postid",
+                    parameter = "postid",
+                    errorCode = CustomErrorCode.InvalidPostId
+                });
+            }
+            else if (!_dbcontext.Posts.Any(m => m.PostId == postId && m.IsDeleted != true))
+            {
+                errors.Add(new ValidationError
+                {
+                    message = CustomErrorMessage.ExitsPost,
+                    reference = "postid",
+                    parameter = "postid",
+                    errorCode = CustomErrorCode.IsNotPost
                 });
             }
             return errors;
@@ -311,7 +345,7 @@ namespace InstagramWebAPI.BLL
             }
             else
             {
-                if (model.TypeUserId == "email" && !Regex.IsMatch(model.UserID, EmailRegex))
+                if (model.Type == "email" && !Regex.IsMatch(model.UserID, EmailRegex))
                 {
                     errors.Add(new ValidationError
                     {
@@ -321,7 +355,7 @@ namespace InstagramWebAPI.BLL
                         errorCode = CustomErrorCode.InvalidEmailFormat
                     });
                 }
-                else if (model.TypeUserId == "phone" && !Regex.IsMatch(model.UserID, MobileRegex))
+                else if (model.Type== "phone" && !Regex.IsMatch(model.UserID, MobileRegex))
                 {
                     errors.Add(new ValidationError
                     {
@@ -331,7 +365,7 @@ namespace InstagramWebAPI.BLL
                         errorCode = CustomErrorCode.InvalidMobileNumberFormat
                     });
                 }
-                else if (model.TypeUserId == "username" && !Regex.IsMatch(model.UserID, UserNameRegex))
+                else if (model.Type == "username" && !Regex.IsMatch(model.UserID, UserNameRegex))
                 {
                     errors.Add(new ValidationError
                     {
@@ -593,34 +627,59 @@ namespace InstagramWebAPI.BLL
         public List<ValidationError> ValidateCreatePost(CreatePostDTO model)
         {
             ValidateUserId(model.UserId);
+            if(model.PostId > 0)
+            {
+                if (!_dbcontext.Posts.Any(m => m.PostId == model.PostId && m.IsDeleted != true))
+                {
+                    errors.Add(new ValidationError
+                    {
+                        message = CustomErrorMessage.ExitsPost,
+                        reference = "userid",
+                        parameter = "userid",
+                        errorCode = CustomErrorCode.IsNotPost
+                    });
+                }
+            }
+            if (model.PostId <= 0)
+            {
+                if (model.File == null || model.File.Count == 0)
+                {
+                    errors.Add(new ValidationError
+                    {
+                        message = CustomErrorMessage.NullProfilePhoto,
+                        reference = "Files",
+                        parameter = "Files",
+                        errorCode = CustomErrorCode.NullProfilePhoto
+                    });
+                }
+                else
+                {
+                    foreach (var file in model.File)
+                    {
+                        string fileExtension = Path.GetExtension(file.FileName).ToLowerInvariant();
 
-            if (model.File == null || model.File.Count == 0)
+                        if (!AllowedExtensions.Contains(fileExtension))
+                        {
+                            errors.Add(new ValidationError
+                            {
+                                message = string.Format(CustomErrorMessage.InvalidPhotoExtension, string.Join(", ", AllowedExtensionsProfilePhoto)),
+                                reference = "Files",
+                                parameter = "Files",
+                                errorCode = CustomErrorCode.InvalidFileFormat
+                            });
+                        }
+                    }
+                }
+            }
+            if (!(model.PostType == "Post" || model.PostType == "Reel"))
             {
                 errors.Add(new ValidationError
                 {
-                    message = CustomErrorMessage.NullProfilePhoto,
-                    reference = "Files",
-                    parameter = "Files",
-                    errorCode = CustomErrorCode.NullProfilePhoto
+                    message = CustomErrorMessage.InvalidPostType,
+                    reference = "UserId",
+                    parameter = "UserId",
+                    errorCode = CustomErrorCode.InvalidPostType
                 });
-            }
-            else
-            {
-                foreach (var file in model.File)
-                {
-                    string fileExtension = Path.GetExtension(file.FileName).ToLowerInvariant();
-
-                    if (!AllowedExtensions.Contains(fileExtension))
-                    {
-                        errors.Add(new ValidationError
-                        {
-                            message = string.Format(CustomErrorMessage.InvalidPhotoExtension, string.Join(", ", AllowedExtensionsProfilePhoto)),
-                            reference = "Files",
-                            parameter = "Files",
-                            errorCode = CustomErrorCode.InvalidFileFormat
-                        });
-                    }
-                }
             }
             return errors;
         }
@@ -649,7 +708,7 @@ namespace InstagramWebAPI.BLL
                 });
             }
             User? user = _dbcontext.Users.FirstOrDefault(m => m.UserId == model.UserId && m.IsDeleted == false);
-            if(!BCrypt.Net.BCrypt.Verify(model.OldPassword, user.Password))
+            if(user != null && !BCrypt.Net.BCrypt.Verify(model.OldPassword, user.Password))
                 {
                 errors.Add(new ValidationError
                 {
@@ -680,6 +739,34 @@ namespace InstagramWebAPI.BLL
                     errorCode = CustomErrorCode.PasswordNOTMatch
                 });
             }
+            return errors;
+        }
+
+        public List<ValidationError> ValidatePostList(RequestDTO<PostListRequestDTO> model)
+        {
+            ValidateUserId(model.Model.UserId);
+            if (!(model.Model.PostType == "Post" || model.Model.PostType == "Reel"))
+            {
+                errors.Add(new ValidationError
+                {
+                    message = CustomErrorMessage.InvalidPostType,
+                    reference = "typepost",
+                    parameter = "typepost",
+                    errorCode = CustomErrorCode.InvalidPostType
+                });
+            }
+            return errors;
+        }
+        public List<ValidationError> ValidateDeletePostId(long postId)
+        {
+            ValidatePostId(postId);
+            return errors;
+        }
+
+        public List<ValidationError> ValidateLikePost(long userId,long postId)
+        {
+            ValidateUserId(userId);
+            ValidatePostId(postId);
             return errors;
         }
     }

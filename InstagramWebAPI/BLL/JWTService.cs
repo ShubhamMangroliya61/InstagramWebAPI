@@ -16,6 +16,11 @@ namespace InstagramWebAPI.BLL
             secretkey = configuration.GetValue<string>("Jwt:Key") ?? string.Empty;
         }
 
+        /// <summary>
+        /// Generates a JWT token for the given user.
+        /// </summary>
+        /// <param name="user">The user object for whom the token is generated.</param>
+        /// <returns>A JWT token string.</returns>
         public string GetJWTToken(User user)
         {
             JwtSecurityTokenHandler tokenHandler = new();

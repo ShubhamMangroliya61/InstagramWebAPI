@@ -35,7 +35,7 @@ public partial class ApplicationDbContext : DbContext
 
     protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
 #warning To protect potentially sensitive information in your connection string, you should move it out of source code. You can avoid scaffolding the connection string by using the Name= syntax to read it from configuration - see https://go.microsoft.com/fwlink/?linkid=2131148. For more guidance on storing connection strings, see http://go.microsoft.com/fwlink/?LinkId=723263.
-        => optionsBuilder.UseSqlServer("Server=192.168.0.5;Database=shubhammangroliya_db;User=shubham1;Password=WKy6qka6;TrustServerCertificate=true;");
+        => optionsBuilder.UseSqlServer("Server=192.168.0.5;Database=shubhammangroliya_db;User=shubham1;Password=WKy6qka6;Encrypt=True;TrustServerCertificate=True;");
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
@@ -85,15 +85,15 @@ public partial class ApplicationDbContext : DbContext
 
         modelBuilder.Entity<PostMapping>(entity =>
         {
-            entity.HasKey(e => e.PostMappingId).HasName("PK__PostMapp__F2670387C1360299");
+            entity.HasKey(e => e.PostMappingId).HasName("PK__PostMapp__F267038701C597D5");
 
             entity.HasOne(d => d.MediaType).WithMany(p => p.PostMappings)
                 .OnDelete(DeleteBehavior.ClientSetNull)
-                .HasConstraintName("FK__PostMappi__Media__7E02B4CC");
+                .HasConstraintName("FK__PostMappi__Media__14E61A24");
 
             entity.HasOne(d => d.Post).WithMany(p => p.PostMappings)
                 .OnDelete(DeleteBehavior.ClientSetNull)
-                .HasConstraintName("FK__PostMappi__PostI__7D0E9093");
+                .HasConstraintName("FK__PostMappi__PostI__13F1F5EB");
         });
 
         modelBuilder.Entity<Request>(entity =>

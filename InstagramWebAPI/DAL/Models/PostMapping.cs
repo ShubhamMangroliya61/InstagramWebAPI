@@ -30,7 +30,7 @@ public partial class PostMapping
     public DateTime CreatedDate { get; set; }
 
     [Column(TypeName = "datetime")]
-    public DateTime ModifiedDate { get; set; }
+    public DateTime? ModifiedDate { get; set; }
 
     [ForeignKey("MediaTypeId")]
     [InverseProperty("PostMappings")]
