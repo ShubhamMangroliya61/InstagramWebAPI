@@ -116,7 +116,7 @@ namespace InstagramWebAPI.Controllers
                 string encryptedUserId = Convert.ToBase64String(b);
 
                 string subject = "Forgot Password - Instagram";
-                string resetLink = $"https://1d51-202-131-123-10.ngrok-free.app/resetpassword/{encryptedUserId}";
+                string resetLink = $"https://e828-202-131-123-10.ngrok-free.app/resetpassword/{encryptedUserId}";
                 
                 string htmlMessage = $@"
                                     <html>

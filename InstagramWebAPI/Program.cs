@@ -38,17 +38,7 @@ builder.Services.AddCors(options =>
                 .AllowAnyHeader();
         });
 });
-//builder.Services.AddCors(options =>
-//{
-//    options.AddPolicy("AllowAll",
-//        builder =>
-//        {
-//            builder.WithOrigins("http://localhost:3000", "http://192.168.3.172:3000")
-//                   .AllowAnyMethod()
-//                   .AllowAnyHeader()
-//                   .AllowCredentials();
-//        });
-//});
+
 builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
     .AddJwtBearer(options =>
     {

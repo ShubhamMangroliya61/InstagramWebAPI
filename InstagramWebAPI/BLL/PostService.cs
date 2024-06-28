@@ -155,6 +155,21 @@ namespace InstagramWebAPI.BLL
                         MediaURL = m.MediaUrl,
                         MediaName = m.MediaName
                     }).ToList(),
+                     PostLikes= post.Likes.Select(l => new PostLike
+                    {
+                        LikeId = l.LikeId,
+                        UserId = l.UserId,
+                        Avtar = l.User.ProfilePictureUrl, // Assuming Avtar is a property of the User entity
+                        UserName = l.User.UserName // Assuming UserName is a property of the User entity
+                    }).ToList(),
+                    PostComments = post.Comments.Select(c => new PostComment
+                    {
+                        CommentId = c.CommentId,
+                        UserId = c.UserId,
+                        CommentText = c.CommentText,
+                        Avtar = c.User.ProfilePictureUrl, // Assuming Avtar is a property of the User entity
+                        UserName = c.User.UserName // Assuming UserName is a property of the User entity
+                    }).ToList()
 
                 });
 
