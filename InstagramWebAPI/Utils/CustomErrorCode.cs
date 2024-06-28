@@ -16,6 +16,7 @@
         public const string InvalidMobileNumberFormat = "INVALID_MOBILENUMBER_FORMAT";
         public const string NullPassword = "NULL_PASSWORD";
         public const string NullOldPassword = "NULL_OLD_PASSWORD";
+        public const string NullComment = "NULL_COMMENTTEXT";
         public const string PasswordNOTMatch = "PASSWORD_NOT_MATCH";
         public const string NullConfirmPassword = "NULL_CONFIRMPASSWORD";
         public const string InvalidPasswordFormat = "INVALID_PASSWORD_FORMAT";
@@ -27,15 +28,18 @@
         public const string NullContactNumber = "NULL_USERNAME";
         public const string NullEmailOrMobileNumberOrUsername = "NULL_EMAIL_OR_MOBILENUMBER_OR_USERNAME";
         public const string IsNotExits = "USER_NOT_EXITS";
+        public const string IsNotComment = "COMMENT_NOT_EXITS";
         public const string IsNotPost = "POST_NOT_EXITS";
         public const string IsNotRequest = "REQUEST_NOT_EXITS";
         public const string MailNotSend = "MAIL_NOT_SEND";
         public const string IsReset = "RESET_ERROR";
         public const string IsPOst = "CREATE_POST_ERROR";
         public const string InvalidUserId = "INVALID_USERID";
+        public const string InvalidCommentId = "INVALID_COMMENTID";
         public const string InvalidRequestId = "INVALID_REQUESTID";
         public const string InvalidPostId = "INVALID_POSTID";
         public const string NullUserId = "NULL_USERID";
+        public const string NullCommentId = "NULL_COMMENTID";
         public const string NullProfilePhoto = "NULL_PROFILE_PHOTO";
         public const string InvalidPhotoExtension = "INVALID_PHOTO_EXTENSION";
         public const string InvalidFileFormat = "INVALID_FILE_FORMATE";
@@ -54,6 +58,7 @@
         public const string IsGetLIst = "GET_LIST_ERROR";
         public const string IsPostDelete = "POST_DELETE_ERROR";
         public const string IsPostLIke = "LIKE_ERROR";
+        public const string IsPostComment = "COMMENT_ERROR";
         public const string NullRequestId = "NULL_REQUESTID";
         public const string NullPostId = "NULL_POSTID";
 

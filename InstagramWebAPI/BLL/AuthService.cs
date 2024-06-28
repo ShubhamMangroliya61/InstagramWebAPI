@@ -23,7 +23,7 @@ namespace InstagramWebAPI.BLL
             _jWTService = jWTService;
         }
 
-        
+
 
         /// <summary>
         /// Registers a new user asynchronously.
@@ -36,22 +36,8 @@ namespace InstagramWebAPI.BLL
             {
                 User user = _dbcontext.Users.FirstOrDefault(m => m.UserId == model.UserId && m.IsDeleted != true) ?? new();
 
-                if (string.IsNullOrWhiteSpace(model.EmailOrNumber))
-                {
-                    user.Email = model.Email ?? string.Empty;
-                    user.ContactNumber = model.ContactNumber ?? string.Empty;
-                }
-                else
-                {
-                    if (model.Type == "phone")
-                    {
-                        user.ContactNumber = model.EmailOrNumber ?? string.Empty;
-                    }
-                    else if(model.Type == "email")
-                    {
-                        user.Email = model.EmailOrNumber ?? string.Empty;
-                    }
-                }
+                user.Email = model.Email ?? string.Empty;
+                user.ContactNumber = model.ContactNumber ?? string.Empty;
                 user.Name = model.Name ?? string.Empty;
                 user.Password = BCrypt.Net.BCrypt.HashPassword(model.Password);
                 user.UserName = model.UserName ?? string.Empty;

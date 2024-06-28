@@ -18,4 +18,21 @@
         public string? MediaName { get; set; }
 
     }
+    
+    public class PostLike
+    {
+        public long LikeId { get; set; }
+        public long UserId { get; set; }
+        public string? Avtar { get; set; }
+        public string? UserName { get; set; }
+    }
+
+    public class PostComment
+    {
+        public long CommentId { get; set; }
+        public long UserId { get; set; }
+        public string? CommentText { get; set;}
+        public string? Avtar { get; set;}
+        public string? UserName { get; set;}
+    }
 }

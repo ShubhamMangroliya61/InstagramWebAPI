@@ -1,9 +1,9 @@
 ﻿namespace InstagramWebAPI.DTO
 {
-    public class LikePostDTO
+    public class CommentPostDTO
     {
         public long UserId { get; set; }
         public long PostId { get; set; }
-        public bool IsLike { get; set; }
+        public string? CommentText { get; set; }
     }
 }

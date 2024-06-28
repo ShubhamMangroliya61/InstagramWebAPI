@@ -138,7 +138,7 @@ namespace InstagramWebAPI.BLL
         {
             IQueryable<PostResponseDTO> posts = _dbcontext.Posts
                 .Include(m => m.PostMappings)
-                .ThenInclude(m => m.MediaType)
+                .ThenInclude(m => m.MediaType).Include(m=>m.Likes).Include(m=>m.Comments).Include(m=>m.User)
                 .Where(m => m.IsDeleted == false && (model.Model.PostType == "Post" ? m.PostTypeId == 4 : m.PostTypeId == 3) && m.UserId == model.Model.UserId)
                 .OrderByDescending(p => p.CreatedDate)
                 .Select(post => new PostResponseDTO
@@ -154,7 +154,8 @@ namespace InstagramWebAPI.BLL
                         MediaType = m.MediaTypeId == 1 ? "Images" : "Video",
                         MediaURL = m.MediaUrl,
                         MediaName = m.MediaName
-                    }).ToList()
+                    }).ToList(),
+
                 });
 
             int totalRecords = await posts.CountAsync();
@@ -190,16 +191,17 @@ namespace InstagramWebAPI.BLL
             }
             return false;
         }
+
         public async Task<bool> LikeAndUnlikePostAsync(LikePostDTO model)
         {
-            Like? like = await _dbcontext.Likes.FirstOrDefaultAsync(m => m.UserId == model.userId && m.PostId == model.postId);
+            Like? like = await _dbcontext.Likes.FirstOrDefaultAsync(m => m.UserId == model.UserId && m.PostId == model.PostId);
 
             if (like != null)
             {
-                if (model.isLike != like.IsLike)
+                if (model.IsLike != like.IsLike)
                 {
-                    like.IsLike = model.isLike;
-                    like.IsDeleted = !model.isLike;
+                    like.IsLike = model.IsLike;
+                    like.IsDeleted = !model.IsLike;
                     like.ModifiedDate = DateTime.Now;
 
                     _dbcontext.Likes.Update(like);
@@ -209,12 +211,12 @@ namespace InstagramWebAPI.BLL
             }
             else
             {
-                if (model.isLike)
+                if (model.IsLike)
                 {
                     Like newLike = new()
                     {
-                        UserId = model.userId,
-                        PostId = model.postId,
+                        UserId = model.UserId,
+                        PostId = model.PostId,
                         IsLike = true,
                         IsDeleted = false,
                         CreatedDate = DateTime.Now,
@@ -226,6 +228,37 @@ namespace InstagramWebAPI.BLL
                 }
                 return false;
             }
+        }
+
+        public async Task<bool> CommentPostAsync(CommentPostDTO model)
+        {
+            Comment comment = new()
+            {
+                UserId = model.UserId,
+                PostId = model.PostId,
+                CommentText = model.CommentText,
+                CreatedDate = DateTime.Now,
+                IsDeleted = false,
+            };
+            await _dbcontext.Comments.AddAsync(comment);
+            await _dbcontext.SaveChangesAsync();  
+            return true;
+        }
+
+        public async Task<bool> DetelePostCommentAsync(long commentId)
+        {
+            Comment? comment = await _dbcontext.Comments.FirstOrDefaultAsync(m => m.CommentId == commentId && m.IsDeleted == false);
+            if (comment != null)
+            {
+                comment.IsDeleted = true;
+                comment.ModifiedDate = DateTime.Now;
+
+                _dbcontext.Comments.Update(comment);
+                await _dbcontext.SaveChangesAsync();
+
+                return true;
+            }
+            return false;
         }
     }
 }

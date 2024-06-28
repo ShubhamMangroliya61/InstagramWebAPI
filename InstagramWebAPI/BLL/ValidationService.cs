@@ -36,9 +36,9 @@ namespace InstagramWebAPI.BLL
             {
                 errors.Add(new ValidationError
                 {
-                    message = CustomErrorMessage.UsernameRequired,
-                    reference = "UserName",
-                    parameter = "UserName",
+                    message = CustomErrorMessage.EmailRequired,
+                    reference = "email",
+                    parameter = "email",
                     errorCode = CustomErrorCode.NullEmail
                 });
             }
@@ -47,8 +47,8 @@ namespace InstagramWebAPI.BLL
                 errors.Add(new ValidationError
                 {
                     message = CustomErrorMessage.InvalidEmailFormat,
-                    reference = "Password",
-                    parameter = "Password",
+                    reference = "email",
+                    parameter = "email",
                     errorCode = CustomErrorCode.InvalidEmailFormat
                 });
             }
@@ -112,8 +112,8 @@ namespace InstagramWebAPI.BLL
                 errors.Add(new ValidationError
                 {
                     message = CustomErrorMessage.InvalidUserNameFormat,
-                    reference = "Password",
-                    parameter = "Password",
+                    reference = "UserName",
+                    parameter = "UserName",
                     errorCode = CustomErrorCode.InvalidUserNameFormat
                 });
             }
@@ -143,27 +143,18 @@ namespace InstagramWebAPI.BLL
         }
         public void ValidateContactNumber(string contactNumber)
         {
-            if (string.IsNullOrWhiteSpace(contactNumber))
-            {
-                errors.Add(new ValidationError
-                {
-                    message = CustomErrorMessage.UsernameRequired,
-                    reference = "UserName",
-                    parameter = "UserName",
-                    errorCode = CustomErrorCode.NullContactNumber
-                });
-            }
-            else if (!Regex.IsMatch(contactNumber, MobileRegex))
+            if (!string.IsNullOrWhiteSpace(contactNumber) && !Regex.IsMatch(contactNumber, MobileRegex))
             {
                 errors.Add(new ValidationError
                 {
                     message = CustomErrorMessage.InvalidMobileNumberFormat,
-                    reference = "Password",
-                    parameter = "Password",
+                    reference = "contactNumber",
+                    parameter = "contactNumber",
                     errorCode = CustomErrorCode.InvalidMobileNumberFormat
                 });
             }
         }
+
         public  List<ValidationError> ValidateUserId(long userId)
         {
             if (userId == 0)
@@ -205,8 +196,8 @@ namespace InstagramWebAPI.BLL
                 errors.Add(new ValidationError
                 {
                     message = CustomErrorMessage.NullRequestId,
-                    reference = "UserId",
-                    parameter = "UserId",
+                    reference = "requestId",
+                    parameter = "requestId",
                     errorCode = CustomErrorCode.NullRequestId
                 });
             }
@@ -215,8 +206,8 @@ namespace InstagramWebAPI.BLL
                 errors.Add(new ValidationError
                 {
                     message = CustomErrorMessage.InvalidRequestId,
-                    reference = "UserId",
-                    parameter = "UserId",
+                    reference = "requestId",
+                    parameter = "requestId",
                     errorCode = CustomErrorCode.InvalidRequestId
                 });
             }
@@ -225,8 +216,8 @@ namespace InstagramWebAPI.BLL
                 errors.Add(new ValidationError
                 {
                     message = CustomErrorMessage.ExitsRequest,
-                    reference = "UserName",
-                    parameter = "UserName",
+                    reference = "requestId",
+                    parameter = "requestId",
                     errorCode = CustomErrorCode.IsNotRequest
                 });
             }
@@ -287,8 +278,7 @@ namespace InstagramWebAPI.BLL
         /// <returns>True if the username is unique; false otherwise.</returns>
         public  bool IsUniqueEmail(UserDTO model)
         {
-            User? user =  _dbcontext.Users.FirstOrDefault(m => ((m.Email ?? string.Empty).ToLower() == (model.EmailOrNumber ?? string.Empty).ToLower() && !string.IsNullOrWhiteSpace(m.Email)
-                                      || (m.Email ?? string.Empty).ToLower() == (model.Email ?? string.Empty).ToLower() && !string.IsNullOrWhiteSpace(m.Email))
+            User? user =  _dbcontext.Users.FirstOrDefault(m => ((m.Email ?? string.Empty).ToLower() == (model.Email ?? string.Empty).ToLower() && !string.IsNullOrWhiteSpace(m.Email))
                                        && m.IsDeleted != true);
             if (user == null) return false;
 
@@ -302,8 +292,7 @@ namespace InstagramWebAPI.BLL
         /// <returns>True if the username is unique; false otherwise.</returns>
         public bool IsUniquePhoneNumber(UserDTO model)
         {
-            User? user =  _dbcontext.Users.FirstOrDefault(m => (m.ContactNumber == model.EmailOrNumber && !string.IsNullOrWhiteSpace(m.ContactNumber)
-                                       || m.ContactNumber == model.ContactNumber && !string.IsNullOrWhiteSpace(m.ContactNumber))
+            User? user =  _dbcontext.Users.FirstOrDefault(m => (m.ContactNumber == model.ContactNumber && !string.IsNullOrWhiteSpace(m.ContactNumber) && !string.IsNullOrWhiteSpace(model.ContactNumber))
                                        && m.IsDeleted != true);
             if (user == null) return false;
 
@@ -319,51 +308,18 @@ namespace InstagramWebAPI.BLL
         {
             if (model.UserId == 0)
             {
-                if (string.IsNullOrWhiteSpace(model.EmailOrNumber))
-                {
-                    errors.Add(new ValidationError
-                    {
-                        message = CustomErrorMessage.EmailOrMobileRequired,
-                        reference = "Email OR MobileNumber",
-                        parameter = "Email or MobileNumber",
-                        errorCode = CustomErrorCode.NullEmailOrMobileNumber
-                    });
-                }
-                else
-                {
-                    if (model.Type == "email" && !Regex.IsMatch(model.EmailOrNumber, EmailRegex))
-                    {
-                        errors.Add(new ValidationError
-                        {
-                            message = CustomErrorMessage.InvalidEmailFormat,
-                            reference = "Email",
-                            parameter = model.EmailOrNumber,
-                            errorCode = CustomErrorCode.InvalidEmailFormat
-                        });
-                    }
-                    else if (model.Type == "phone" && !Regex.IsMatch(model.EmailOrNumber, MobileRegex))
-                    {
-                        errors.Add(new ValidationError
-                        {
-                            message = CustomErrorMessage.InvalidMobileNumberFormat,
-                            reference = "MobileNumber",
-                            parameter = model.EmailOrNumber,
-                            errorCode = CustomErrorCode.InvalidMobileNumberFormat
-                        });
-                    }
-                }
-
                 ValidatePassword(model.Password ?? string.Empty);
             }
-            
+            ValidateEmail(model.Email ?? string.Empty);
+            ValidateContactNumber(model.ContactNumber ?? string.Empty);
             ValidateUserName(model.UserName);
             if (IsUniqueUserName(model.UserName))
             {
                 errors.Add(new ValidationError
                 {
                     message = CustomErrorMessage.DuplicateUsername,
-                    reference = "MobileNumber",
-                    parameter = model.EmailOrNumber,
+                    reference = "username",
+                    parameter = model.UserName,
                     errorCode = CustomErrorCode.IsUserName
                 });
             }
@@ -372,8 +328,8 @@ namespace InstagramWebAPI.BLL
                 errors.Add(new ValidationError
                 {
                     message = CustomErrorMessage.DuplicateEmail,
-                    reference = "MobileNumber",
-                    parameter = model.EmailOrNumber,
+                    reference = "username",
+                    parameter = model.Email,
                     errorCode = CustomErrorCode.IsEmail
                 });
                
@@ -383,8 +339,8 @@ namespace InstagramWebAPI.BLL
                 errors.Add(new ValidationError
                 {
                     message = CustomErrorMessage.DuplicateNumber,
-                    reference = "MobileNumber",
-                    parameter = model.EmailOrNumber,
+                    reference = "mobileNumber",
+                    parameter = model.ContactNumber,
                     errorCode = CustomErrorCode.IsPhoneNumber
                 });
                
@@ -393,10 +349,7 @@ namespace InstagramWebAPI.BLL
             {
                 ValidateDateOfBirth(model.DateOfBirth ?? string.Empty);
                 ValidateUserId(model.UserId);
-                ValidateEmail(model.Email ?? string.Empty);
-                ValidateContactNumber(model.ContactNumber ?? string.Empty);
             }
-
             return errors;
         }
 
@@ -445,8 +398,8 @@ namespace InstagramWebAPI.BLL
                     errors.Add(new ValidationError
                     {
                         message = CustomErrorMessage.InvalidUserNameFormat,
-                        reference = "Password",
-                        parameter = "Password",
+                        reference = "username",
+                        parameter = "username",
                         errorCode = CustomErrorCode.InvalidUserNameFormat
                     });
                 }
@@ -615,8 +568,8 @@ namespace InstagramWebAPI.BLL
                 errors.Add(new ValidationError
                 {
                     message = CustomErrorMessage.InvalidUserNameFormat,
-                    reference = "Password",
-                    parameter = "Password",
+                    reference = "username",
+                    parameter = "username",
                     errorCode = CustomErrorCode.InvalidUserNameFormat
                 });
             }
@@ -665,8 +618,8 @@ namespace InstagramWebAPI.BLL
                 errors.Add(new ValidationError
                 {
                     message = CustomErrorMessage.InvalidType,
-                    reference = "UserId",
-                    parameter = "UserId",
+                    reference = "type",
+                    parameter = "type",
                     errorCode = CustomErrorCode.InvalidListType
                 });
             }
@@ -691,8 +644,8 @@ namespace InstagramWebAPI.BLL
                 errors.Add(new ValidationError
                 {
                     message = CustomErrorMessage.InvalidReqType,
-                    reference = "UserId",
-                    parameter = "UserId",
+                    reference = "reqtype",
+                    parameter = "reqtype",
                     errorCode = CustomErrorCode.InvalidReqType
                 });
             }
@@ -751,8 +704,8 @@ namespace InstagramWebAPI.BLL
                 errors.Add(new ValidationError
                 {
                     message = CustomErrorMessage.InvalidPostType,
-                    reference = "UserId",
-                    parameter = "UserId",
+                    reference = "post",
+                    parameter = "post",
                     errorCode = CustomErrorCode.InvalidPostType
                 });
             }
@@ -842,6 +795,57 @@ namespace InstagramWebAPI.BLL
         {
             ValidateUserId(userId);
             ValidatePostId(postId);
+            return errors;
+        }
+
+        public List<ValidationError> ValidateCommentPost(CommentPostDTO model)
+        {
+            ValidateUserId(model.UserId);
+            ValidatePostId(model.PostId);
+            if (string.IsNullOrWhiteSpace(model.CommentText))
+            {
+                errors.Add(new ValidationError
+                {
+                    message = CustomErrorMessage.CommentRequired,
+                    reference = "comment",
+                    parameter = "comment",
+                    errorCode = CustomErrorCode.NullComment
+                });
+            }
+            return errors;
+        }
+        public List<ValidationError> ValidateCommentId(long commentId)
+        {
+            if (commentId == 0)
+            {
+                errors.Add(new ValidationError
+                {
+                    message = CustomErrorMessage.NullCommentId,
+                    reference = "commentId",
+                    parameter = "commentId",
+                    errorCode = CustomErrorCode.NullCommentId
+                });
+            }
+            else if (commentId < 0)
+            {
+                errors.Add(new ValidationError
+                {
+                    message = CustomErrorMessage.InvalidCommentId,
+                    reference = "commentId",
+                    parameter = "commentId",
+                    errorCode = CustomErrorCode.InvalidCommentId
+                });
+            }
+            if (!_dbcontext.Comments.Any(m => m.CommentId == commentId && m.IsDeleted != true))
+            {
+                errors.Add(new ValidationError
+                {
+                    message = CustomErrorMessage.ExitsPOstComment,
+                    reference = "commentId",
+                    parameter = "commentId",
+                    errorCode = CustomErrorCode.IsNotComment
+                });
+            }
             return errors;
         }
     }

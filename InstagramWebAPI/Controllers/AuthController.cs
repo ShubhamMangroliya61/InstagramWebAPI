@@ -45,8 +45,6 @@ namespace InstagramWebAPI.Controllers
                     return BadRequest(_responseHandler.BadRequest(CustomErrorCode.IsValid, CustomErrorMessage.ValidationRegistrtion, errors));
                 }
 
-                
-
                 User? user = await _authService.UpSertUserAsync(model);
                 if (user == null)
                 {
@@ -114,10 +112,36 @@ namespace InstagramWebAPI.Controllers
 
                 User user = await _authService.GetUser(model);
 
-                var subject = "Forgot Password - Instagram";
-                var message = "Tap on link for Forgot Password: ";
+                byte[] b = System.Text.ASCIIEncoding.ASCII.GetBytes(user.UserId.ToString());
+                string encryptedUserId = Convert.ToBase64String(b);
 
-                if (!await _helper.EmailSender(user.Email ?? string.Empty, subject, message))
+                string subject = "Forgot Password - Instagram";
+                string resetLink = $"https://1d51-202-131-123-10.ngrok-free.app/resetpassword/{encryptedUserId}";
+                
+                string htmlMessage = $@"
+                                    <html>
+                        <body style=""font-family: Arial, sans-serif; background-color:rgb(243, 242, 242);  padding: 20px;"">
+ 
+                            <!-- Header -->
+                            <div style="" padding: 10px; text-align: center;"">
+                                <img src=""https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcRNFFDufYJlSyMP1NgyV8OUR_zYH9YIcCcCUA&s""  style=""width: 120px; height: auto;"">
+                            </div>
+                            <div style="" padding-left: 15px; border-radius: 5px; margin-top: 20px;"">
+                                <p>Hi <span style=""color: #0095f6;"">sohilvekariya2024</span>,</p>
+                                <p>Sorry to hear you’re having trouble logging into Instagram. We got a message that you forgot your password. If this was you, you can get right back into your account or reset your password now.</p>
+                                <div style=""text-align: center; margin-top: 20px;"">
+                                    <br>
+                                    <a href=""{resetLink}"" style=""display: inline-block; background-color: #0095f6; color: white; text-decoration: none; padding: 10px 20px; border-radius: 5px;"">Reset your password</a>
+                                </div>
+                                <p style=""margin-top: 20px;"">If you didn’t request a login link or a password reset, you can ignore this message and <a href=""#"" style=""color: #0095f6; text-decoration: none;"">learn more about why you may have received it.</a></p>
+                                <p>Only people who know your Instagram password or click the login link in this email can log into your account.</p>
+                            </div>
+                        </body>
+                        </html>
+                        ";
+
+                // Send email using EmailSender method
+                if (!await _helper.EmailSender(user.Email??string.Empty, subject, htmlMessage))
                 {
                     return BadRequest(_responseHandler.BadRequest(CustomErrorCode.MailNotSend, CustomErrorMessage.MailNotSend, model));
                 }
@@ -129,6 +153,8 @@ namespace InstagramWebAPI.Controllers
                 return BadRequest(_responseHandler.BadRequest(CustomErrorCode.IsNotExits, ex.Message, model));
             }
         }
+
+
 
         /// <summary>
         /// Handles the data for resetting password asynchronously.
@@ -142,6 +168,10 @@ namespace InstagramWebAPI.Controllers
         {
             try
             {
+                byte[] b = Convert.FromBase64String(model.EncyptUserId??string.Empty.ToString());
+                string dcryptedUserId = System.Text.ASCIIEncoding.ASCII.GetString(b);
+                model.UserId = Convert.ToInt32(dcryptedUserId);
+
                 List<ValidationError> errors = _validationService.ValidateForgotPasswordData(model);
                 if (errors.Any())
                 {

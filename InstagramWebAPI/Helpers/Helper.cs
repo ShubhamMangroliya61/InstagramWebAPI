@@ -5,7 +5,7 @@ namespace InstagramWebAPI.Helpers
 {
     public class Helper
     {
-        public async Task<bool> EmailSender(string email, string subject, string message)
+        public async Task<bool> EmailSender(string email, string subject, string htmlMessage)
         {
             try
             {
@@ -17,10 +17,21 @@ namespace InstagramWebAPI.Helpers
                     EnableSsl = true,
                     Credentials = new NetworkCredential(mail, password)
                 };
-                await client.SendMailAsync(new MailMessage(from: mail, to: email, subject, message));
+
+                var mailMessage = new MailMessage
+                {
+                    From = new MailAddress(mail),
+                    Subject = subject,
+                    Body = htmlMessage,
+                    IsBodyHtml = true
+                };
+                mailMessage.To.Add(email);
+
+                await client.SendMailAsync(mailMessage);
+
                 return true;
             }
-            catch
+            catch (Exception)
             {
                 return false;
             }

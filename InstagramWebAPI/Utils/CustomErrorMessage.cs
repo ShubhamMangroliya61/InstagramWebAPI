@@ -8,6 +8,7 @@
         public const string InvalidEmailFormat = "Please enter a valid Email address.";
         public const string InvalidMobileNumberFormat = "Please enter a valid Mobile number.";
         public const string PasswordRequired = "Password is required.";
+        public const string CommentRequired = "CommentText is required.";
         public const string PasswordNotmatch = "Password Not Match.";
         public const string OldPasswordRequired = "OldPassword is required.";
         public const string ConfirmPasswordRequired = "ConfirmPassword is required.";
@@ -30,6 +31,7 @@
         public const string RegistrationSucces = "Registration Successfully";
         public const string LoginSucces = "Login Successfully";
         public const string ExitsUser = "User Not Exits";
+        public const string ExitsPOstComment = "comment Not Exits";
         public const string ExitsPost = "Post Not Exits";
         public const string ExitsRequest = "Request Not Exits";
         public const string MailSend = "Email send successfully";
@@ -42,7 +44,9 @@
         public const string UpdatePost = "Post Update Successfully";
         public const string ValidationReset = "Validation failed for ResetPassword data.";
         public const string InvalidUserId = "Invalid UserId. UserId must be greater than zero.";
+        public const string InvalidCommentId = "Invalid CommentId. CommentId must be greater than zero.";
         public const string NullUserId = "Userid is required";
+        public const string NullCommentId = "Userid is required";
         public const string MatchUserId = "Please Enter Different UserId";
         public const string NullProfilePhoto = "Profile photo is required.";
         public const string InvalidPhotoExtension = "Invalid file extension. Allowed extensions are: {0}";
@@ -74,10 +78,13 @@
         public const string ValidationReqType = "Validation failed for Request  data.";
         public const string AccpteUpdate = "Update Successfully";
         public const string PostDelete = "Post Delete Successfully";
+        public const string PostCommentDelete = "Comment Delete Successfully";
         public const string PostLike = "Post Like Or Unlike Successfully";
+        public const string PostComment = "Post Comment Successfully";
         public const string CountSucces = "Get Count Successfully";
         public const string PostDeleteError = "Error occurred while Delete Post.";
         public const string PostLikeError = "Error occurred while Like Post.";
+        public const string PostCommentError = "Error occurred while Comment Post.";
 
 
 

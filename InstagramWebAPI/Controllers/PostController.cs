@@ -133,7 +133,7 @@ namespace InstagramWebAPI.Controllers
         {
             try
             {
-                List<ValidationError> errors = _validationService.ValidateLikePost(model.userId, model.postId);
+                List<ValidationError> errors = _validationService.ValidateLikePost(model.UserId, model.PostId);
                 if (errors.Any())
                 {
                     return BadRequest(_responseHandler.BadRequest(CustomErrorCode.IsValid, CustomErrorMessage.ValidationPost, errors));
@@ -143,7 +143,7 @@ namespace InstagramWebAPI.Controllers
                 {
                     return BadRequest(_responseHandler.BadRequest(CustomErrorCode.IsPostLIke, CustomErrorMessage.PostLikeError, errors));
                 }
-                return Ok(_responseHandler.Success(CustomErrorMessage.PostLike, model.postId));
+                return Ok(_responseHandler.Success(CustomErrorMessage.PostLike, model.PostId));
             }
             catch (Exception ex)
             {
@@ -153,12 +153,66 @@ namespace InstagramWebAPI.Controllers
                 }
                 else
                 {
-                    return BadRequest(_responseHandler.BadRequest(CustomErrorCode.IsPostLIke, ex.Message, model.postId));
+                    return BadRequest(_responseHandler.BadRequest(CustomErrorCode.IsPostLIke, ex.Message, model.PostId));
                 }
             }
         }
 
-       
+        [HttpPost("CommentPost")]
+        public async Task<ActionResult<ResponseModel>> CommentPostAsync(CommentPostDTO model)
+        {
+            try
+            {
+                List<ValidationError> errors = _validationService.ValidateCommentPost(model);
+                if (errors.Any())
+                {
+                    return BadRequest(_responseHandler.BadRequest(CustomErrorCode.IsValid, CustomErrorMessage.ValidationPost, errors));
+                }
+                bool isComment = await _postService.CommentPostAsync(model);
+               
+                return Ok(_responseHandler.Success(CustomErrorMessage.PostComment, model));
+            }
+            catch (Exception ex)
+            {
+                if (ex is ValidationException vx)
+                {
+                    return BadRequest(_responseHandler.BadRequest(vx.ErrorCode, vx.Message, vx.Errors));
+                }
+                else
+                {
+                    return BadRequest(_responseHandler.BadRequest(CustomErrorCode.IsPostComment, ex.Message, model.PostId));
+                }
+            }
+        }
 
+        [HttpPost("DeletePostComment")]
+        public async Task<ActionResult<ResponseModel>> DetelePostCommentAsync([FromQuery] long commentId)
+        {
+            try
+            {
+                List<ValidationError> errors = _validationService.ValidateCommentId(commentId);
+                if (errors.Any())
+                {
+                    return BadRequest(_responseHandler.BadRequest(CustomErrorCode.IsValid, CustomErrorMessage.ValidationPost, errors));
+                }
+                bool isDeleted = await _postService.DetelePostCommentAsync(commentId);
+                if (!isDeleted)
+                {
+                    return BadRequest(_responseHandler.BadRequest(CustomErrorCode.IsPostComment, CustomErrorMessage.PostCommentError, errors));
+                }
+                return Ok(_responseHandler.Success(CustomErrorMessage.PostCommentDelete, commentId));
+            }
+            catch (Exception ex)
+            {
+                if (ex is ValidationException vx)
+                {
+                    return BadRequest(_responseHandler.BadRequest(vx.ErrorCode, vx.Message, vx.Errors));
+                }
+                else
+                {
+                    return BadRequest(_responseHandler.BadRequest(CustomErrorCode.IsPostDelete, ex.Message, commentId));
+                }
+            }
+        }
     }
 }
