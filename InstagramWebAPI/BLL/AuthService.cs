@@ -23,36 +23,7 @@ namespace InstagramWebAPI.BLL
             _jWTService = jWTService;
         }
 
-        /// <summary>
-        /// Checks if the given username is unique.
-        /// </summary>
-        /// <param name="userName">The username to check.</param>
-        /// <returns>True if the username is unique; false otherwise.</returns>
-        public async Task<bool> IsUniqueUserName(string userName)
-        {
-            User? user = await _dbcontext.Users.FirstOrDefaultAsync(m => m.UserName == userName && m.IsDeleted != true);
-            if (user == null) return false;
-
-            return true;
-        }
-
-        /// <summary>
-        /// Checks if the given username is unique.
-        /// </summary>
-        /// <param name="userName">The username to check.</param>
-        /// <returns>True if the username is unique; false otherwise.</returns>
-        public async Task<bool> IsUniqueUserNameEmailPhoneNumber(UserDTO model)
-        {
-            User? user = await _dbcontext.Users.FirstOrDefaultAsync(m => ((m.UserName ?? string.Empty).ToLower() == (model.UserName ?? string.Empty).ToLower() && !string.IsNullOrWhiteSpace(m.UserName)
-                                       || (m.Email ?? string.Empty).ToLower() == (model.EmailOrNumber ?? string.Empty).ToLower() && !string.IsNullOrWhiteSpace(m.Email)
-                                       || m.ContactNumber == model.EmailOrNumber && !string.IsNullOrWhiteSpace(m.ContactNumber)
-                                       || (m.Email ?? string.Empty).ToLower() == (model.Email ?? string.Empty).ToLower() && !string.IsNullOrWhiteSpace(m.Email)
-                                       || m.ContactNumber == model.ContactNumber && !string.IsNullOrWhiteSpace(m.ContactNumber))
-                                       && m.IsDeleted != true);
-            if (user == null) return false;
-
-            return true;
-        }
+        
 
         /// <summary>
         /// Registers a new user asynchronously.
@@ -72,11 +43,11 @@ namespace InstagramWebAPI.BLL
                 }
                 else
                 {
-                    if (model.EmailOrNumber == "phone")
+                    if (model.Type == "phone")
                     {
                         user.ContactNumber = model.EmailOrNumber ?? string.Empty;
                     }
-                    else
+                    else if(model.Type == "email")
                     {
                         user.Email = model.EmailOrNumber ?? string.Empty;
                     }
@@ -85,18 +56,21 @@ namespace InstagramWebAPI.BLL
                 user.Password = BCrypt.Net.BCrypt.HashPassword(model.Password);
                 user.UserName = model.UserName ?? string.Empty;
                 user.CreatedDate = DateTime.Now;
-                user.DateOfBirth = DateTime.TryParseExact(model.DateOfBirth, "yyyy-MM-dd", CultureInfo.InvariantCulture, DateTimeStyles.None, out DateTime dob) ? dob : DateTime.MinValue;
                 user.Bio = model.Bio;
                 user.Link = model.Link;
                 user.Gender = model.Gender;
 
                 if (user.UserId > 0)
                 {
+                    user.DateOfBirth = DateTime.TryParseExact(model.DateOfBirth, "yyyy-MM-dd", CultureInfo.InvariantCulture, DateTimeStyles.None, out DateTime dob) ? dob : DateTime.MinValue;
                     user.ModifiedDate = DateTime.Now;
                     _dbcontext.Users.Update(user);
                 }
                 else
                 {
+                    user.Bio = "";
+                    user.Link = "";
+                    user.Gender = "";
                     user.CreatedDate = DateTime.Now;
                     await _dbcontext.Users.AddAsync(user);
                 }

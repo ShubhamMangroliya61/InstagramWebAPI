@@ -4,6 +4,8 @@
     {
         public const string IsValid = "VALIDATION_ERROR";
         public const string IsUserName = "DUPLICATE_USERNAME";
+        public const string IsPhoneNumber = "DUPLICATE_PHONENUMBER";
+        public const string IsEmail = "DUPLICATE_EMAIL";
         public const string IsRegister = "REGISTRATION_ERROR";
         public const string IsCount = "COUNT_ERROR";
         public const string IsLogin = "INVALID_USERNAME_OR_PASSWORD";
@@ -51,6 +53,7 @@
         public const string InvalidPostType = "INVALID_Post_TYPE";
         public const string IsGetLIst = "GET_LIST_ERROR";
         public const string IsPostDelete = "POST_DELETE_ERROR";
+        public const string IsPostLIke = "LIKE_ERROR";
         public const string NullRequestId = "NULL_REQUESTID";
         public const string NullPostId = "NULL_POSTID";
 

@@ -19,6 +19,8 @@
         public const string InvalidUserNameFormat = "Username must start with an alphanumeric character and be between 8 to 18 characters long, allowing only letters, numbers, underscores(_), and dots(.).";
         public const string InvalidUsernameOrPassword = "Username or Password is invalid.";
         public const string DuplicateUsername = "Username already exists.";
+        public const string DuplicateEmail = "Email already exists.";
+        public const string DuplicateNumber = "Phone Number already exists.";
         public const string RegistrationError = "Error occurred while registering the user.";
         public const string CountError = "Error occurred while count the Follower and Follwing.";
         public const string ModelIsNull = "All fields are required.";
@@ -72,8 +74,10 @@
         public const string ValidationReqType = "Validation failed for Request  data.";
         public const string AccpteUpdate = "Update Successfully";
         public const string PostDelete = "Post Delete Successfully";
+        public const string PostLike = "Post Like Or Unlike Successfully";
         public const string CountSucces = "Get Count Successfully";
         public const string PostDeleteError = "Error occurred while Delete Post.";
+        public const string PostLikeError = "Error occurred while Like Post.";
 
 
 

@@ -45,10 +45,7 @@ namespace InstagramWebAPI.Controllers
                     return BadRequest(_responseHandler.BadRequest(CustomErrorCode.IsValid, CustomErrorMessage.ValidationRegistrtion, errors));
                 }
 
-                if (await _authService.IsUniqueUserNameEmailPhoneNumber(model))
-                {
-                    return BadRequest(_responseHandler.BadRequest(CustomErrorCode.IsUserName, CustomErrorMessage.DuplicateUsername, model));
-                }
+                
 
                 User? user = await _authService.UpSertUserAsync(model);
                 if (user == null)

@@ -92,7 +92,6 @@ namespace InstagramWebAPI.BLL
                     }
                 }
             }
-
             return errors;
         }
 
@@ -267,6 +266,50 @@ namespace InstagramWebAPI.BLL
             }
             return errors;
         }
+
+        /// <summary>
+        /// Checks if the given username is unique.
+        /// </summary>
+        /// <param name="userName">The username to check.</param>
+        /// <returns>True if the username is unique; false otherwise.</returns>
+        public  bool IsUniqueUserName(string userName)
+        {
+            User? user =  _dbcontext.Users.FirstOrDefault(m => ((m.UserName ?? string.Empty).ToLower() == (userName ?? string.Empty).ToLower() && !string.IsNullOrWhiteSpace(m.UserName)) && m.IsDeleted == false);
+            if (user == null) return false;
+
+            return true;
+        }
+
+        /// <summary>
+        /// Checks if the given username is unique.
+        /// </summary>
+        /// <param name="userName">The username to check.</param>
+        /// <returns>True if the username is unique; false otherwise.</returns>
+        public  bool IsUniqueEmail(UserDTO model)
+        {
+            User? user =  _dbcontext.Users.FirstOrDefault(m => ((m.Email ?? string.Empty).ToLower() == (model.EmailOrNumber ?? string.Empty).ToLower() && !string.IsNullOrWhiteSpace(m.Email)
+                                      || (m.Email ?? string.Empty).ToLower() == (model.Email ?? string.Empty).ToLower() && !string.IsNullOrWhiteSpace(m.Email))
+                                       && m.IsDeleted != true);
+            if (user == null) return false;
+
+            return true;
+        }
+
+        /// <summary>
+        /// Checks if the given username is unique.
+        /// </summary>
+        /// <param name="userName">The username to check.</param>
+        /// <returns>True if the username is unique; false otherwise.</returns>
+        public bool IsUniquePhoneNumber(UserDTO model)
+        {
+            User? user =  _dbcontext.Users.FirstOrDefault(m => (m.ContactNumber == model.EmailOrNumber && !string.IsNullOrWhiteSpace(m.ContactNumber)
+                                       || m.ContactNumber == model.ContactNumber && !string.IsNullOrWhiteSpace(m.ContactNumber))
+                                       && m.IsDeleted != true);
+            if (user == null) return false;
+
+            return true;
+        }
+
         /// <summary>
         /// Validates the registration request DTO.
         /// </summary>
@@ -312,11 +355,43 @@ namespace InstagramWebAPI.BLL
 
                 ValidatePassword(model.Password ?? string.Empty);
             }
-            ValidateDateOfBirth(model.DateOfBirth ?? string.Empty);
+            
             ValidateUserName(model.UserName);
-
+            if (IsUniqueUserName(model.UserName))
+            {
+                errors.Add(new ValidationError
+                {
+                    message = CustomErrorMessage.DuplicateUsername,
+                    reference = "MobileNumber",
+                    parameter = model.EmailOrNumber,
+                    errorCode = CustomErrorCode.IsUserName
+                });
+            }
+            if (IsUniqueEmail(model))
+            {
+                errors.Add(new ValidationError
+                {
+                    message = CustomErrorMessage.DuplicateEmail,
+                    reference = "MobileNumber",
+                    parameter = model.EmailOrNumber,
+                    errorCode = CustomErrorCode.IsEmail
+                });
+               
+            }
+            if (IsUniquePhoneNumber(model))
+            {
+                errors.Add(new ValidationError
+                {
+                    message = CustomErrorMessage.DuplicateNumber,
+                    reference = "MobileNumber",
+                    parameter = model.EmailOrNumber,
+                    errorCode = CustomErrorCode.IsPhoneNumber
+                });
+               
+            }
             if (model.UserId > 0)
             {
+                ValidateDateOfBirth(model.DateOfBirth ?? string.Empty);
                 ValidateUserId(model.UserId);
                 ValidateEmail(model.Email ?? string.Empty);
                 ValidateContactNumber(model.ContactNumber ?? string.Empty);

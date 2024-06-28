@@ -56,6 +56,8 @@ public partial class ApplicationDbContext : DbContext
         {
             entity.HasKey(e => e.LikeId).HasName("PK__Like__A2922C14FCDE588C");
 
+            entity.Property(e => e.IsLike).HasDefaultValueSql("((1))");
+
             entity.HasOne(d => d.Post).WithMany(p => p.Likes)
                 .OnDelete(DeleteBehavior.ClientSetNull)
                 .HasConstraintName("FK__Like__PostId__74794A92");

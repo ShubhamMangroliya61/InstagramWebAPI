@@ -6,12 +6,12 @@
         public string? EmailOrNumber { get; set; }
         public string UserName { get; set; } = null!;
         public string? Email { get; set; }
-        public string Gender { get; set; } = null!;
+        public string? Gender { get; set; } 
         public string? ContactNumber { get; set; }
         public string? DateOfBirth { get; set; }
         public string? ProfilePictureUrl { get; set; }
         public string? ProfilePictureName { get; set; }
-        public string? Bio { get; set; }
+        public string Bio { get; set; }= "";
         public string? Name { get; set; }
         public string? Link { get; set; }
         public bool IsVerified { get; set; }= false;

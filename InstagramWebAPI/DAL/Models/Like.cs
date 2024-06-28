@@ -24,6 +24,9 @@ public partial class Like
     [Column(TypeName = "datetime")]
     public DateTime? ModifiedDate { get; set; }
 
+    [Required]
+    public bool? IsLike { get; set; }
+
     [ForeignKey("PostId")]
     [InverseProperty("Likes")]
     public virtual Post Post { get; set; } = null!;

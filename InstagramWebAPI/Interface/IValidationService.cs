@@ -22,6 +22,8 @@ namespace InstagramWebAPI.Interface
         List<ValidationError> ValidatePostList(RequestDTO<PostListRequestDTO> model);
         List<ValidationError> ValidateDeletePostId(long postId);
         List<ValidationError> ValidateLikePost(long userId, long postId);
-
+        bool IsUniqueUserName(string userName);
+        bool IsUniqueEmail(UserDTO model);
+        bool IsUniquePhoneNumber(UserDTO model);
     }
 }
