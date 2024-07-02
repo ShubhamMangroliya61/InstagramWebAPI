@@ -19,12 +19,12 @@ namespace InstagramWebAPI.Controllers
         private readonly ResponseHandler _responseHandler;
         private readonly Helper _helper;
 
-        public AuthController(IValidationService validationService, ResponseHandler responseHandler, IAuthService authService)
+        public AuthController(IValidationService validationService, ResponseHandler responseHandler, IAuthService authService,Helper helper)
         {
             _validationService = validationService;
             _responseHandler = responseHandler;
             _authService = authService;
-            this._helper = new Helper();
+            _helper = helper;
         }
 
         /// <summary>
@@ -45,7 +45,7 @@ namespace InstagramWebAPI.Controllers
                     return BadRequest(_responseHandler.BadRequest(CustomErrorCode.IsValid, CustomErrorMessage.ValidationRegistrtion, errors));
                 }
 
-                User? user = await _authService.UpSertUserAsync(model);
+                UserDTO? user = await _authService.UpSertUserAsync(model);
                 if (user == null)
                 {
                     return BadRequest(_responseHandler.BadRequest(CustomErrorCode.IsRegister, CustomErrorMessage.RegistrationError, model));
@@ -79,7 +79,7 @@ namespace InstagramWebAPI.Controllers
                 }
 
                 LoginResponseDTO loginResponse = await _authService.UserLoginAsync(model);
-                if (loginResponse.User == null && string.IsNullOrEmpty(loginResponse.Token))
+                if (string.IsNullOrEmpty(loginResponse.Token))
                 {
                     return BadRequest(_responseHandler.BadRequest(CustomErrorCode.IsLogin, CustomErrorMessage.InvalidUsernameOrPassword, loginResponse));
                 }
@@ -127,7 +127,7 @@ namespace InstagramWebAPI.Controllers
                                 <img src=""https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcRNFFDufYJlSyMP1NgyV8OUR_zYH9YIcCcCUA&s""  style=""width: 120px; height: auto;"">
                             </div>
                             <div style="" padding-left: 15px; border-radius: 5px; margin-top: 20px;"">
-                                <p>Hi <span style=""color: #0095f6;"">sohilvekariya2024</span>,</p>
+                                <p>Hi <span style=""color: #0095f6;"">{user.Name}</span>,</p>
                                 <p>Sorry to hear you’re having trouble logging into Instagram. We got a message that you forgot your password. If this was you, you can get right back into your account or reset your password now.</p>
                                 <div style=""text-align: center; margin-top: 20px;"">
                                     <br>

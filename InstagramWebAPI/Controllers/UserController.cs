@@ -8,6 +8,7 @@ using InstagramWebAPI.Utils;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.JsonPatch.Internal;
 using Microsoft.AspNetCore.Mvc;
+using System.Security.Claims;
 using System.Transactions;
 using System.Xml.Linq;
 
@@ -23,13 +24,13 @@ namespace InstagramWebAPI.Controllers
         private readonly Helper _helper;
         private readonly IAuthService _authService;
 
-        public UserController(IValidationService validationService, ResponseHandler responseHandler, IUserService userService, IAuthService authService)
+        public UserController(IValidationService validationService, ResponseHandler responseHandler, IUserService userService, IAuthService authService, Helper helper)
         {
             _validationService = validationService;
             _responseHandler = responseHandler;
             _userService = userService;
             _authService = authService;
-            this._helper = new Helper();
+            _helper = helper;
         }
         /// <summary>
         /// Handles the asynchronous upload of a user's profile photo.
@@ -38,20 +39,21 @@ namespace InstagramWebAPI.Controllers
         /// <returns>An <see cref="ActionResult{T}"/> representing the result of the profile photo upload operation.</returns>
         [HttpPost("UploadProfilePhoto")]
         [Authorize]
-        public async Task<ActionResult<ResponseModel>> UploadProfilePhotoAsync([FromForm] UploadProfilePhotoDTO model)
+        public async Task<ActionResult<ResponseModel>> UploadProfilePhotoAsync(IFormFile ProfilePhoto)
         {
             try
             {
-                List<ValidationError> errors = _validationService.ValidateProfileFile(model);
+                long userId = _helper.GetUserIdClaim();
+                List<ValidationError> errors = _validationService.ValidateProfileFile(ProfilePhoto, userId);
                 if (errors.Any())
                 {
                     return BadRequest(_responseHandler.BadRequest(CustomErrorCode.IsValid, CustomErrorMessage.ValidationProfile, errors));
                 }
 
-                ProfilePhotoResponseDTO profilePhotoDTO = await _userService.UploadProfilePhotoAsync(model);
+                ProfilePhotoResponseDTO profilePhotoDTO = await _userService.UploadProfilePhotoAsync(ProfilePhoto, userId);
                 if (profilePhotoDTO == null)
                 {
-                    return BadRequest(_responseHandler.BadRequest(CustomErrorCode.IsUpload, CustomErrorMessage.UploadError, model));
+                    return BadRequest(_responseHandler.BadRequest(CustomErrorCode.IsUpload, CustomErrorMessage.UploadError, ProfilePhoto));
                 }
                 return Ok(_responseHandler.Success(CustomErrorMessage.UploadPhoto, profilePhotoDTO));
             }
@@ -63,7 +65,7 @@ namespace InstagramWebAPI.Controllers
                 }
                 else
                 {
-                    return BadRequest(_responseHandler.BadRequest(CustomErrorCode.IsUpload, ex.Message, model));
+                    return BadRequest(_responseHandler.BadRequest(CustomErrorCode.IsUpload, ex.Message, ProfilePhoto));
                 }
             }
         }
@@ -74,18 +76,19 @@ namespace InstagramWebAPI.Controllers
         /// <param name="model">The data transfer object containing the updated user profile data.</param>
         /// <returns>An <see cref="ActionResult{T}"/> representing the result of the profile update operation.</returns>
         [Authorize]
-        [HttpPut("UpdateProfile")]
+        [HttpPost("UpdateProfile")]
         public async Task<ActionResult<ResponseModel>> UpdateProfileAsync(UserDTO model)
         {
             try
             {
+                model.UserId = _helper.GetUserIdClaim();
                 List<ValidationError> errors = _validationService.ValidateRegistration(model);
                 if (errors.Any())
                 {
                     return BadRequest(_responseHandler.BadRequest(CustomErrorCode.IsValid, CustomErrorMessage.ValidationUpdateProfile, errors));
                 }
 
-                User? user = await _authService.UpSertUserAsync(model);
+                UserDTO? user = await _authService.UpSertUserAsync(model);
                 if (user == null)
                 {
                     return BadRequest(_responseHandler.BadRequest(CustomErrorCode.IsUpdate, CustomErrorMessage.UpdateProfile, model));
@@ -116,12 +119,13 @@ namespace InstagramWebAPI.Controllers
         {
             try
             {
+                model.FromUserId = _helper.GetUserIdClaim();
                 List<ValidationError> errors = _validationService.ValidateFollowRequest(model);
                 if (errors.Any())
                 {
                     return BadRequest(_responseHandler.BadRequest(CustomErrorCode.IsValid, CustomErrorMessage.ValidationRequest, errors));
                 }
-                bool isFollow =await _userService.FollowRequestAsync(model);
+                bool isFollow = await _userService.FollowRequestAsync(model);
                 if (!isFollow)
                 {
                     return BadRequest(_responseHandler.BadRequest(CustomErrorCode.IsRequest, CustomErrorMessage.RequestError, errors));
@@ -157,7 +161,7 @@ namespace InstagramWebAPI.Controllers
                 {
                     return BadRequest(_responseHandler.BadRequest(CustomErrorCode.IsValid, CustomErrorMessage.ValidationRequest, errors));
                 }
-                PaginationResponceModel<UserDTO> data =await _userService.GetFollowerORFollowingListAsync(model);
+                PaginationResponceModel<UserDTO> data = await _userService.GetFollowerORFollowingListAsync(model);
                 if (data == null)
                 {
                     return BadRequest(_responseHandler.BadRequest(CustomErrorCode.IsGetLIst, CustomErrorMessage.GetFollowerList, model));
@@ -261,12 +265,12 @@ namespace InstagramWebAPI.Controllers
         {
             try
             {
-                List<ValidationError> errors = _validationService.ValidateRequestAccept(requestId,accpetType);
+                List<ValidationError> errors = _validationService.ValidateRequestAccept(requestId, accpetType);
                 if (errors.Any())
                 {
                     return BadRequest(_responseHandler.BadRequest(CustomErrorCode.IsValid, CustomErrorMessage.ValidationReqType, errors));
                 }
-                bool isAccept=await _userService.RequestAcceptOrCancelAsync(requestId,accpetType);
+                bool isAccept = await _userService.RequestAcceptOrCancelAsync(requestId, accpetType);
                 if (!isAccept)
                 {
                     return BadRequest(_responseHandler.BadRequest(CustomErrorCode.IsValid, CustomErrorMessage.ValidationReqType, errors));
@@ -291,9 +295,9 @@ namespace InstagramWebAPI.Controllers
         /// </summary>
         /// <param name="userId">The ID of the user to retrieve follower and following counts.</param>
         /// <returns>An <see cref="ActionResult{T}"/> representing the result of retrieving follower and following counts.</returns>
-        [HttpGet("FollowerAndFollowingCountById")]
+        [HttpGet("FollowerAndFollowingAndPostCountById")]
         [Authorize]
-        public async Task<ActionResult<ResponseModel>> GetFollowerAndFollowingCountByIdAsync([FromQuery] long userId)
+        public async Task<ActionResult<ResponseModel>> GetFollowerAndFollowingAndPostCountByIdAsync([FromQuery] long userId)
         {
             try
             {
@@ -323,6 +327,39 @@ namespace InstagramWebAPI.Controllers
             }
         }
 
-        
+        [HttpPost("MutualFriendAsync")]
+        [Authorize]
+        public async Task<ActionResult<ResponseModel>> MutualFriendAsync([FromBody] RequestDTO<UserIdRequestDTO> model)
+        {
+            try
+            {
+                List<ValidationError> errors = _validationService.ValidateMatualFrnd(model);
+                if (errors.Any())
+                {
+                    return BadRequest(_responseHandler.BadRequest(CustomErrorCode.IsValid, CustomErrorMessage.ExitsUser, errors));
+                }
+                PaginationResponceModel<MutualFriendDTO> data = await _userService.GetMutualFriendsWithDetailsAsync(model);
+                if (data == null)
+                {
+                    return BadRequest(_responseHandler.BadRequest(CustomErrorCode.IsMutual, CustomErrorMessage.MutualError, model));
+                }
+
+                return Ok(_responseHandler.Success(CustomErrorMessage.mutualSucces, data));
+            }
+            catch (Exception ex)
+            {
+                if (ex is ValidationException vx)
+                {
+                    return BadRequest(_responseHandler.BadRequest(vx.ErrorCode, vx.Message, vx.Errors));
+                }
+                else
+                {
+                    return BadRequest(_responseHandler.BadRequest(CustomErrorCode.IsMutual, ex.Message, model));
+                }
+            }
+        }
+
+
+
     }
 }

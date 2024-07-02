@@ -2,6 +2,7 @@ using InstagramWebAPI;
 using InstagramWebAPI.BLL;
 using InstagramWebAPI.Common;
 using InstagramWebAPI.DAL.Models;
+using InstagramWebAPI.Helpers;
 using InstagramWebAPI.Interface;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.EntityFrameworkCore;
@@ -22,10 +23,12 @@ builder.Services.AddDbContext<ApplicationDbContext>(options =>
 builder.Services.AddScoped<IAuthService, AuthService>();
 builder.Services.AddScoped<IUserService, UserService>();
 builder.Services.AddScoped<IPostService, PostService>();
+builder.Services.AddScoped<IStoryService ,StoryService>();
 builder.Services.AddScoped<IValidationService, ValidationService>();
 builder.Services.AddScoped<ResponseHandler>();
+builder.Services.AddScoped<Helper>();
 builder.Services.AddScoped<IJWTService, JWTService>();
-
+builder.Services.AddSingleton<IHttpContextAccessor, HttpContextAccessor>();
 var key = builder.Configuration.GetValue<string>("Jwt:Key");
 
 builder.Services.AddCors(options =>
@@ -105,7 +108,7 @@ app.UseSwagger();
 app.UseSwaggerUI();
 
 app.UseCors("AllowAll");
-
+app.UseStaticFiles();
 app.UseHttpsRedirection();
 app.UseAuthentication();
 app.UseAuthorization();

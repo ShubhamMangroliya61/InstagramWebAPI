@@ -2,11 +2,10 @@
 using InstagramWebAPI.Common;
 using InstagramWebAPI.DAL.Models;
 using InstagramWebAPI.DTO;
+using InstagramWebAPI.Helpers;
 using InstagramWebAPI.Interface;
 using InstagramWebAPI.Utils;
 using Microsoft.EntityFrameworkCore;
-using Microsoft.EntityFrameworkCore.Metadata.Internal;
-using static Microsoft.EntityFrameworkCore.DbLoggerCategory;
 using static System.Runtime.InteropServices.JavaScript.JSType;
 
 namespace InstagramWebAPI.BLL
@@ -14,8 +13,10 @@ namespace InstagramWebAPI.BLL
     public class UserService : IUserService
     {
         public readonly ApplicationDbContext _dbcontext;
-        public UserService(ApplicationDbContext db)
+        public readonly Helper _helper;
+        public UserService(ApplicationDbContext db,Helper helper)
         {
+            _helper = helper;
             _dbcontext = db;
         }
 
@@ -24,10 +25,10 @@ namespace InstagramWebAPI.BLL
         /// </summary>
         /// <param name="model">The model containing UserId and the profile photo to upload.</param>
         /// <returns>A ProfilePhotoResponseDTO containing the uploaded photo details.</returns>
-        public async Task<ProfilePhotoResponseDTO> UploadProfilePhotoAsync(UploadProfilePhotoDTO model)
+        public async Task<ProfilePhotoResponseDTO> UploadProfilePhotoAsync(IFormFile ProfilePhoto,long userId)
         {
 
-            User user = await _dbcontext.Users.FirstOrDefaultAsync(m => m.UserId == model.UserId && m.IsDeleted != true) ??
+            User user = await _dbcontext.Users.FirstOrDefaultAsync(m => m.UserId == userId && m.IsDeleted != true) ??
                throw new ValidationException(CustomErrorMessage.ExitsUser, CustomErrorCode.IsNotExits, new List<ValidationError>
                {
                        new ValidationError
@@ -40,7 +41,7 @@ namespace InstagramWebAPI.BLL
                });
 
 
-            IFormFile file = model.ProfilePhoto ??
+            IFormFile file = ProfilePhoto ??
                   throw new ValidationException(CustomErrorMessage.NullProfilePhoto, CustomErrorCode.NullProfilePhoto, new List<ValidationError>
                    {
                        new ValidationError
@@ -52,9 +53,9 @@ namespace InstagramWebAPI.BLL
                 }
                    }); ;
 
-            string userId = model.UserId.ToString();
+            string userID = userId.ToString();
 
-            string path = Path.Combine(Directory.GetCurrentDirectory(), "wwwroot", "content", "User", userId, "ProfilePhoto");
+            string path = Path.Combine(Directory.GetCurrentDirectory(), "wwwroot", "content", "User", userID, "ProfilePhoto");
 
             if (!Directory.Exists(path))
             {
@@ -77,7 +78,7 @@ namespace InstagramWebAPI.BLL
             }
 
 
-            user.ProfilePictureUrl = Path.Combine("content", "User", userId, "ProfilePhoto", fileName);
+            user.ProfilePictureUrl = Path.Combine("content", "User", userID, "ProfilePhoto", fileName);
             user.ProfilePictureName = fileName;
 
 
@@ -299,22 +300,7 @@ namespace InstagramWebAPI.BLL
                     }
                });
 
-            UserDTO userDTO = new()
-            {
-                UserId = user.UserId,
-                UserName = user.UserName,
-                Email = user.Email,
-                Name = user.Name,
-                Bio = user.Bio,
-                Link = user.Link,
-                Gender = user.Gender ?? string.Empty,
-                ProfilePictureName = user.ProfilePictureName ?? string.Empty,
-                ProfilePictureUrl = user.ProfilePictureUrl ?? string.Empty,
-                ContactNumber = user.ContactNumber ?? string.Empty,
-                IsPrivate = user.IsPrivate,
-                IsVerified = user.IsVerified
-                // Map other properties as needed
-            };
+            UserDTO userDTO = _helper.UserMapper(user);
             return userDTO;
         }
 
@@ -371,15 +357,60 @@ namespace InstagramWebAPI.BLL
                 .Where(r => r.FromUserId == userId && r.IsAccepted == true && r.IsDeleted == false)
                 .CountAsync();
 
+            int postCount = await _dbcontext.Posts
+                .Where(m => m.UserId == userId && m.IsDeleted == false && m.PostTypeId == 4)
+                .CountAsync();
             return new CountResponseDTO
             {
                 FolloweCount = followerCount,
-                FollowingCount = followingCount
+                FollowingCount = followingCount,
+                PostCount = postCount
             };
         }
 
-       
+        public string GetContentType(string fileExtension)
+        {
+            return fileExtension switch
+            {
+                "jpg" or "jpeg" => "image/jpeg",
+                "png" => "image/png",
+                "mp4" => "video/mp4",
+                _ => "application/octet-stream",
+            };
+        }
 
+        public async Task<PaginationResponceModel<MutualFriendDTO>> GetMutualFriendsWithDetailsAsync(RequestDTO<UserIdRequestDTO> model)
+        {
+            long fromUserId = _helper.GetUserIdClaim();
+            IQueryable<MutualFriendDTO> mutualFriends = _dbcontext.Requests
+                .Where( r1 => r1.FromUserId == fromUserId && r1.IsAccepted && !r1.IsDeleted &&
+                             _dbcontext.Requests
+                                .Any(r2 => r2.FromUserId == r1.ToUserId && r2.IsAccepted && !r2.IsDeleted && r2.ToUserId == model.Model.UserId))
+                .Join(_dbcontext.Users,
+                      r1 => r1.ToUserId,
+                      user => user.UserId,
+                      (r1, user) => new MutualFriendDTO
+                      {
+                          UserId = user.UserId,
+                          UserName = user.UserName,
+                          ProfilePictureName = user.ProfilePictureName ?? string.Empty
+                      }) ;
 
+            List<MutualFriendDTO> result = await mutualFriends
+               .Skip((model.PageNumber - 1) * model.PageSize)
+            .Take(model.PageSize)
+               .ToListAsync();
+
+            int totalRecords = await mutualFriends.CountAsync();
+            int requiredPages = (int)Math.Ceiling((decimal)totalRecords / model.PageSize);
+            return new PaginationResponceModel<MutualFriendDTO>
+            {
+                Totalrecord = totalRecords,
+                PageSize = model.PageSize,
+                PageNumber = model.PageNumber,
+                RequirdPage = requiredPages,
+                Record = result
+            };
+        }
     }
 }

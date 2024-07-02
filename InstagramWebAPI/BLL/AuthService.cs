@@ -3,12 +3,9 @@ using InstagramWebAPI.DTO;
 using InstagramWebAPI.Interface;
 using InstagramWebAPI.Utils;
 using Microsoft.EntityFrameworkCore;
-using System.Net.Mail;
-using System.Net;
-
-using static System.Runtime.InteropServices.JavaScript.JSType;
 using InstagramWebAPI.Common;
 using System.Globalization;
+using InstagramWebAPI.Helpers;
 
 namespace InstagramWebAPI.BLL
 {
@@ -16,30 +13,27 @@ namespace InstagramWebAPI.BLL
     {
         public readonly ApplicationDbContext _dbcontext;
         public readonly IJWTService _jWTService;
+        public readonly Helper _helper;
 
-        public AuthService(ApplicationDbContext db, IConfiguration configuration, IJWTService jWTService)
+        public AuthService(ApplicationDbContext db, IConfiguration configuration, IJWTService jWTService, Helper helper)
         {
             _dbcontext = db;
             _jWTService = jWTService;
+            _helper = helper;
         }
-
-
 
         /// <summary>
         /// Registers a new user asynchronously.
         /// </summary>
         /// <param name="model">The registration details.</param>
         /// <returns>A task that represents the asynchronous operation. The task result contains the registered User.</returns>
-        public async Task<User> UpSertUserAsync(UserDTO model)
+        public async Task<UserDTO> UpSertUserAsync(UserDTO model)
         {
-            try
-            {
                 User user = _dbcontext.Users.FirstOrDefault(m => m.UserId == model.UserId && m.IsDeleted != true) ?? new();
 
                 user.Email = model.Email ?? string.Empty;
                 user.ContactNumber = model.ContactNumber ?? string.Empty;
                 user.Name = model.Name ?? string.Empty;
-                user.Password = BCrypt.Net.BCrypt.HashPassword(model.Password);
                 user.UserName = model.UserName ?? string.Empty;
                 user.CreatedDate = DateTime.Now;
                 user.Bio = model.Bio;
@@ -58,18 +52,16 @@ namespace InstagramWebAPI.BLL
                     user.Link = "";
                     user.Gender = "";
                     user.CreatedDate = DateTime.Now;
+                    user.Password = BCrypt.Net.BCrypt.HashPassword(model.Password);
                     await _dbcontext.Users.AddAsync(user);
                 }
 
                 await _dbcontext.SaveChangesAsync();
-
                 user.Password = "";
-                return user;
-            }
-            catch
-            {
-                throw new Exception(CustomErrorMessage.RegistrationError);
-            }
+            
+             UserDTO userDTO= _helper.UserMapper(user);
+            return userDTO;
+            
         }
 
         /// <summary>
@@ -92,7 +84,6 @@ namespace InstagramWebAPI.BLL
                     return new LoginResponseDTO
                     {
                         Token = "",
-                        User = null,
                     };
                 }
                 else
@@ -102,7 +93,6 @@ namespace InstagramWebAPI.BLL
                         return new LoginResponseDTO
                         {
                             Token = "",
-                            User = null,
                         };
                     }
                 }
@@ -110,7 +100,6 @@ namespace InstagramWebAPI.BLL
                 LoginResponseDTO loginResponceDTO = new()
                 {
                     Token = _jWTService.GetJWTToken(user),
-                    User = user,
                 };
 
                 return loginResponceDTO;

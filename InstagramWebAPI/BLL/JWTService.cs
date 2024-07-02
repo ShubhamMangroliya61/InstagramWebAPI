@@ -30,7 +30,7 @@ namespace InstagramWebAPI.BLL
             {
                 Subject = new ClaimsIdentity(new List<Claim>
                 {
-                new Claim(ClaimTypes.Name, user.UserId.ToString()),
+                new Claim("UserId", user.UserId.ToString()),
                 new Claim("UserName", user.UserName ?? string.Empty),
                 }),
                 Expires = DateTime.UtcNow.AddMinutes(120),

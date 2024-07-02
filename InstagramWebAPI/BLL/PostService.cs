@@ -1,6 +1,7 @@
 ﻿using DataAccess.CustomModel;
 using InstagramWebAPI.DAL.Models;
 using InstagramWebAPI.DTO;
+using InstagramWebAPI.Helpers;
 using InstagramWebAPI.Interface;
 using Microsoft.EntityFrameworkCore;
 
@@ -9,9 +10,12 @@ namespace InstagramWebAPI.BLL
     public class PostService: IPostService
     {
         public readonly ApplicationDbContext _dbcontext;
-        public PostService(ApplicationDbContext db)
+        private readonly Helper _helper;
+
+        public PostService(ApplicationDbContext db,Helper helper)
         {
             _dbcontext = db;
+            _helper = helper;
         }
         /// <summary>
         /// Creates or updates a post asynchronously.
@@ -20,12 +24,11 @@ namespace InstagramWebAPI.BLL
         /// <returns>A PostResponseDTO object representing the created or updated post.</returns>
         public async Task<PostResponseDTO> CreatePostAsync(CreatePostDTO model)
         {
+            long UserId = _helper.GetUserIdClaim();
             Post post = await _dbcontext.Posts.FirstOrDefaultAsync(m => m.PostId == model.PostId && m.IsDeleted == false) ?? new();
-
 
             post.Caption = model.Caption;
             post.Location = model.Location;
-
 
             if (model.PostId > 0)
             {
@@ -35,7 +38,7 @@ namespace InstagramWebAPI.BLL
             else
             {
                 post.CreatedDate = DateTime.Now;
-                post.UserId = model.UserId;
+                post.UserId = UserId;
                 if (model.PostType == "Post")
                 {
                     post.PostTypeId = 4;
@@ -50,14 +53,14 @@ namespace InstagramWebAPI.BLL
             await _dbcontext.SaveChangesAsync();
 
 
-            var medias = new List<Media>();
-            var postMappings = new List<PostMapping>();
+            List<Media> medias = new();
+            List<PostMapping> postMappings = new();
             if (model.PostId == 0)
             {
                 foreach (var file in model.File)
                 {
-                    var mediaType = Path.GetExtension(file.FileName).TrimStart('.');
-                    string userId = model.UserId.ToString();
+                    string mediaType = Path.GetExtension(file.FileName).TrimStart('.');
+                    string userId = UserId.ToString();
                     string path = "";
 
                     if (model.PostType == "Post")
@@ -94,7 +97,7 @@ namespace InstagramWebAPI.BLL
                     {
                         mediaTypeId = 2;
                     }
-                    var postMapping = new PostMapping
+                    PostMapping postMapping = new ()
                     {
                         PostId = post.PostId,
                         MediaTypeId = mediaTypeId,
@@ -102,12 +105,11 @@ namespace InstagramWebAPI.BLL
                         MediaName = fileName,
                         CreatedDate = DateTime.Now,
                         ModifiedDate = DateTime.Now,
-
                     };
 
                     postMappings.Add(postMapping);
                     await _dbcontext.SaveChangesAsync();
-                    var media = new Media
+                    Media media = new()
                     {
                         PostMappingId = postMapping.PostMappingId,
                         MediaType = file.ContentType,
@@ -122,7 +124,7 @@ namespace InstagramWebAPI.BLL
             }
 
             // Prepare response DTO
-            var responseDTO = new PostResponseDTO
+            PostResponseDTO responseDTO = new ()
             {
                 PostId = post.PostId,
                 UserId = post.UserId,
@@ -159,16 +161,16 @@ namespace InstagramWebAPI.BLL
                     {
                         LikeId = l.LikeId,
                         UserId = l.UserId,
-                        Avtar = l.User.ProfilePictureUrl, // Assuming Avtar is a property of the User entity
-                        UserName = l.User.UserName // Assuming UserName is a property of the User entity
+                        Avtar = l.User.ProfilePictureUrl, 
+                        UserName = l.User.UserName 
                     }).ToList(),
                     PostComments = post.Comments.Select(c => new PostComment
                     {
                         CommentId = c.CommentId,
                         UserId = c.UserId,
                         CommentText = c.CommentText,
-                        Avtar = c.User.ProfilePictureUrl, // Assuming Avtar is a property of the User entity
-                        UserName = c.User.UserName // Assuming UserName is a property of the User entity
+                        Avtar = c.User.ProfilePictureUrl, 
+                        UserName = c.User.UserName 
                     }).ToList()
 
                 });

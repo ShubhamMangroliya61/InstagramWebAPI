@@ -8,6 +8,8 @@
         public const string IsEmail = "DUPLICATE_EMAIL";
         public const string IsRegister = "REGISTRATION_ERROR";
         public const string IsCount = "COUNT_ERROR";
+        public const string IsMutual = "MUTUAL_FRIEND_GET_ERROR";
+        public const string IsPath = "PATH_ERROR";
         public const string IsLogin = "INVALID_USERNAME_OR_PASSWORD";
         public const string LoginError = "LOGIN_ERROR";
         public const string ModelIsNull = "MODEL_IS_NULL";
@@ -30,6 +32,7 @@
         public const string IsNotExits = "USER_NOT_EXITS";
         public const string IsNotComment = "COMMENT_NOT_EXITS";
         public const string IsNotPost = "POST_NOT_EXITS";
+        public const string IsNotStory = "STORY_NOT_EXITS";
         public const string IsNotRequest = "REQUEST_NOT_EXITS";
         public const string MailNotSend = "MAIL_NOT_SEND";
         public const string IsReset = "RESET_ERROR";
@@ -38,13 +41,16 @@
         public const string InvalidCommentId = "INVALID_COMMENTID";
         public const string InvalidRequestId = "INVALID_REQUESTID";
         public const string InvalidPostId = "INVALID_POSTID";
+        public const string InvalidStoryId = "INVALID_STORYID";
         public const string NullUserId = "NULL_USERID";
         public const string NullCommentId = "NULL_COMMENTID";
-        public const string NullProfilePhoto = "NULL_PROFILE_PHOTO";
+        public const string NullProfilePhoto = "NULL_PHOTO";
         public const string InvalidPhotoExtension = "INVALID_PHOTO_EXTENSION";
         public const string InvalidFileFormat = "INVALID_FILE_FORMATE";
         public const string IsUpload = "UPLOAD_PROFILE_ERROR";
         public const string IsUpdate = "UPDATE_PROFILE_ERROR";
+        public const string IsStory = "UPLOAD_STORY_ERROR";
+        public const string IsLIkeStory = "STORY_LIKE_ERROR";
         public const string InvalidFromUserId = "INVALID_FROM_USERID";
         public const string InvalidToUserId = "INVALID_TO_USERID";
         public const string IsRequest = "FOLLOW_REQUEST_ERROR";
@@ -57,10 +63,12 @@
         public const string InvalidPostType = "INVALID_Post_TYPE";
         public const string IsGetLIst = "GET_LIST_ERROR";
         public const string IsPostDelete = "POST_DELETE_ERROR";
+        public const string IsStoryDelete = "STORY_DELETE_ERROR";
         public const string IsPostLIke = "LIKE_ERROR";
         public const string IsPostComment = "COMMENT_ERROR";
         public const string NullRequestId = "NULL_REQUESTID";
         public const string NullPostId = "NULL_POSTID";
+        public const string NullStoryId = "NULL_STORYID";
 
 
 

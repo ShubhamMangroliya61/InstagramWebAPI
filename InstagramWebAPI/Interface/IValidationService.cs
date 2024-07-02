@@ -6,19 +6,19 @@ namespace InstagramWebAPI.Interface
 {
     public interface IValidationService
     {
-        bool IsUniqueUserName(string userName);
+        bool IsUniqueUserName(string userName, long userId);
         bool IsUniqueEmail(UserDTO model);
         bool IsUniquePhoneNumber(UserDTO model);
         List<ValidationError> ValidateRegistration(UserDTO model);
         List<ValidationError> ValidateLogin(LoginRequestDTO model);
         List<ValidationError> ValidateForgotPassword(ForgotPasswordDTO model);
         List<ValidationError> ValidateForgotPasswordData(ForgotPasswordDTO model);
-        List<ValidationError> ValidateProfileFile(UploadProfilePhotoDTO model);
+        List<ValidationError> ValidateProfileFile(IFormFile ProfilePhoto, long userId);
         List<ValidationError> ValidateProfileData(UserDTO model);
         List<ValidationError> ValidateFollowRequest(FollowRequestDTO model);
         List<ValidationError> ValidateFollowerList(RequestDTO<FollowerListRequestDTO> model);
         List<ValidationError> ValidateRequestList(RequestDTO<FollowRequestDTO> model);
-        List<ValidationError> ValidateGetUserById(long userid);
+        List<ValidationError> ValidateGetUserById(long userId);
         List<ValidationError> ValidateRequestAccept(long requestId, string acceptType);
         List<ValidationError> ValidateCreatePost(CreatePostDTO model);
         List<ValidationError> ValidateResetPassword(ResetPasswordRequestDTO model);
@@ -27,5 +27,9 @@ namespace InstagramWebAPI.Interface
         List<ValidationError> ValidateLikePost(long userId, long postId);
         List<ValidationError> ValidateCommentPost(CommentPostDTO model);
         List<ValidationError> ValidateCommentId(long commentId);
+        List<ValidationError> ValidateStoryFile(AddStoryDTO model);
+        List<ValidationError> ValidateStoryId(long storyId);
+        List<ValidationError> ValidateGetStoryById(long userId, long storyId);
+        List<ValidationError> ValidateMatualFrnd(RequestDTO<UserIdRequestDTO> model);
     }
 }

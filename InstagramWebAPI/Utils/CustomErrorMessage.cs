@@ -24,6 +24,7 @@
         public const string DuplicateNumber = "Phone Number already exists.";
         public const string RegistrationError = "Error occurred while registering the user.";
         public const string CountError = "Error occurred while count the Follower and Follwing.";
+        public const string MutualError = "Error occurred while get mutual friend.";
         public const string ModelIsNull = "All fields are required.";
         public const string LoginError = "Error occurred while logging in.";
         public const string ValidationRegistrtion = "Validation failed for registration data.";
@@ -33,6 +34,7 @@
         public const string ExitsUser = "User Not Exits";
         public const string ExitsPOstComment = "comment Not Exits";
         public const string ExitsPost = "Post Not Exits";
+        public const string ExitsStory = "Story Not Exits";
         public const string ExitsRequest = "Request Not Exits";
         public const string MailSend = "Email send successfully";
         public const string MailNotSend = "Email Not Send";
@@ -49,11 +51,20 @@
         public const string NullCommentId = "Userid is required";
         public const string MatchUserId = "Please Enter Different UserId";
         public const string NullProfilePhoto = "Profile photo is required.";
+        public const string NullStoryPhoto = "Story photo is required.";
+        public const string NullPostPhoto = "Post photo is required.";
         public const string InvalidPhotoExtension = "Invalid file extension. Allowed extensions are: {0}";
         public const string ValidationProfile = "Validation failed for Profile data.";
         public const string ValidationPost = "Validation failed for Post data.";
+        public const string ValidationStory = "Validation failed for Story data.";
         public const string UploadPhoto = "Profile Upload Successfully";
+        public const string UploadStory = "Story Upload Successfully";
+        public const string SeenStory = "Story Seen Add Successfully";
+        public const string LIkeStory = "Story Like Successfully";
+        public const string GetStory = "Story Get Successfully";
         public const string UploadError = "Error occurred while Upload ProfilePhoto the user.";
+        public const string UploadStoryError = "Error occurred while Upload Story the user.";
+        public const string LikeStoryError = "Error occurred while Like Story.";
         public const string UpdateProfile = "Error occurred while Update Profile the user.";
         public const string ValidationUpdateProfile = "Validation failed for Update Profile data.";
         public const string UpdateProfileSuccess = "Profile Update Successfully";
@@ -73,19 +84,24 @@
         public const string GetUser = "User Get Successfully";
         public const string NullRequestId = "Requestid is required";
         public const string NullPostId = "PostId is required";
+        public const string NullStoryId = "StoryId is required";
         public const string InvalidRequestId = "Invalid RequestId. requestId must be greater than zero.";
         public const string InvalidPostId = "Invalid PostId.PostId must be greater than zero.";
+        public const string InvalidStoryId = "Invalid StoryId.StoryId must be greater than zero.";
         public const string ValidationReqType = "Validation failed for Request  data.";
         public const string AccpteUpdate = "Update Successfully";
         public const string PostDelete = "Post Delete Successfully";
+        public const string StoryDelete = "Story Delete Successfully";
         public const string PostCommentDelete = "Comment Delete Successfully";
         public const string PostLike = "Post Like Or Unlike Successfully";
         public const string PostComment = "Post Comment Successfully";
         public const string CountSucces = "Get Count Successfully";
+        public const string mutualSucces = "Mutual Friend List Get Successfully";
         public const string PostDeleteError = "Error occurred while Delete Post.";
+        public const string StoryDeleteError = "Error occurred while Delete Story.";
         public const string PostLikeError = "Error occurred while Like Post.";
         public const string PostCommentError = "Error occurred while Comment Post.";
-
+        public const string PathNotExits = "Path Not Found";
 
 
 

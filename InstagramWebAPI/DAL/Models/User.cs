@@ -85,4 +85,9 @@ public partial class User
 
     [InverseProperty("StoryViewUser")]
     public virtual ICollection<StoryView> StoryViews { get; set; } = new List<StoryView>();
+
+    internal static object FindFirst(string v)
+    {
+        throw new NotImplementedException();
+    }
 }

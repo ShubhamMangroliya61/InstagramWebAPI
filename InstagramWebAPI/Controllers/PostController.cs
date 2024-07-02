@@ -16,12 +16,15 @@ namespace InstagramWebAPI.Controllers
         private readonly IValidationService _validationService;
         private readonly IPostService _postService;
         private readonly ResponseHandler _responseHandler;
+        private readonly Helper _helper;
 
-        public PostController(IValidationService validationService, ResponseHandler responseHandler, IPostService postService)
+
+        public PostController(IValidationService validationService, ResponseHandler responseHandler, IPostService postService, Helper helper)
         {
             _validationService = validationService;
             _responseHandler = responseHandler;
             _postService = postService;
+            _helper = helper;
         }
 
         /// <summary>
@@ -35,7 +38,6 @@ namespace InstagramWebAPI.Controllers
         {
             try
             {
-                //using var transaction = new TransactionScope();
                 List<ValidationError> errors = _validationService.ValidateCreatePost(model);
                 if (errors.Any())
                 {
@@ -69,6 +71,7 @@ namespace InstagramWebAPI.Controllers
         }
 
         [HttpPost("PostAndReelListById")]
+        [Authorize]
         public async Task<ActionResult<ResponseModel>> GetPostAndReelListByIdAsync([FromBody] RequestDTO<PostListRequestDTO> model)
         {
             try
@@ -99,6 +102,7 @@ namespace InstagramWebAPI.Controllers
         }
 
         [HttpPost("DeletePost")]
+        [Authorize]
         public async Task<ActionResult<ResponseModel>> DetelePostAsync([FromQuery] long postId)
         {
             try
@@ -129,6 +133,7 @@ namespace InstagramWebAPI.Controllers
         }
 
         [HttpPost("LikeAndUnlikePost")]
+        [Authorize]
         public async Task<ActionResult<ResponseModel>> LikeAndUnlikePostAsync(LikePostDTO model)
         {
             try
@@ -159,6 +164,7 @@ namespace InstagramWebAPI.Controllers
         }
 
         [HttpPost("CommentPost")]
+        [Authorize]
         public async Task<ActionResult<ResponseModel>> CommentPostAsync(CommentPostDTO model)
         {
             try
@@ -186,6 +192,7 @@ namespace InstagramWebAPI.Controllers
         }
 
         [HttpPost("DeletePostComment")]
+        [Authorize]
         public async Task<ActionResult<ResponseModel>> DetelePostCommentAsync([FromQuery] long commentId)
         {
             try
