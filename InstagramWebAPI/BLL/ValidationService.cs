@@ -256,13 +256,82 @@ namespace InstagramWebAPI.BLL
             }
             return errors;
         }
+        public List<ValidationError> ValidateHighLightId(long highLightId)
+        {
+            if (highLightId == 0)
+            {
+                errors.Add(new ValidationError
+                {
+                    message = CustomErrorMessage.NullHighLighttId,
+                    reference = "highLightId",
+                    parameter = "highLightId",
+                    errorCode = CustomErrorCode.NullHighLightId
+                });
+            }
+            else if (highLightId < 0)
+            {
+                errors.Add(new ValidationError
+                {
+                    message = CustomErrorMessage.InvalidHighLightId,
+                    reference = "highLightId",
+                    parameter = "highLightId",
+                    errorCode = CustomErrorCode.InvalidHighLightId
+                });
+            }
+            else if (!_dbcontext.Highlights.Any(m => m.HighlightsId == highLightId && m.IsDeleted != true))
+            {
+                errors.Add(new ValidationError
+                {
+                    message = CustomErrorMessage.ExitHighlight,
+                    reference = "highLightId",
+                    parameter = "highLightId",
+                    errorCode = CustomErrorCode.IsNotHighlight
+                });
+            }
+            return errors;
+        }
+
+        public List<ValidationError> ValidateStoryHighLightId(long storyHighLightId)
+        {
+            if (storyHighLightId == 0)
+            {
+                errors.Add(new ValidationError
+                {
+                    message = CustomErrorMessage.NullStoryHighLighttId,
+                    reference = "highLightId",
+                    parameter = "highLightId",
+                    errorCode = CustomErrorCode.NullStoryHighLightId
+                });
+            }
+            else if (storyHighLightId < 0)
+            {
+                errors.Add(new ValidationError
+                {
+                    message = CustomErrorMessage.InvalidStoryHighLightId,
+                    reference = "highLightId",
+                    parameter = "highLightId",
+                    errorCode = CustomErrorCode.InvalidStoryHighLightId
+                });
+            }
+            else if (!_dbcontext.StoryHighlights.Any(m => m.StoryHighlightId == storyHighLightId && m.IsDeleted != true))
+            {
+                errors.Add(new ValidationError
+                {
+                    message = CustomErrorMessage.ExitStoryHighlight,
+                    reference = "highLightId",
+                    parameter = "highLightId",
+                    errorCode = CustomErrorCode.IsNotStoryHighlight
+                });
+            }
+            return errors;
+        }
 
         /// <summary>
         /// Checks if the given username is unique.
         /// </summary>
         /// <param name="userName">The username to check.</param>
         /// <returns>True if the username is unique; false otherwise.</returns>
-        public bool IsUniqueUserName(string userName,long userId)
+        public bool IsUniqueUserName(string userName, long userId)
         {
             User? user = _dbcontext.Users.FirstOrDefault(m => ((m.UserName ?? string.Empty).ToLower() == (userName ?? string.Empty).ToLower() && !string.IsNullOrWhiteSpace(m.UserName)) && m.IsDeleted == false && (m.UserId <= 0 || m.UserId != userId));
             if (user == null) return false;
@@ -312,7 +381,7 @@ namespace InstagramWebAPI.BLL
             ValidateEmail(model.Email ?? string.Empty);
             ValidateContactNumber(model.ContactNumber ?? string.Empty);
             ValidateUserName(model.UserName);
-            if (IsUniqueUserName(model.UserName,model.UserId))
+            if (IsUniqueUserName(model.UserName, model.UserId))
             {
                 errors.Add(new ValidationError
                 {
@@ -501,13 +570,13 @@ namespace InstagramWebAPI.BLL
         /// </summary>
         /// <param name="model">The upload profile DTO containing user ID and profile photo information.</param>
         /// <returns>A list of validation errors, if any.</returns>
-        public List<ValidationError> ValidateProfileFile(IFormFile ProfilePhoto,long userId)
+        public List<ValidationError> ValidateProfileFile(IFormFile ProfilePhoto, long userId)
         {
             List<ValidationError> errors = new();
 
             ValidateUserId(userId);
 
-            if(ProfilePhoto != null) 
+            if (ProfilePhoto != null)
             {
                 string fileExtension = Path.GetExtension(ProfilePhoto.FileName).ToLowerInvariant();
                 if (!AllowedExtensionsProfilePhoto.Contains(fileExtension))
@@ -520,21 +589,22 @@ namespace InstagramWebAPI.BLL
                         errorCode = CustomErrorCode.InvalidPhotoExtension
                     });
                 }
-            }
-            int maxFileSizeInBytes = 1024 * 1024; 
-            if (ProfilePhoto.Length > maxFileSizeInBytes)
-            {
-                errors.Add(new ValidationError
+
+                int maxFileSizeInBytes = 1024 * 1024;
+                if (ProfilePhoto.Length > maxFileSizeInBytes)
                 {
-                    message = CustomErrorMessage.FileSizeLimitExceeded,
-                    reference = "ProfilePhoto",
-                    parameter = "ProfilePhoto",
-                    errorCode = CustomErrorCode.FileSizeLimitExceeded
-                });
+                    errors.Add(new ValidationError
+                    {
+                        message = CustomErrorMessage.FileSizeLimitExceeded,
+                        reference = "ProfilePhoto",
+                        parameter = "ProfilePhoto",
+                        errorCode = CustomErrorCode.FileSizeLimitExceeded
+                    });
+                }
             }
+
             return errors;
         }
-
         public List<ValidationError> ValidateProfileData(UserDTO model)
         {
             List<ValidationError> errors = new();
@@ -607,7 +677,6 @@ namespace InstagramWebAPI.BLL
             }
             return errors;
         }
-
         public List<ValidationError> ValidateFollowerList(RequestDTO<FollowerListRequestDTO> model)
         {
             ValidateUserId(model.Model.UserId);
@@ -662,8 +731,8 @@ namespace InstagramWebAPI.BLL
                     errors.Add(new ValidationError
                     {
                         message = CustomErrorMessage.ExitsPost,
-                        reference = "userid",
-                        parameter = "userid",
+                        reference = "postid",
+                        parameter = "postid",
                         errorCode = CustomErrorCode.IsNotPost
                     });
                 }
@@ -963,13 +1032,65 @@ namespace InstagramWebAPI.BLL
             }
             return errors;
         }
-        public List<ValidationError> ValidateGetStoryById(long userId,long storyId)
+        public List<ValidationError> ValidateGetStoryById(long userId, long storyId)
         {
             ValidateUserId(userId);
             ValidateStoryId(storyId);
             return errors;
         }
-
-       
+        public List<ValidationError> ValidateUpsertHighLight(HighLightRequestDTO model)
+        {
+            if (model.HighlightId > 0)
+            {
+                ValidateHighLightId(model.HighlightId);
+            }
+            if (string.IsNullOrWhiteSpace(model.HighlightName))
+            {
+                errors.Add(new ValidationError
+                {
+                    message = CustomErrorMessage.NullHighLightName,
+                    reference = "highLightId",
+                    parameter = "highLightId",
+                    errorCode = CustomErrorCode.NullHighLightName
+                });
+            }
+            return errors;
+        }
+        public List<ValidationError> ValidateAddStoryhighlight(long highLightId , long storyId,long userId)
+        {
+            ValidateHighLightId(highLightId);
+            if (storyId == 0)
+            {
+                errors.Add(new ValidationError
+                {
+                    message = CustomErrorMessage.NullStoryId,
+                    reference = "postid",
+                    parameter = "postid",
+                    errorCode = CustomErrorCode.NullStoryId
+                });
+            }
+            else if (storyId < 0)
+            {
+                errors.Add(new ValidationError
+                {
+                    message = CustomErrorMessage.InvalidStoryId,
+                    reference = "postid",
+                    parameter = "postid",
+                    errorCode = CustomErrorCode.InvalidStoryId
+                });
+            }
+            else if (!_dbcontext.Stories.Any(m => m.StoryId == storyId && m.UserId==userId && m.IsDeleted != true))
+            {
+                errors.Add(new ValidationError
+                {
+                    message = CustomErrorMessage.ExitsStory,
+                    reference = "postid",
+                    parameter = "postid",
+                    errorCode = CustomErrorCode.IsNotStory
+                });
+            }
+            return errors;
+        }
+        
     }
 }

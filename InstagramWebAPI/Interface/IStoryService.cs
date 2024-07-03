@@ -11,5 +11,10 @@ namespace InstagramWebAPI.Interface
         Task<bool> StorySeenByUserIdAsync(long storyId);
         Task<StoryResponseListDTO> GetStoryById(long userId, long storyId);
         Task<bool> LikeStoryAsync(long storyId, bool isLike);
+        Task<HighlightDTO> UpsertHighlightAsync(HighLightRequestDTO model);
+        Task<bool> DeteleHighLightAsync(long highLightId);
+        Task<bool> AddStoryHighLightAsync(long highLightId, long storyId);
+        Task<bool> DeleteStoryHighLightAsync(long storyHighLightId);
+        Task<PaginationResponceModel<HighlightDTO>> GetHighLightListByUserId(RequestDTO<UserIdRequestDTO> model);
     }
 }

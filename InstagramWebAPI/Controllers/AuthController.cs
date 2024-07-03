@@ -59,7 +59,6 @@ namespace InstagramWebAPI.Controllers
             }
         }
 
-
         /// <summary>
         /// Logs in a user asynchronously.
         /// </summary>

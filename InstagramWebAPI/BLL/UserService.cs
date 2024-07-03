@@ -31,7 +31,7 @@ namespace InstagramWebAPI.BLL
             User user = await _dbcontext.Users.FirstOrDefaultAsync(m => m.UserId == userId && m.IsDeleted != true) ??
                throw new ValidationException(CustomErrorMessage.ExitsUser, CustomErrorCode.IsNotExits, new List<ValidationError>
                {
-                       new ValidationError
+                    new ValidationError
                     {
                         message = CustomErrorMessage.ExitsUser,
                         reference = "UserName",
@@ -39,7 +39,6 @@ namespace InstagramWebAPI.BLL
                         errorCode = CustomErrorCode.IsNotExits
                     }
                });
-
 
             IFormFile file = ProfilePhoto;
 
@@ -73,8 +72,8 @@ namespace InstagramWebAPI.BLL
             }
             else
             {
-                user.ProfilePictureUrl = "";
-                user.ProfilePictureName = "";
+                user.ProfilePictureUrl = null;
+                user.ProfilePictureName = null;
             }
             user.ModifiedDate=DateTime.Now;
             _dbcontext.Users.Update(user);
@@ -102,15 +101,15 @@ namespace InstagramWebAPI.BLL
                     !await _dbcontext.Users.AnyAsync(m => m.UserId == model.FromUserId))
                 {
                     throw new ValidationException(CustomErrorMessage.ExitsUser, CustomErrorCode.IsNotExits, new List<ValidationError>
-                {
-                        new ValidationError
                     {
-                        message = CustomErrorMessage.ExitsUser,
-                        reference = "UserName",
-                        parameter = "UserName",
-                        errorCode = CustomErrorCode.IsNotExits
-                    }
-                });
+                            new ValidationError
+                        {
+                            message = CustomErrorMessage.ExitsUser,
+                            reference = "UserName",
+                            parameter = "UserName",
+                            errorCode = CustomErrorCode.IsNotExits
+                        }
+                    });
                 }
 
                 Request data = await _dbcontext.Requests.FirstOrDefaultAsync(m => m.FromUserId == model.FromUserId && m.ToUserId == model.ToUserId)
@@ -286,7 +285,7 @@ namespace InstagramWebAPI.BLL
             User user = await _dbcontext.Users.FirstOrDefaultAsync(m => m.UserId == userId && m.IsDeleted != true) ??
                throw new ValidationException(CustomErrorMessage.ExitsUser, CustomErrorCode.IsNotExits, new List<ValidationError>
                {
-                       new ValidationError
+                    new ValidationError
                     {
                         message = CustomErrorMessage.ExitsUser,
                         reference = "UserName",
@@ -310,13 +309,13 @@ namespace InstagramWebAPI.BLL
             Request request = await _dbcontext.Requests.FirstOrDefaultAsync(m => m.RequestId == requestId && m.IsDeleted == false)
                 ?? throw new ValidationException(CustomErrorMessage.ExitsRequest, CustomErrorCode.IsNotRequest, new List<ValidationError>
                    {
-                       new ValidationError
-                    {
-                        message = CustomErrorMessage.ExitsRequest,
-                        reference = "UserName",
-                        parameter = "UserName",
-                        errorCode = CustomErrorCode.IsNotRequest
-                    }
+                        new ValidationError
+                        {
+                            message = CustomErrorMessage.ExitsRequest,
+                            reference = "UserName",
+                            parameter = "UserName",
+                            errorCode = CustomErrorCode.IsNotRequest
+                        }
                    });
 
             if (acceptType == "Accept")

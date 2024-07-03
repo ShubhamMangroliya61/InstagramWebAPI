@@ -7,6 +7,7 @@ using InstagramWebAPI.Interface;
 using InstagramWebAPI.Utils;
 using Microsoft.EntityFrameworkCore;
 using System.Net;
+using static System.Runtime.InteropServices.JavaScript.JSType;
 
 namespace InstagramWebAPI.BLL
 {
@@ -296,6 +297,120 @@ namespace InstagramWebAPI.BLL
                 }
                 return false;
             }
+        }
+
+        public async Task<HighlightDTO> UpsertHighlightAsync(HighLightRequestDTO model)
+        {
+            long userId = _helper.GetUserIdClaim();
+            Highlight highlight = await _dbcontext.Highlights.FirstOrDefaultAsync(m => m.HighlightsId == model.HighlightId && m.UserId == userId && m.IsDeleted == false) ?? new();
+
+            highlight.HighlightsName = model.HighlightName ?? string.Empty;
+            highlight.UserId = userId;
+
+            if (model.HighlightId > 0)
+            {
+                highlight.ModifiedDate = DateTime.Now;
+                _dbcontext.Highlights.Update(highlight);
+                await _dbcontext.SaveChangesAsync();
+            }
+            else
+            {
+                highlight.CreatedDate = DateTime.Now;
+               await _dbcontext.Highlights.AddAsync(highlight);
+                await _dbcontext.SaveChangesAsync();
+            }
+
+            return new HighlightDTO()
+            {
+                HighlightId = highlight.HighlightsId,
+                HighlightName = highlight.HighlightsName,
+            };
+        }
+
+        public async Task<bool> DeteleHighLightAsync(long highLightId)
+        {
+            long userId = _helper.GetUserIdClaim();
+            Highlight? highlight = await _dbcontext.Highlights.FirstOrDefaultAsync(m => m.HighlightsId == highLightId && m.UserId == userId && m.IsDeleted == false);
+
+            if (highlight != null)
+            {
+                highlight.IsDeleted = true;
+                highlight.ModifiedDate = DateTime.UtcNow;
+
+                _dbcontext.Highlights.Update(highlight);
+                await _dbcontext.SaveChangesAsync();
+                return true;
+            }
+            return false;
+        }
+
+        public async Task<bool> AddStoryHighLightAsync(long highLightId,long storyId)
+        {
+            StoryHighlight data = new()
+            {
+                StoryId = storyId,
+                HighlightsId = highLightId,
+                CreatedDate = DateTime.Now,
+            };
+            await _dbcontext.StoryHighlights.AddAsync(data);
+            await _dbcontext.SaveChangesAsync();
+            return true;
+        }
+
+        public async Task<bool> DeleteStoryHighLightAsync(long storyHighLightId)
+        {
+            StoryHighlight? highlight = await _dbcontext.StoryHighlights.FirstOrDefaultAsync(m => m.StoryHighlightId == storyHighLightId && m.IsDeleted == false);
+
+            if (highlight != null)
+            {
+                highlight.IsDeleted = true;
+                highlight.ModifiedDate = DateTime.UtcNow;
+
+                _dbcontext.StoryHighlights.Update(highlight);
+                await _dbcontext.SaveChangesAsync();
+                return true;
+            }
+            return false;
+        }
+
+        public async Task<PaginationResponceModel<HighlightDTO>> GetHighLightListByUserId(RequestDTO<UserIdRequestDTO> model)
+        {
+            IQueryable<HighlightDTO> data = _dbcontext.Highlights
+                        .Include(m => m.StoryHighlights).ThenInclude(m => m.Story) 
+                        .Where(m => m.UserId == model.Model.UserId)
+                        .Select(m => new HighlightDTO
+                        {
+                            HighlightId = m.HighlightsId,
+                            HighlightName = m.HighlightsName,
+                            StoryHighLightLists = m.StoryHighlights.Select(s => new StoryHighLightList
+                            {
+                                StoryHighLightId = s.StoryHighlightId,
+                                StoryId = s.StoryId,
+                                StoryUrl = s.Story.StoryUrl,
+                                StoryName = s.Story.StoryName,
+                                Caption = s.Story.Caption,
+                                StoryType = s.Story.StoryTypeId == 1 ? "Image" : "Video",
+                                CreatedDate = s.Story.CreatedDate
+                            }).ToList()
+                        });
+
+            int totalRecords = await data.CountAsync();
+            int requiredPages = (int)Math.Ceiling((decimal)totalRecords / model.PageSize);
+
+            // Paginate the data
+            List<HighlightDTO> records = await data
+                .Skip((model.PageNumber - 1) * model.PageSize)
+                .Take(model.PageSize)
+                .ToListAsync();
+
+            return new PaginationResponceModel<HighlightDTO>
+            {
+                Totalrecord = totalRecords,
+                PageSize = model.PageSize,
+                PageNumber = model.PageNumber,
+                RequirdPage = requiredPages,
+                Record = records,
+            };
         }
     }
 }

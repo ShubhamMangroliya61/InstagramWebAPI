@@ -44,10 +44,10 @@ namespace InstagramWebAPI.Controllers
             }
 
             byte[] imageBytes = System.IO.File.ReadAllBytes(imagePath);
-
+            string base64String = Convert.ToBase64String(imageBytes);
             string fileType = _userService.GetContentType(extension);
 
-            return this.File(imageBytes, fileType);
+            return Ok(_responseHandler.Success(CustomErrorMessage.GetSuccess, new { ImageBase64 = base64String, FileType = fileType }));
         }
 
         /// <summary>
@@ -76,10 +76,10 @@ namespace InstagramWebAPI.Controllers
             }
 
             byte[] imageBytes = System.IO.File.ReadAllBytes(imagePath);
-
+            string base64String = Convert.ToBase64String(imageBytes);
             string fileType = _userService.GetContentType(extension);
 
-            return this.File(imageBytes, fileType);
+            return Ok(_responseHandler.Success(CustomErrorMessage.GetSuccess, new { ImageBase64 = base64String, FileType = fileType }));
         }
 
         /// <summary>
@@ -108,10 +108,10 @@ namespace InstagramWebAPI.Controllers
             }
 
             byte[] imageBytes = System.IO.File.ReadAllBytes(imagePath);
-
+            string base64String = Convert.ToBase64String(imageBytes);
             string fileType = _userService.GetContentType(extension);
 
-            return this.File(imageBytes, fileType);
+            return Ok(_responseHandler.Success(CustomErrorMessage.GetSuccess, new { ImageBase64 = base64String, FileType = fileType }));
         }
 
         /// <summary>
@@ -140,10 +140,10 @@ namespace InstagramWebAPI.Controllers
             }
 
             byte[] imageBytes = System.IO.File.ReadAllBytes(imagePath);
-
+            string base64String = Convert.ToBase64String(imageBytes);
             string fileType = _userService.GetContentType(extension);
 
-            return this.File(imageBytes, fileType);
+            return Ok(_responseHandler.Success(CustomErrorMessage.GetSuccess, new { ImageBase64 = base64String, FileType = fileType }));
         }
     }
 }

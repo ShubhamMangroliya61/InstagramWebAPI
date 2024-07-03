@@ -32,6 +32,8 @@
         public const string IsNotExits = "USER_NOT_EXITS";
         public const string IsNotComment = "COMMENT_NOT_EXITS";
         public const string IsNotPost = "POST_NOT_EXITS";
+        public const string IsNotHighlight = "HIGHLIGHT_NOT_EXITS";
+        public const string IsNotStoryHighlight = "STORYHIGHLIGHT_NOT_EXITS";
         public const string IsNotStory = "STORY_NOT_EXITS";
         public const string IsNotRequest = "REQUEST_NOT_EXITS";
         public const string MailNotSend = "MAIL_NOT_SEND";
@@ -41,6 +43,8 @@
         public const string InvalidCommentId = "INVALID_COMMENTID";
         public const string InvalidRequestId = "INVALID_REQUESTID";
         public const string InvalidPostId = "INVALID_POSTID";
+        public const string InvalidHighLightId = "INVALID_HIGHLIGHTID";
+        public const string InvalidStoryHighLightId = "INVALID_STORYHIGHLIGHTID";
         public const string InvalidStoryId = "INVALID_STORYID";
         public const string NullUserId = "NULL_USERID";
         public const string NullCommentId = "NULL_COMMENTID";
@@ -52,6 +56,7 @@
         public const string IsUpdate = "UPDATE_PROFILE_ERROR";
         public const string IsStory = "UPLOAD_STORY_ERROR";
         public const string IsLIkeStory = "STORY_LIKE_ERROR";
+        public const string IsHighlight = "HIGHLIGHT_ERROR";
         public const string InvalidFromUserId = "INVALID_FROM_USERID";
         public const string InvalidToUserId = "INVALID_TO_USERID";
         public const string IsRequest = "FOLLOW_REQUEST_ERROR";
@@ -69,6 +74,9 @@
         public const string IsPostComment = "COMMENT_ERROR";
         public const string NullRequestId = "NULL_REQUESTID";
         public const string NullPostId = "NULL_POSTID";
+        public const string NullHighLightId = "NULL_HIGHLIGHTID";
+        public const string NullStoryHighLightId = "NULL_STORYHIGHLIGHTID";
+        public const string NullHighLightName = "NULL_HIGHLIGHTNAME";
         public const string NullStoryId = "NULL_STORYID";
         public const string FileSizeLimitExceeded = "INVALID__SIZE";
 

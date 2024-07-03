@@ -41,6 +41,9 @@ public partial class Story
     [Column(TypeName = "datetime")]
     public DateTime? ModifiedDate { get; set; }
 
+    [InverseProperty("Story")]
+    public virtual ICollection<StoryHighlight> StoryHighlights { get; set; } = new List<StoryHighlight>();
+
     [ForeignKey("StoryTypeId")]
     [InverseProperty("Stories")]
     public virtual MediaType StoryType { get; set; } = null!;

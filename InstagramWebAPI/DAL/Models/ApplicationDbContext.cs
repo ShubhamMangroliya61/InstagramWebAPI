@@ -17,6 +17,8 @@ public partial class ApplicationDbContext : DbContext
 
     public virtual DbSet<Comment> Comments { get; set; }
 
+    public virtual DbSet<Highlight> Highlights { get; set; }
+
     public virtual DbSet<Like> Likes { get; set; }
 
     public virtual DbSet<MediaType> MediaTypes { get; set; }
@@ -30,6 +32,8 @@ public partial class ApplicationDbContext : DbContext
     public virtual DbSet<Request> Requests { get; set; }
 
     public virtual DbSet<Story> Stories { get; set; }
+
+    public virtual DbSet<StoryHighlight> StoryHighlights { get; set; }
 
     public virtual DbSet<StoryView> StoryViews { get; set; }
 
@@ -52,6 +56,15 @@ public partial class ApplicationDbContext : DbContext
             entity.HasOne(d => d.User).WithMany(p => p.Comments)
                 .OnDelete(DeleteBehavior.ClientSetNull)
                 .HasConstraintName("FK__Comment__UserId__7849DB76");
+        });
+
+        modelBuilder.Entity<Highlight>(entity =>
+        {
+            entity.HasKey(e => e.HighlightsId).HasName("PK__Highligh__18642F6086857EDE");
+
+            entity.HasOne(d => d.User).WithMany(p => p.Highlights)
+                .OnDelete(DeleteBehavior.ClientSetNull)
+                .HasConstraintName("FK__Highlight__UserI__1F63A897");
         });
 
         modelBuilder.Entity<Like>(entity =>
@@ -139,6 +152,19 @@ public partial class ApplicationDbContext : DbContext
             entity.HasOne(d => d.User).WithMany(p => p.Stories)
                 .OnDelete(DeleteBehavior.ClientSetNull)
                 .HasConstraintName("FK__Story__UserId__02C769E9");
+        });
+
+        modelBuilder.Entity<StoryHighlight>(entity =>
+        {
+            entity.HasKey(e => e.StoryHighlightId).HasName("PK__StoryHig__BCCFBC40AD1FF9B9");
+
+            entity.HasOne(d => d.Highlights).WithMany(p => p.StoryHighlights)
+                .OnDelete(DeleteBehavior.ClientSetNull)
+                .HasConstraintName("FK__StoryHigh__Highl__2334397B");
+
+            entity.HasOne(d => d.Story).WithMany(p => p.StoryHighlights)
+                .OnDelete(DeleteBehavior.ClientSetNull)
+                .HasConstraintName("FK__StoryHigh__Story__24285DB4");
         });
 
         modelBuilder.Entity<StoryView>(entity =>

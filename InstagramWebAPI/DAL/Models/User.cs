@@ -69,6 +69,9 @@ public partial class User
     public virtual ICollection<Comment> Comments { get; set; } = new List<Comment>();
 
     [InverseProperty("User")]
+    public virtual ICollection<Highlight> Highlights { get; set; } = new List<Highlight>();
+
+    [InverseProperty("User")]
     public virtual ICollection<Like> Likes { get; set; } = new List<Like>();
 
     [InverseProperty("NotifireUser")]

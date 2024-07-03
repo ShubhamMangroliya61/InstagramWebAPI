@@ -120,7 +120,7 @@ namespace InstagramWebAPI.BLL
                 }
 
                 await _dbcontext.PostMappings.AddRangeAsync(postMappings);
-                await _dbcontext.SaveChangesAsync(); // Save all mappings in one go
+                await _dbcontext.SaveChangesAsync(); 
             }
 
             // Prepare response DTO

@@ -17,12 +17,13 @@ namespace InstagramWebAPI.Controllers
         private readonly IValidationService _validationService;
         private readonly ResponseHandler _responseHandler;
         private readonly IStoryService _storyService;
-
-        public StoryController(IValidationService validationService, ResponseHandler responseHandler, IStoryService storyService)
+        private readonly Helper _helper;
+        public StoryController(IValidationService validationService, ResponseHandler responseHandler, IStoryService storyService, Helper helper)
         {
             _validationService = validationService;
             _responseHandler = responseHandler;
             _storyService = storyService;
+            _helper = helper;
         }
 
         /// <summary>
@@ -264,5 +265,160 @@ namespace InstagramWebAPI.Controllers
             }
         }
 
+        [HttpPost("UpsertHighlight")]
+        [Authorize]
+        public async Task<ActionResult<ResponseModel>> UpsertHighlightAsync([FromForm] HighLightRequestDTO model)
+        {
+            try
+            {
+                List<ValidationError> errors = _validationService.ValidateUpsertHighLight(model);
+                if (errors.Any())
+                {
+                    return BadRequest(_responseHandler.BadRequest(CustomErrorCode.IsValid, CustomErrorMessage.ValidationHighLight, errors));
+                }
+
+                HighlightDTO response = await _storyService.UpsertHighlightAsync(model);
+                if (response == null)
+                {
+                    return BadRequest(_responseHandler.BadRequest(CustomErrorCode.IsHighlight, CustomErrorMessage.HighlightError, model));
+                }
+                return Ok(_responseHandler.Success(CustomErrorMessage.AddHighLight, response));
+            }
+            catch (Exception ex)
+            {
+                if (ex is ValidationException vx)
+                {
+                    return BadRequest(_responseHandler.BadRequest(vx.ErrorCode, vx.Message, vx.Errors));
+                }
+                else
+                {
+                    return BadRequest(_responseHandler.BadRequest(CustomErrorCode.IsHighlight, ex.Message, model));
+                }
+            }
+        }
+
+        [HttpDelete("DeteleHighLight")]
+        [Authorize]
+        public async Task<ActionResult<ResponseModel>> DeteleHighLightAsync([FromQuery] long highLightId)
+        {
+            try
+            {
+                List<ValidationError> errors = _validationService.ValidateHighLightId(highLightId);
+                if (errors.Any())
+                {
+                    return BadRequest(_responseHandler.BadRequest(CustomErrorCode.IsValid, CustomErrorMessage.ValidationHighLight, errors));
+                }
+                bool isDeleted = await _storyService.DeleteStoryHighLightAsync(highLightId);
+                if (!isDeleted)
+                {
+                    return BadRequest(_responseHandler.BadRequest(CustomErrorCode.IsHighlight, CustomErrorMessage.HighlightDeleteError, errors));
+                }
+                return Ok(_responseHandler.Success(CustomErrorMessage.HighlightDelete, highLightId));
+            }
+            catch (Exception ex)
+            {
+                if (ex is ValidationException vx)
+                {
+                    return BadRequest(_responseHandler.BadRequest(vx.ErrorCode, vx.Message, vx.Errors));
+                }
+                else
+                {
+                    return BadRequest(_responseHandler.BadRequest(CustomErrorCode.IsHighlight, ex.Message, highLightId));
+                }
+            }
+        }
+
+        [HttpPost("AddStoryHighLight")]
+        [Authorize]
+        public async Task<ActionResult<ResponseModel>> AddStoryHighLightAsync([FromQuery] long highLightId,long storyId)
+        {
+            try
+            {
+                long userId=_helper.GetUserIdClaim();
+                List<ValidationError> errors = _validationService.ValidateAddStoryhighlight(highLightId,storyId,userId);
+                if (errors.Any())
+                {
+                    return BadRequest(_responseHandler.BadRequest(CustomErrorCode.IsValid, CustomErrorMessage.ValidationHighLight, errors));
+                }
+                bool isDeleted = await _storyService.AddStoryHighLightAsync(highLightId,storyId);
+                if (!isDeleted)
+                {
+                    return BadRequest(_responseHandler.BadRequest(CustomErrorCode.IsHighlight, CustomErrorMessage.StoryHighlightAddError, errors));
+                }
+                return Ok(_responseHandler.Success(CustomErrorMessage.StoryHighlightAdd, highLightId));
+            }
+            catch (Exception ex)
+            {
+                if (ex is ValidationException vx)
+                {
+                    return BadRequest(_responseHandler.BadRequest(vx.ErrorCode, vx.Message, vx.Errors));
+                }
+                else
+                {
+                    return BadRequest(_responseHandler.BadRequest(CustomErrorCode.IsHighlight, ex.Message, highLightId));
+                }
+            }
+        }
+
+        [HttpDelete("DeleteStoryHighLight")]
+        [Authorize]
+        public async Task<ActionResult<ResponseModel>> DeleteStoryHighLightAsync([FromQuery] long storyHighLightId)
+        {
+            try
+            {
+                List<ValidationError> errors = _validationService.ValidateStoryHighLightId(storyHighLightId);
+                if (errors.Any())
+                {
+                    return BadRequest(_responseHandler.BadRequest(CustomErrorCode.IsValid, CustomErrorMessage.ValidationHighLight, errors));
+                }
+                bool isDeleted = await _storyService.DeleteStoryHighLightAsync(storyHighLightId);
+                if (!isDeleted)
+                {
+                    return BadRequest(_responseHandler.BadRequest(CustomErrorCode.IsHighlight, CustomErrorMessage.StoryHighlightDeleteError, errors));
+                }
+                return Ok(_responseHandler.Success(CustomErrorMessage.StoryHighlightDelete, storyHighLightId));
+            }
+            catch (Exception ex)
+            {
+                if (ex is ValidationException vx)
+                {
+                    return BadRequest(_responseHandler.BadRequest(vx.ErrorCode, vx.Message, vx.Errors));
+                }
+                else
+                {
+                    return BadRequest(_responseHandler.BadRequest(CustomErrorCode.IsHighlight, ex.Message, storyHighLightId));
+                }
+            }
+        }
+        [HttpPost("HighLightListByUserId")]
+        [Authorize]
+        public async Task<ActionResult<ResponseModel>> GetHighLightListByUserId([FromBody] RequestDTO<UserIdRequestDTO> model)
+        {
+            try
+            {
+                List<ValidationError> errors = _validationService.ValidateGetUserById(model.Model.UserId);
+                if (errors.Any())
+                {
+                    return BadRequest(_responseHandler.BadRequest(CustomErrorCode.IsValid, CustomErrorMessage.ValidationStory, errors));
+                }
+                PaginationResponceModel<HighlightDTO> data = await _storyService.GetHighLightListByUserId(model);
+                if (data == null)
+                {
+                    return BadRequest(_responseHandler.BadRequest(CustomErrorCode.IsGetLIst, CustomErrorMessage.GetFollowerList, model));
+                }
+                return Ok(_responseHandler.Success(CustomErrorMessage.GetFollowerListSucces, data));
+            }
+            catch (Exception ex)
+            {
+                if (ex is ValidationException vx)
+                {
+                    return BadRequest(_responseHandler.BadRequest(vx.ErrorCode, vx.Message, vx.Errors));
+                }
+                else
+                {
+                    return BadRequest(_responseHandler.BadRequest(CustomErrorCode.IsGetLIst, ex.Message, model));
+                }
+            }
+        }
     }
 }
