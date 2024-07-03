@@ -154,7 +154,6 @@ namespace InstagramWebAPI.BLL
                 });
             }
         }
-
         public List<ValidationError> ValidateUserId(long userId)
         {
             if (userId == 0)
@@ -328,7 +327,7 @@ namespace InstagramWebAPI.BLL
                 errors.Add(new ValidationError
                 {
                     message = CustomErrorMessage.DuplicateEmail,
-                    reference = "username",
+                    reference = "Email",
                     parameter = model.Email,
                     errorCode = CustomErrorCode.IsEmail
                 });
@@ -508,17 +507,7 @@ namespace InstagramWebAPI.BLL
 
             ValidateUserId(userId);
 
-            if (ProfilePhoto == null)
-            {
-                errors.Add(new ValidationError
-                {
-                    message = CustomErrorMessage.NullProfilePhoto,
-                    reference = "ProfilePhoto",
-                    parameter = "ProfilePhoto",
-                    errorCode = CustomErrorCode.NullProfilePhoto
-                });
-            }
-            else
+            if(ProfilePhoto != null) 
             {
                 string fileExtension = Path.GetExtension(ProfilePhoto.FileName).ToLowerInvariant();
                 if (!AllowedExtensionsProfilePhoto.Contains(fileExtension))
@@ -532,10 +521,19 @@ namespace InstagramWebAPI.BLL
                     });
                 }
             }
+            int maxFileSizeInBytes = 1024 * 1024; 
+            if (ProfilePhoto.Length > maxFileSizeInBytes)
+            {
+                errors.Add(new ValidationError
+                {
+                    message = CustomErrorMessage.FileSizeLimitExceeded,
+                    reference = "ProfilePhoto",
+                    parameter = "ProfilePhoto",
+                    errorCode = CustomErrorCode.FileSizeLimitExceeded
+                });
+            }
             return errors;
         }
-
-
 
         public List<ValidationError> ValidateProfileData(UserDTO model)
         {
@@ -655,7 +653,6 @@ namespace InstagramWebAPI.BLL
             }
             return errors;
         }
-
         public List<ValidationError> ValidateCreatePost(CreatePostDTO model)
         {
             if (model.PostId > 0)
@@ -688,6 +685,7 @@ namespace InstagramWebAPI.BLL
                     foreach (var file in model.File)
                     {
                         string fileExtension = Path.GetExtension(file.FileName).ToLowerInvariant();
+                        long fileSizeInBytes = file.Length;
 
                         if (!AllowedExtensions.Contains(fileExtension))
                         {
@@ -698,6 +696,34 @@ namespace InstagramWebAPI.BLL
                                 parameter = "Files",
                                 errorCode = CustomErrorCode.InvalidFileFormat
                             });
+                        }
+                        if (file.ContentType.Contains("image"))
+                        {
+                            // Photo file size limit (1 MB)
+                            if (fileSizeInBytes > 1 * 1024 * 1024) // 1 MB in bytes
+                            {
+                                errors.Add(new ValidationError
+                                {
+                                    message = CustomErrorMessage.FileSizeLimitExceeded,
+                                    reference = "Files",
+                                    parameter = "Files",
+                                    errorCode = CustomErrorCode.FileSizeLimitExceeded
+                                });
+                            }
+                        }
+                        else if (file.ContentType.Contains("video"))
+                        {
+                            // Video file size limit (3 MB less than)
+                            if (fileSizeInBytes > 3 * 1024 * 1024) // 3 MB in bytes
+                            {
+                                errors.Add(new ValidationError
+                                {
+                                    message = CustomErrorMessage.VideoFileSizeLimitExceeded,
+                                    reference = "Files",
+                                    parameter = "Files",
+                                    errorCode = CustomErrorCode.FileSizeLimitExceeded
+                                });
+                            }
                         }
                     }
                 }
@@ -714,7 +740,6 @@ namespace InstagramWebAPI.BLL
             }
             return errors;
         }
-
         public List<ValidationError> ValidateResetPassword(ResetPasswordRequestDTO model)
         {
             ValidateUserId(model.UserId);
@@ -772,7 +797,6 @@ namespace InstagramWebAPI.BLL
             }
             return errors;
         }
-
         public List<ValidationError> ValidatePostList(RequestDTO<PostListRequestDTO> model)
         {
             ValidateUserId(model.Model.UserId);
@@ -793,14 +817,12 @@ namespace InstagramWebAPI.BLL
             ValidatePostId(postId);
             return errors;
         }
-
         public List<ValidationError> ValidateLikePost(long userId, long postId)
         {
             ValidateUserId(userId);
             ValidatePostId(postId);
             return errors;
         }
-
         public List<ValidationError> ValidateCommentPost(CommentPostDTO model)
         {
             ValidateUserId(model.UserId);
@@ -876,10 +898,37 @@ namespace InstagramWebAPI.BLL
                         errorCode = CustomErrorCode.InvalidPhotoExtension
                     });
                 }
+                if (model.Story.ContentType.Contains("image"))
+                {
+                    // Photo file size limit (1 MB)
+                    if (model.Story.Length > 1 * 1024 * 1024) // 1 MB in bytes
+                    {
+                        errors.Add(new ValidationError
+                        {
+                            message = CustomErrorMessage.FileSizeLimitExceeded,
+                            reference = "Files",
+                            parameter = "Files",
+                            errorCode = CustomErrorCode.FileSizeLimitExceeded
+                        });
+                    }
+                }
+                else if (model.Story.ContentType.Contains("video"))
+                {
+                    // Video file size limit (3 MB less than)
+                    if (model.Story.Length > 3 * 1024 * 1024) // 3 MB in bytes
+                    {
+                        errors.Add(new ValidationError
+                        {
+                            message = CustomErrorMessage.VideoFileSizeLimitExceeded,
+                            reference = "Files",
+                            parameter = "Files",
+                            errorCode = CustomErrorCode.FileSizeLimitExceeded
+                        });
+                    }
+                }
             }
             return errors;
         }
-
         public List<ValidationError> ValidateStoryId(long storyId)
         {
             if (storyId == 0)

@@ -30,6 +30,8 @@
   <ItemGroup>
     <Folder Include="DAL\" />
     <Folder Include="wwwroot\content\User\" />
+    <Folder Include="wwwroot\content\User\1\ProfilePhoto\" />
+    <Folder Include="wwwroot\content\User\4\Reel\" />
   </ItemGroup>
 
 </Project>

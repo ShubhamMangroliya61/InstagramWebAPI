@@ -71,6 +71,12 @@ public partial class User
     [InverseProperty("User")]
     public virtual ICollection<Like> Likes { get; set; } = new List<Like>();
 
+    [InverseProperty("NotifireUser")]
+    public virtual ICollection<Notification> NotificationNotifireUsers { get; set; } = new List<Notification>();
+
+    [InverseProperty("User")]
+    public virtual ICollection<Notification> NotificationUsers { get; set; } = new List<Notification>();
+
     [InverseProperty("User")]
     public virtual ICollection<Post> Posts { get; set; } = new List<Post>();
 
@@ -85,9 +91,4 @@ public partial class User
 
     [InverseProperty("StoryViewUser")]
     public virtual ICollection<StoryView> StoryViews { get; set; } = new List<StoryView>();
-
-    internal static object FindFirst(string v)
-    {
-        throw new NotImplementedException();
-    }
 }

@@ -21,6 +21,8 @@ public partial class ApplicationDbContext : DbContext
 
     public virtual DbSet<MediaType> MediaTypes { get; set; }
 
+    public virtual DbSet<Notification> Notifications { get; set; }
+
     public virtual DbSet<Post> Posts { get; set; }
 
     public virtual DbSet<PostMapping> PostMappings { get; set; }
@@ -70,6 +72,21 @@ public partial class ApplicationDbContext : DbContext
         modelBuilder.Entity<MediaType>(entity =>
         {
             entity.HasKey(e => e.MediaTypeId).HasName("PK__MediaTyp__0E6FCB72DD952BBD");
+        });
+
+        modelBuilder.Entity<Notification>(entity =>
+        {
+            entity.HasKey(e => e.NotificationId).HasName("PK__Notifica__20CF2E12FEA68E1B");
+
+            entity.HasOne(d => d.NotifireUser).WithMany(p => p.NotificationNotifireUsers)
+                .OnDelete(DeleteBehavior.ClientSetNull)
+                .HasConstraintName("FK__Notificat__Notif__1A9EF37A");
+
+            entity.HasOne(d => d.Post).WithMany(p => p.Notifications).HasConstraintName("FK__Notificat__PostI__1B9317B3");
+
+            entity.HasOne(d => d.User).WithMany(p => p.NotificationUsers)
+                .OnDelete(DeleteBehavior.ClientSetNull)
+                .HasConstraintName("FK__Notificat__UserI__19AACF41");
         });
 
         modelBuilder.Entity<Post>(entity =>

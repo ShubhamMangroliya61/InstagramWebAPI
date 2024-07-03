@@ -25,6 +25,14 @@ namespace InstagramWebAPI.Controllers
             _storyService = storyService;
         }
 
+        /// <summary>
+        /// Adds a new story asynchronously based on the provided data.
+        /// </summary>
+        /// <param name="model">The data object containing the story file and associated details.</param>
+        /// <returns>
+        /// An asynchronous task that returns an <see cref="ActionResult{T}"/> where T is <see cref="ResponseModel"/>.
+        /// If successful, returns an <see cref="ActionResult"/> with a success message indicating the story was uploaded successfully.
+        /// </returns>
         [HttpPost("AddStory")]
         [Authorize]
         public async Task<ActionResult<ResponseModel>> AddStoryAsync([FromForm] AddStoryDTO model)
@@ -57,7 +65,15 @@ namespace InstagramWebAPI.Controllers
             }
         }
 
-        [HttpPost("DeleteStory")]
+        /// <summary>
+        /// Deletes a story asynchronously based on the provided story ID.
+        /// </summary>
+        /// <param name="storyId">The unique identifier of the story to delete.</param>
+        /// <returns>
+        /// An asynchronous task that returns an <see cref="ActionResult{T}"/> where T is <see cref="ResponseModel"/>.
+        /// If successful, returns an <see cref="ActionResult"/> with a success message indicating the story was deleted.
+        /// </returns>
+        [HttpDelete("DeleteStory")]
         [Authorize]
         public async Task<ActionResult<ResponseModel>> DeteleStoryAsync([FromQuery] long storyId)
         {
@@ -88,6 +104,14 @@ namespace InstagramWebAPI.Controllers
             }
         }
 
+        /// <summary>
+        /// Retrieves a list of stories belonging to a user asynchronously based on the provided user ID.
+        /// </summary>
+        /// <param name="model">The request data object containing the user ID.</param>
+        /// <returns>
+        /// An asynchronous task that returns an <see cref="ActionResult{T}"/> where T is <see cref="ResponseModel"/>.
+        /// If successful, returns an <see cref="ActionResult"/> with a success message and the retrieved story list.
+        /// </returns>
         [HttpPost("StoryListByUserId")]
         [Authorize]
         public async Task<ActionResult<ResponseModel>> GetStoryListByUserIdAsync([FromBody] RequestDTO<UserIdRequestDTO> model)
@@ -119,6 +143,14 @@ namespace InstagramWebAPI.Controllers
             }
         }
 
+        /// <summary>
+        /// Marks a story as seen by a user asynchronously based on the provided story ID.
+        /// </summary>
+        /// <param name="storyId">The unique identifier of the story to mark as seen.</param>
+        /// <returns>
+        /// An asynchronous task that returns an <see cref="ActionResult{T}"/> where T is <see cref="ResponseModel"/>.
+        /// If successful, returns an <see cref="ActionResult"/> with a success message indicating the story was marked as seen.
+        /// </returns>
         [HttpPost("StorySeen")]
         [Authorize]
         public async Task<ActionResult<ResponseModel>> StorySeenByUserIdAsync([FromForm] long storyId)
@@ -151,6 +183,15 @@ namespace InstagramWebAPI.Controllers
             }
         }
 
+        /// <summary>
+        /// Retrieves a specific story asynchronously based on the provided user ID and story ID.
+        /// </summary>
+        /// <param name="userId">The unique identifier of the user who owns the story.</param>
+        /// <param name="storyId">The unique identifier of the story to retrieve.</param>
+        /// <returns>
+        /// An asynchronous task that returns an <see cref="ActionResult{T}"/> where T is <see cref="ResponseModel"/>.
+        /// If successful, returns an <see cref="ActionResult"/> with a success message and the retrieved story data.
+        /// </returns>
         [HttpGet("GetStoryById")]
         [Authorize]
         public async Task<ActionResult<ResponseModel>> GetStoryByIdAsync([FromQuery] long userId,long storyId)
@@ -182,6 +223,15 @@ namespace InstagramWebAPI.Controllers
             }
         }
 
+        /// <summary>
+        /// Likes or unlikes a story asynchronously based on the provided story ID and like status.
+        /// </summary>
+        /// <param name="storyId">The unique identifier of the story to like or unlike.</param>
+        /// <param name="isLike">Boolean indicating whether to like (true) or unlike (false) the story.</param>
+        /// <returns>
+        /// An asynchronous task that returns an <see cref="ActionResult{T}"/> where T is <see cref="ResponseModel"/>.
+        /// If successful, returns an <see cref="ActionResult"/> with a success message indicating the story was liked or unliked.
+        /// </returns>
         [HttpPost("LikeStory")]
         [Authorize]
         public async Task<ActionResult<ResponseModel>> LikeStoryAsync([FromForm] long storyId,bool isLike)

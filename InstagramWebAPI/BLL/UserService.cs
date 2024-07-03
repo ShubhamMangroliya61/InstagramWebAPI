@@ -41,29 +41,7 @@ namespace InstagramWebAPI.BLL
                });
 
 
-            IFormFile file = ProfilePhoto ??
-                  throw new ValidationException(CustomErrorMessage.NullProfilePhoto, CustomErrorCode.NullProfilePhoto, new List<ValidationError>
-                   {
-                       new ValidationError
-                {
-                    message = CustomErrorMessage.NullProfilePhoto,
-                    reference = "ProfilePhoto",
-                    parameter = "ProfilePhoto",
-                    errorCode = CustomErrorCode.NullProfilePhoto
-                }
-                   }); ;
-
-            string userID = userId.ToString();
-
-            string path = Path.Combine(Directory.GetCurrentDirectory(), "wwwroot", "content", "User", userID, "ProfilePhoto");
-
-            if (!Directory.Exists(path))
-            {
-                Directory.CreateDirectory(path);
-            }
-
-            string fileName = Guid.NewGuid().ToString() + Path.GetExtension(file.FileName);
-            string filePath = Path.Combine(path, fileName);
+            IFormFile file = ProfilePhoto;
 
             // Delete the old profile photo file if it exists
             if (!string.IsNullOrEmpty(user.ProfilePictureUrl) && System.IO.File.Exists(Path.Combine(Directory.GetCurrentDirectory(), "wwwroot", user.ProfilePictureUrl)))
@@ -71,17 +49,34 @@ namespace InstagramWebAPI.BLL
                 System.IO.File.Delete(Path.Combine(Directory.GetCurrentDirectory(), "wwwroot", user.ProfilePictureUrl));
             }
 
-
-            using (var fileStream = new FileStream(filePath, FileMode.Create))
+            if (ProfilePhoto != null)
             {
-                await file.CopyToAsync(fileStream);
+                string userID = userId.ToString();
+
+                string path = Path.Combine(Directory.GetCurrentDirectory(), "wwwroot", "content", "User", userID, "ProfilePhoto");
+
+                if (!Directory.Exists(path))
+                {
+                    Directory.CreateDirectory(path);
+                }
+
+                string fileName = Guid.NewGuid().ToString() + Path.GetExtension(file.FileName);
+                string filePath = Path.Combine(path, fileName);
+
+                using (var fileStream = new FileStream(filePath, FileMode.Create))
+                {
+                    await file.CopyToAsync(fileStream);
+                }
+
+                user.ProfilePictureUrl = Path.Combine("content", "User", userID, "ProfilePhoto", fileName);
+                user.ProfilePictureName = fileName;
             }
-
-
-            user.ProfilePictureUrl = Path.Combine("content", "User", userID, "ProfilePhoto", fileName);
-            user.ProfilePictureName = fileName;
-
-
+            else
+            {
+                user.ProfilePictureUrl = "";
+                user.ProfilePictureName = "";
+            }
+            user.ModifiedDate=DateTime.Now;
             _dbcontext.Users.Update(user);
             await _dbcontext.SaveChangesAsync();
 
@@ -368,6 +363,11 @@ namespace InstagramWebAPI.BLL
             };
         }
 
+        /// <summary>
+        /// Gets the content type based on the file extension.
+        /// </summary>
+        /// <param name="fileExtension">The file extension (without the dot).</param>
+        /// <returns>The content type string corresponding to the provided file extension.</returns>
         public string GetContentType(string fileExtension)
         {
             return fileExtension switch
@@ -379,6 +379,11 @@ namespace InstagramWebAPI.BLL
             };
         }
 
+        /// <summary>
+        /// Retrieves mutual friends with details between the authenticated user and another user.
+        /// </summary>
+        /// <param name="model">The request model containing the target user's ID.</param>
+        /// <returns>A paginated list of mutual friends with their details.</returns>
         public async Task<PaginationResponceModel<MutualFriendDTO>> GetMutualFriendsWithDetailsAsync(RequestDTO<UserIdRequestDTO> model)
         {
             long fromUserId = _helper.GetUserIdClaim();

@@ -154,8 +154,6 @@ namespace InstagramWebAPI.Controllers
             }
         }
 
-
-
         /// <summary>
         /// Handles the data for resetting password asynchronously.
         /// </summary>

@@ -70,6 +70,13 @@ namespace InstagramWebAPI.Controllers
             }
         }
 
+        /// <summary>
+        /// Retrieves a list of posts and reels based on the provided request data asynchronously.
+        /// </summary>
+        /// <param name="model">The request data object containing parameters for retrieving post and reel lists.</param>
+        /// <returns>
+        /// An asynchronous task that returns an <see cref="ActionResult{T}"/> where T is <see cref="ResponseModel"/>.
+        /// </returns>
         [HttpPost("PostAndReelListById")]
         [Authorize]
         public async Task<ActionResult<ResponseModel>> GetPostAndReelListByIdAsync([FromBody] RequestDTO<PostListRequestDTO> model)
@@ -101,7 +108,15 @@ namespace InstagramWebAPI.Controllers
             }
         }
 
-        [HttpPost("DeletePost")]
+        /// <summary>
+        /// Deletes a post asynchronously based on the provided post ID.
+        /// </summary>
+        /// <param name="postId">The unique identifier of the post to delete.</param>
+        /// <returns>
+        /// An asynchronous task that returns an <see cref="ActionResult{T}"/> where T is <see cref="ResponseModel"/>.
+        /// If successful, returns an <see cref="ActionResult"/> with a success message indicating the post was deleted.
+        /// </returns>
+        [HttpDelete("DeletePost")]
         [Authorize]
         public async Task<ActionResult<ResponseModel>> DetelePostAsync([FromQuery] long postId)
         {
@@ -132,6 +147,14 @@ namespace InstagramWebAPI.Controllers
             }
         }
 
+        /// <summary>
+        /// Likes or unlikes a post asynchronously based on the provided data.
+        /// </summary>
+        /// <param name="model">The data object containing user ID and post ID for the like operation.</param>
+        /// <returns>
+        /// An asynchronous task that returns an <see cref="ActionResult{T}"/> where T is <see cref="ResponseModel"/>.
+        /// If successful, returns an <see cref="ActionResult"/> with a success message indicating the post was liked or unliked.
+        /// </returns>
         [HttpPost("LikeAndUnlikePost")]
         [Authorize]
         public async Task<ActionResult<ResponseModel>> LikeAndUnlikePostAsync(LikePostDTO model)
@@ -163,6 +186,14 @@ namespace InstagramWebAPI.Controllers
             }
         }
 
+        /// <summary>
+        /// Adds a comment to a post asynchronously based on the provided data.
+        /// </summary>
+        /// <param name="model">The data object containing user ID, post ID, and comment content.</param>
+        /// <returns>
+        /// An asynchronous task that returns an <see cref="ActionResult{T}"/> where T is <see cref="ResponseModel"/>.
+        /// If successful, returns an <see cref="ActionResult"/> with a success message indicating the comment was added.
+        /// </returns>
         [HttpPost("CommentPost")]
         [Authorize]
         public async Task<ActionResult<ResponseModel>> CommentPostAsync(CommentPostDTO model)
@@ -191,6 +222,14 @@ namespace InstagramWebAPI.Controllers
             }
         }
 
+        /// <summary>
+        /// Deletes a comment from a post asynchronously based on the provided comment ID.
+        /// </summary>
+        /// <param name="commentId">The unique identifier of the comment to delete.</param>
+        /// <returns>
+        /// An asynchronous task that returns an <see cref="ActionResult{T}"/> where T is <see cref="ResponseModel"/>.
+        /// If successful, returns an <see cref="ActionResult"/> with a success message indicating the comment was deleted.
+        /// </returns>
         [HttpPost("DeletePostComment")]
         [Authorize]
         public async Task<ActionResult<ResponseModel>> DetelePostCommentAsync([FromQuery] long commentId)

@@ -21,6 +21,11 @@ namespace InstagramWebAPI.Controllers
             _userService = userService;
         }
 
+        /// <summary>
+        /// Retrieves the profile image for a specified user.
+        /// </summary>
+        /// <param name="userId">The unique identifier of the user.</param>
+        /// <param name="imageName">The filename of the profile image.</param>
         [HttpGet("ProfilePhoto")]
         public IActionResult GetProfileImage(long userId, string imageName)
         {
@@ -45,6 +50,14 @@ namespace InstagramWebAPI.Controllers
             return this.File(imageBytes, fileType);
         }
 
+        /// <summary>
+        /// Retrieves a post file for a specified user.
+        /// </summary>
+        /// <param name="userId">The unique identifier of the user.</param>
+        /// <param name="postName">The filename of the post file.</param>
+        /// <returns>
+        /// Returns the post file for the specified user as an <see cref="ActionResult"/>.
+        /// </returns>
         [HttpGet("Post")]
         public IActionResult GetPost(long userId, string postName)
         {
@@ -69,6 +82,14 @@ namespace InstagramWebAPI.Controllers
             return this.File(imageBytes, fileType);
         }
 
+        /// <summary>
+        /// Retrieves a reel file for a specified user.
+        /// </summary>
+        /// <param name="userId">The unique identifier of the user.</param>
+        /// <param name="reelName">The filename of the reel file.</param>
+        /// <returns>
+        /// Returns the reel file for the specified user as an <see cref="ActionResult"/>.
+        /// </returns>
         [HttpGet("Reel")]
         public IActionResult GetReel(long userId, string reelName)
         {
@@ -93,6 +114,14 @@ namespace InstagramWebAPI.Controllers
             return this.File(imageBytes, fileType);
         }
 
+        /// <summary>
+        /// Retrieves a story file for a specified user.
+        /// </summary>
+        /// <param name="userId">The unique identifier of the user.</param>
+        /// <param name="storyName">The filename of the story file.</param>
+        /// <returns>
+        /// Returns the story file for the specified user as an <see cref="ActionResult"/>.
+        /// </returns>
         [HttpGet("Story")]
         public IActionResult GetStory(long userId, string storyName)
         {

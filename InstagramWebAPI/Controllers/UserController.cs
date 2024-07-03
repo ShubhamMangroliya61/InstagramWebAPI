@@ -39,12 +39,12 @@ namespace InstagramWebAPI.Controllers
         /// <returns>An <see cref="ActionResult{T}"/> representing the result of the profile photo upload operation.</returns>
         [HttpPost("UploadProfilePhoto")]
         [Authorize]
-        public async Task<ActionResult<ResponseModel>> UploadProfilePhotoAsync(IFormFile ProfilePhoto)
+        public async Task<ActionResult<ResponseModel>> UploadProfilePhotoAsync(IFormFile? ProfilePhoto)
         {
             try
             {
                 long userId = _helper.GetUserIdClaim();
-                List<ValidationError> errors = _validationService.ValidateProfileFile(ProfilePhoto, userId);
+                List<ValidationError> errors = _validationService.ValidateProfileFile(ProfilePhoto,userId);
                 if (errors.Any())
                 {
                     return BadRequest(_responseHandler.BadRequest(CustomErrorCode.IsValid, CustomErrorMessage.ValidationProfile, errors));
@@ -69,7 +69,7 @@ namespace InstagramWebAPI.Controllers
                 }
             }
         }
-
+        
         /// <summary>
         /// Handles the asynchronous update of user profile information.
         /// </summary>
@@ -327,6 +327,14 @@ namespace InstagramWebAPI.Controllers
             }
         }
 
+        /// <summary>
+        /// Retrieves mutual friends between two users asynchronously based on the provided user ID.
+        /// </summary>
+        /// <param name="model">The request data object containing the user ID.</param>
+        /// <returns>
+        /// An asynchronous task that returns an <see cref="ActionResult{T}"/> where T is <see cref="ResponseModel"/>.
+        /// If successful, returns an <see cref="ActionResult"/> with a success message and the list of mutual friends with details.
+        /// </returns>
         [HttpPost("MutualFriendAsync")]
         [Authorize]
         public async Task<ActionResult<ResponseModel>> MutualFriendAsync([FromBody] RequestDTO<UserIdRequestDTO> model)
@@ -358,8 +366,5 @@ namespace InstagramWebAPI.Controllers
                 }
             }
         }
-
-
-
     }
 }

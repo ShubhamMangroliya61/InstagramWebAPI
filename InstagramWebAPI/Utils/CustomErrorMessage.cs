@@ -70,7 +70,9 @@
         public const string UpdateProfileSuccess = "Profile Update Successfully";
         public const string ValidationRequest = "Validation failed for Follow Request data.";
         public const string RequestSuccess = "Request Send Successfully";
+        public const string DeleteSuccess = "Profile Photo Delete Successfully";
         public const string RequestError = "Error occurred while Fllow Request the user.";
+        public const string Deleteprofile = "Error occurred while delete profile the user.";
         public const string NullDateOfBirth = "Date of birth is required";
         public const string InvalidDateOfBirthFormat = "Date of birth should be in yyyy-MM-dd format";
         public const string FutureDateOfBirth = "Please enter valid DateOfBirth";
@@ -102,6 +104,8 @@
         public const string PostLikeError = "Error occurred while Like Post.";
         public const string PostCommentError = "Error occurred while Comment Post.";
         public const string PathNotExits = "Path Not Found";
+        public const string FileSizeLimitExceeded = "Please Upload Photo size less than 1 MB";
+        public const string VideoFileSizeLimitExceeded = "Please Upload Video size less than 3 MB";
 
 
 

@@ -136,6 +136,14 @@ namespace InstagramWebAPI.BLL
             return responseDTO;
         }
 
+        /// <summary>
+        /// Retrieves a paginated list of posts based on the provided request data.
+        /// </summary>
+        /// <param name="model">The request data object containing parameters for filtering and pagination.</param>
+        /// <returns>
+        /// A task representing the asynchronous operation that returns a <see cref="PaginationResponceModel{T}"/> where T is <see cref="PostResponseDTO"/>.
+        /// The response contains paginated post data including post details, likes, and comments.
+        /// </returns>
         public async Task<PaginationResponceModel<PostResponseDTO>> GetPostsListByIdAsync(RequestDTO<PostListRequestDTO> model)
         {
             IQueryable<PostResponseDTO> posts = _dbcontext.Posts
@@ -193,6 +201,14 @@ namespace InstagramWebAPI.BLL
             };
         }
 
+        /// <summary>
+        /// Soft-deletes a post asynchronously based on the provided post ID.
+        /// </summary>
+        /// <param name="postId">The unique identifier of the post to delete.</param>
+        /// <returns>
+        /// A task representing the asynchronous operation that returns a boolean indicating whether the post was successfully soft-deleted.
+        /// Returns true if the post was found and soft-deleted.
+        /// </returns>
         public async Task<bool> DetelePostAsync(long postId)
         {
             Post? post = await _dbcontext.Posts.FirstOrDefaultAsync(m => m.PostId == postId && m.IsDeleted == false);
@@ -209,6 +225,15 @@ namespace InstagramWebAPI.BLL
             return false;
         }
 
+        /// <summary>
+        /// Likes or unlikes a post asynchronously based on the provided data in the <see cref="LikePostDTO"/> model.
+        /// </summary>
+        /// <param name="model">The data transfer object containing user ID, post ID, and like status.</param>
+        /// <returns>
+        /// A task representing the asynchronous operation that returns a boolean indicating whether the like/unlike operation was successful.
+        /// Returns true if the like/unlike operation was successfully applied.
+        /// Returns false if the user attempts to unlike a post they have not previously liked.
+        /// </returns>
         public async Task<bool> LikeAndUnlikePostAsync(LikePostDTO model)
         {
             Like? like = await _dbcontext.Likes.FirstOrDefaultAsync(m => m.UserId == model.UserId && m.PostId == model.PostId);
@@ -247,6 +272,14 @@ namespace InstagramWebAPI.BLL
             }
         }
 
+        /// <summary>
+        /// Adds a comment to a post asynchronously based on the provided data in the <see cref="CommentPostDTO"/> model.
+        /// </summary>
+        /// <param name="model">The data transfer object containing user ID, post ID, and comment text.</param>
+        /// <returns>
+        /// A task representing the asynchronous operation that returns a boolean indicating whether the comment was successfully added.
+        /// Returns true if the comment was successfully added to the post.
+        /// </returns>
         public async Task<bool> CommentPostAsync(CommentPostDTO model)
         {
             Comment comment = new()
@@ -262,6 +295,15 @@ namespace InstagramWebAPI.BLL
             return true;
         }
 
+        /// <summary>
+        /// Soft-deletes a post comment asynchronously based on the provided comment ID.
+        /// </summary>
+        /// <param name="commentId">The unique identifier of the comment to delete.</param>
+        /// <returns>
+        /// A task representing the asynchronous operation that returns a boolean indicating whether the comment was successfully soft-deleted.
+        /// Returns true if the comment was found and soft-deleted.
+        /// Returns false if no comment with the specified ID was found or if it was already deleted.
+        /// </returns>
         public async Task<bool> DetelePostCommentAsync(long commentId)
         {
             Comment? comment = await _dbcontext.Comments.FirstOrDefaultAsync(m => m.CommentId == commentId && m.IsDeleted == false);

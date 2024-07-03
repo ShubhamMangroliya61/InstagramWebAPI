@@ -20,6 +20,13 @@ namespace InstagramWebAPI.BLL
             _helper = helper;
         }
 
+        /// <summary>
+        /// Adds a story asynchronously based on the provided data in the <see cref="AddStoryDTO"/> model.
+        /// </summary>
+        /// <param name="model">The data transfer object containing the story file and associated data.</param>
+        /// <returns>
+        /// A task representing the asynchronous operation that returns a <see cref="StoryResponseListDTO"/> object representing the added story.
+        /// </returns>
         public async Task<StoryResponseListDTO> AddStoryAsync(AddStoryDTO model)
         {
             long UserId =_helper.GetUserIdClaim();
@@ -81,6 +88,15 @@ namespace InstagramWebAPI.BLL
             return storyResponseDTO;
         }
 
+        /// <summary>
+        /// Soft-deletes a story asynchronously based on the provided story ID and current user ID.
+        /// </summary>
+        /// <param name="storyId">The unique identifier of the story to delete.</param>
+        /// <returns>
+        /// A task representing the asynchronous operation that returns a boolean indicating whether the story was successfully soft-deleted.
+        /// Returns true if the story was found and soft-deleted.
+        /// Returns false if no story with the specified ID was found, the story belongs to a
+        /// </returns>
         public async Task<bool> DeteleStoryAsync(long storyId)
         {
             long userId = _helper.GetUserIdClaim();
@@ -98,6 +114,15 @@ namespace InstagramWebAPI.BLL
 
             return false;
         }
+
+        /// <summary>
+        /// Retrieves a specific story by its ID asynchronously.
+        /// </summary>
+        /// <param name="userId">The ID of the user requesting the story.</param>
+        /// <param name="storyId">The ID of the story to retrieve.</param>
+        /// <returns>
+        /// A task representing the asynchronous operation that returns a <see cref="StoryResponseListDTO"/> object containing the details of the retrieved story.
+        /// </returns>
         public async Task<StoryResponseListDTO> GetStoryById(long userId, long storyId)
         {
             Story story = await _dbcontext.Stories
@@ -151,6 +176,14 @@ namespace InstagramWebAPI.BLL
             };
         }
 
+        /// <summary>
+        /// Retrieves a paginated list of stories for a specified user ID asynchronously.
+        /// </summary>
+        /// <param name="model">The request model containing the user ID and pagination details.</param>
+        /// <returns>
+        /// A task representing the asynchronous operation that returns a <see cref="PaginationResponceModel{T}"/> of <see cref="StoryResponseListDTO"/>.
+        /// The response contains a paginated list of stories with details such as user ID, username, profile picture, and stories associated with the user.
+        /// </returns>
         public async Task<PaginationResponceModel<StoryResponseListDTO>> GetStoryListByUserIdAsync(RequestDTO<UserIdRequestDTO> model)
         {
             DateTime cutoffDate = DateTime.UtcNow.AddDays(-1);
@@ -200,6 +233,13 @@ namespace InstagramWebAPI.BLL
             };
         }
 
+        /// <summary>
+        /// Records that a specific story has been viewed by the authenticated user asynchronously.
+        /// </summary>
+        /// <param name="storyId">The ID of the story that has been viewed.</param>
+        /// <returns>
+        /// A task representing the asynchronous operation that indicates whether the operation to record the story view was successful (<c>true</c>) or not (<c>false</c>).
+        /// </returns>
         public async Task<bool> StorySeenByUserIdAsync(long storyId)
         {
             long userId = _helper.GetUserIdClaim();
@@ -215,30 +255,46 @@ namespace InstagramWebAPI.BLL
             return true;
         }
 
+        /// <summary>
+        /// Likes or unlikes a specific story asynchronously for the authenticated user.
+        /// </summary>
+        /// <param name="storyId">The ID of the story to like or unlike.</param>
+        /// <param name="isLike">Boolean indicating whether to like (<c>true</c>) or unlike (<c>false</c>) the story.</param>
+        /// <returns>
+        /// A task representing the asynchronous operation that indicates whether the operation to like/unlike the story was successful (<c>true</c>) or not (<c>false</c>).
+        /// </returns>
         public async Task<bool> LikeStoryAsync(long storyId,bool isLike)
         {
             long userId = _helper.GetUserIdClaim();
             StoryView? story =await _dbcontext.StoryViews.FirstOrDefaultAsync(m=>m.StoryId == storyId && m.StoryViewUserId == userId);
             
-            if(story == null)
+            if (story != null)
             {
-                StoryView storyView = new()
+                if (isLike != story.IsLike)
                 {
-                    StoryId = storyId,
-                    StoryViewUserId = userId,
-                    CreatedDate = DateTime.Now,
-                    IsLike = isLike,
-                };
-                await _dbcontext.StoryViews.AddAsync(storyView);
-                await _dbcontext.SaveChangesAsync();
+                    story.IsLike = isLike;
+                    _dbcontext.StoryViews.Update(story);
+                    await _dbcontext.SaveChangesAsync();
+                }
                 return true;
             }
             else
             {
-                story.IsLike=isLike;
-                _dbcontext.StoryViews.Update(story);
-                await _dbcontext.SaveChangesAsync();
-                return true;
+                if (isLike)
+                {
+                    StoryView storyView = new()
+                    {
+                        StoryId = storyId,
+                        StoryViewUserId = userId,
+                        CreatedDate = DateTime.Now,
+                        IsLike = isLike,
+                    };
+
+                    await _dbcontext.StoryViews.AddAsync(storyView);
+                    await _dbcontext.SaveChangesAsync();
+                    return true;
+                }
+                return false;
             }
         }
     }

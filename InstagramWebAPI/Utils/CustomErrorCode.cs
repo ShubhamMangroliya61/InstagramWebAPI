@@ -48,6 +48,7 @@
         public const string InvalidPhotoExtension = "INVALID_PHOTO_EXTENSION";
         public const string InvalidFileFormat = "INVALID_FILE_FORMATE";
         public const string IsUpload = "UPLOAD_PROFILE_ERROR";
+        public const string IsProfileDelete = "DELETE_PROFILE_ERROR";
         public const string IsUpdate = "UPDATE_PROFILE_ERROR";
         public const string IsStory = "UPLOAD_STORY_ERROR";
         public const string IsLIkeStory = "STORY_LIKE_ERROR";
@@ -69,7 +70,7 @@
         public const string NullRequestId = "NULL_REQUESTID";
         public const string NullPostId = "NULL_POSTID";
         public const string NullStoryId = "NULL_STORYID";
-
+        public const string FileSizeLimitExceeded = "INVALID__SIZE";
 
 
 
