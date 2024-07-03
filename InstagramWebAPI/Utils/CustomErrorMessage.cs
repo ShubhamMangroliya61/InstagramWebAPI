@@ -19,6 +19,7 @@
         public const string ContactNumberRequired = "ContactNumber is required.";
         public const string InvalidUserNameFormat = "Username must start with an alphanumeric character and be between 8 to 18 characters long, allowing only letters, numbers, underscores(_), and dots(.).";
         public const string InvalidUsernameOrPassword = "Username or Password is invalid.";
+        public const string InvalidLink = "Invalid URL format";
         public const string DuplicateUsername = "Username already exists.";
         public const string DuplicateEmail = "Email already exists.";
         public const string DuplicateNumber = "Phone Number already exists.";

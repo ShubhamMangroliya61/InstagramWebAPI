@@ -9,6 +9,8 @@ using Microsoft.EntityFrameworkCore;
 using System.Globalization;
 using System.Reflection.Metadata;
 using System.Text.RegularExpressions;
+using static Org.BouncyCastle.Crypto.Digests.SkeinEngine;
+using static System.Net.WebRequestMethods;
 using static System.Runtime.InteropServices.JavaScript.JSType;
 
 namespace InstagramWebAPI.BLL
@@ -29,6 +31,7 @@ namespace InstagramWebAPI.BLL
         const string MobileRegex = @"^[6-9]{1}[0-9]{9}$";
         const string PasswordRegex = @"^(?=.*[A-Z])(?=.*\d)(?=.*[a-z])(?=.*\W).{7,15}$";
         const string UserNameRegex = @"^[a-zA-Z0-9][a-zA-Z0-9_.]{7,17}$";
+        const string LinkRegex = @"^(ftp|http|https):\/\/[^""\s]+(?:\/[^""\s]*)?$";
 
         public void ValidateEmail(string email)
         {
@@ -94,7 +97,6 @@ namespace InstagramWebAPI.BLL
             }
             return errors;
         }
-
         public void ValidateUserName(string userName)
         {
             if (string.IsNullOrWhiteSpace(userName))
@@ -411,12 +413,21 @@ namespace InstagramWebAPI.BLL
                     parameter = model.ContactNumber,
                     errorCode = CustomErrorCode.IsPhoneNumber
                 });
-
             }
             if (model.UserId > 0)
             {
                 ValidateDateOfBirth(model.DateOfBirth ?? string.Empty);
                 ValidateUserId(model.UserId);
+                if (!string.IsNullOrWhiteSpace(model.Link) && !Regex.IsMatch(model.Link, LinkRegex, RegexOptions.IgnoreCase))
+                {
+                    errors.Add(new ValidationError
+                    {
+                        message = CustomErrorMessage.InvalidLink,
+                        reference = "UserName",
+                        parameter = "UserName",
+                        errorCode = CustomErrorCode.InvalidLink
+                    });
+                }
             }
             return errors;
         }
@@ -1056,7 +1067,7 @@ namespace InstagramWebAPI.BLL
             }
             return errors;
         }
-        public List<ValidationError> ValidateAddStoryhighlight(long highLightId , long storyId,long userId)
+        public List<ValidationError> ValidateAddStoryhighlight(long highLightId, long storyId, long userId)
         {
             ValidateHighLightId(highLightId);
             if (storyId == 0)
@@ -1079,7 +1090,7 @@ namespace InstagramWebAPI.BLL
                     errorCode = CustomErrorCode.InvalidStoryId
                 });
             }
-            else if (!_dbcontext.Stories.Any(m => m.StoryId == storyId && m.UserId==userId && m.IsDeleted != true))
+            else if (!_dbcontext.Stories.Any(m => m.StoryId == storyId && m.UserId == userId && m.IsDeleted != true))
             {
                 errors.Add(new ValidationError
                 {
@@ -1091,6 +1102,6 @@ namespace InstagramWebAPI.BLL
             }
             return errors;
         }
-        
+
     }
 }

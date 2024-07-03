@@ -25,6 +25,7 @@
         public const string InvalidOldPasswordFormat = "INVALID_OLD_PASSWORD_FORMAT";
         public const string PasswordNotMatch = "PASSWORD_NOT_MATCH";
         public const string InvalidUserNameFormat = "INVALID_USERNAME_FORMAT";
+        public const string InvalidLink = "INVALID_LINK_FORMAT";
         public const string NullUserName = "NULL_USERNAME";
         public const string NullEmail = "NULL_USERNAME";
         public const string NullContactNumber = "NULL_USERNAME";
