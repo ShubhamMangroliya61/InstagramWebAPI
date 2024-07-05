@@ -40,6 +40,7 @@
         public const string MailNotSend = "MAIL_NOT_SEND";
         public const string IsReset = "RESET_ERROR";
         public const string IsPOst = "CREATE_POST_ERROR";
+        public const string IsGetPOst = "GET_POST_ERROR";
         public const string InvalidUserId = "INVALID_USERID";
         public const string InvalidCommentId = "INVALID_COMMENTID";
         public const string InvalidRequestId = "INVALID_REQUESTID";

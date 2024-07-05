@@ -11,5 +11,6 @@ namespace InstagramWebAPI.Interface
         Task<bool> LikeAndUnlikePostAsync(LikePostDTO model);
         Task<bool> CommentPostAsync(CommentPostDTO model);
         Task<bool> DetelePostCommentAsync(long commentId);
+        Task<PostResponseDTO> GetPostById(long postId, string postType);
     }
 }

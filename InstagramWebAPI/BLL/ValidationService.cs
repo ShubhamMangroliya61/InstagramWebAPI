@@ -892,6 +892,21 @@ namespace InstagramWebAPI.BLL
             }
             return errors;
         }
+        public List<ValidationError> ValidatePostById(long postId,string postType)
+        {
+            ValidatePostId(postId);
+            if (!(postType == "Post" || postType == "Reel"))
+            {
+                errors.Add(new ValidationError
+                {
+                    message = CustomErrorMessage.InvalidPostType,
+                    reference = "typepost",
+                    parameter = "typepost",
+                    errorCode = CustomErrorCode.InvalidPostType
+                });
+            }
+            return errors;
+        }
         public List<ValidationError> ValidateDeletePostId(long postId)
         {
             ValidatePostId(postId);

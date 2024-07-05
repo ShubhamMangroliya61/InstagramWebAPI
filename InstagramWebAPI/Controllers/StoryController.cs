@@ -105,6 +105,32 @@ namespace InstagramWebAPI.Controllers
             }
         }
 
+        [HttpPost("GetStoryListById")]
+        [Authorize]
+        public async Task<ActionResult<ResponseModel>> GetStoryListByIdAsync([FromBody] PaginationRequestDTO model)
+        {
+            try
+            {
+                PaginationResponceModel<StoryResponseListDTO> data = await _storyService.GetStoryListByIdAsync(model);
+                if (data == null)
+                {
+                    return BadRequest(_responseHandler.BadRequest(CustomErrorCode.IsGetLIst, CustomErrorMessage.GetFollowerList, model));
+                }
+                return Ok(_responseHandler.Success(CustomErrorMessage.GetFollowerListSucces, data));
+            }
+            catch (Exception ex)
+            {
+                if (ex is ValidationException vx)
+                {
+                    return BadRequest(_responseHandler.BadRequest(vx.ErrorCode, vx.Message, vx.Errors));
+                }
+                else
+                {
+                    return BadRequest(_responseHandler.BadRequest(CustomErrorCode.IsGetLIst, ex.Message, model));
+                }
+            }
+        }
+
         /// <summary>
         /// Retrieves a list of stories belonging to a user asynchronously based on the provided user ID.
         /// </summary>

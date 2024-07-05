@@ -69,6 +69,36 @@ namespace InstagramWebAPI.Controllers
                 }
             }
         }
+        [HttpPost("GetPostById")]
+        [Authorize]
+        public async Task<ActionResult<ResponseModel>> GetPostByIdAsync([FromBody] long postId,string postType)
+        {
+            try
+            {
+                List<ValidationError> errors = _validationService.ValidatePostById(postId,postType);
+                if (errors.Any())
+                {
+                    return BadRequest(_responseHandler.BadRequest(CustomErrorCode.IsValid, CustomErrorMessage.ValidationPost, errors));
+                }
+                PostResponseDTO responseDTO = await _postService.GetPostById(postId,postType);
+                if (responseDTO == null)
+                {
+                    return BadRequest(_responseHandler.BadRequest(CustomErrorCode.IsGetPOst, CustomErrorMessage.PostGetError, postId));
+                }
+                return Ok(_responseHandler.Success(CustomErrorMessage.GetPost, responseDTO));
+            }
+            catch (Exception ex)
+            {
+                if (ex is ValidationException vx)
+                {
+                    return BadRequest(_responseHandler.BadRequest(vx.ErrorCode, vx.Message, vx.Errors));
+                }
+                else
+                {
+                    return BadRequest(_responseHandler.BadRequest(CustomErrorCode.IsGetPOst, ex.Message, postId));
+                }
+            }
+        }
 
         /// <summary>
         /// Retrieves a list of posts and reels based on the provided request data asynchronously.

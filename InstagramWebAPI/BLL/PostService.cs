@@ -1,18 +1,21 @@
 ﻿using DataAccess.CustomModel;
+using InstagramWebAPI.Common;
 using InstagramWebAPI.DAL.Models;
 using InstagramWebAPI.DTO;
 using InstagramWebAPI.Helpers;
 using InstagramWebAPI.Interface;
+using InstagramWebAPI.Utils;
 using Microsoft.EntityFrameworkCore;
+using static System.Runtime.InteropServices.JavaScript.JSType;
 
 namespace InstagramWebAPI.BLL
 {
-    public class PostService: IPostService
+    public class PostService : IPostService
     {
         public readonly ApplicationDbContext _dbcontext;
         private readonly Helper _helper;
 
-        public PostService(ApplicationDbContext db,Helper helper)
+        public PostService(ApplicationDbContext db, Helper helper)
         {
             _dbcontext = db;
             _helper = helper;
@@ -97,7 +100,7 @@ namespace InstagramWebAPI.BLL
                     {
                         mediaTypeId = 2;
                     }
-                    PostMapping postMapping = new ()
+                    PostMapping postMapping = new()
                     {
                         PostId = post.PostId,
                         MediaTypeId = mediaTypeId,
@@ -120,11 +123,11 @@ namespace InstagramWebAPI.BLL
                 }
 
                 await _dbcontext.PostMappings.AddRangeAsync(postMappings);
-                await _dbcontext.SaveChangesAsync(); 
+                await _dbcontext.SaveChangesAsync();
             }
 
             // Prepare response DTO
-            PostResponseDTO responseDTO = new ()
+            PostResponseDTO responseDTO = new()
             {
                 PostId = post.PostId,
                 UserId = post.UserId,
@@ -134,6 +137,61 @@ namespace InstagramWebAPI.BLL
                 Medias = medias
             };
             return responseDTO;
+        }
+        public async Task<PostResponseDTO> GetPostById(long postId, string postType)
+        {
+            Post post = await _dbcontext.Posts
+                .Include(p => p.PostMappings)
+                    .ThenInclude(pm => pm.MediaType)
+                .Include(p => p.Likes)
+                    .ThenInclude(l => l.User)
+                .Include(p => p.Comments)
+                    .ThenInclude(c => c.User)
+                .Include(p => p.User)
+                .FirstOrDefaultAsync(p => p.PostId == postId && !p.IsDeleted &&
+                                          (postType == "Post" ? p.PostTypeId == 4 : p.PostTypeId == 3))
+                ??
+                throw new ValidationException(CustomErrorMessage.NullPostId, CustomErrorCode.NullPostId, new List<ValidationError>
+                {
+                    new ValidationError
+                    {
+                     message = CustomErrorMessage.NullPostId,
+                    reference = "postid",
+                    parameter = "postid",
+                    errorCode = CustomErrorCode.NullPostId
+                    }
+                });
+
+            return new PostResponseDTO
+            {
+                PostId = post.PostId,
+                UserId = post.UserId,
+                Caption = post.Caption,
+                Location = post.Location,
+                PostType = post.PostTypeId == 3 ? "Reel" : "Post",
+                Medias = post.PostMappings.Select(m => new Media
+                {
+                    PostMappingId = m.PostMappingId,
+                    MediaType = m.MediaTypeId == 1 ? "Images" : "Video",
+                    MediaURL = m.MediaUrl,
+                    MediaName = m.MediaName
+                }).ToList(),
+                PostLikes = post.Likes.Select(l => new PostLike
+                {
+                    LikeId = l.LikeId,
+                    UserId = l.UserId,
+                    Avtar = l.User.ProfilePictureUrl,
+                    UserName = l.User.UserName
+                }).ToList(),
+                PostComments = post.Comments.Select(c => new PostComment
+                {
+                    CommentId = c.CommentId,
+                    UserId = c.UserId,
+                    CommentText = c.CommentText,
+                    Avtar = c.User.ProfilePictureUrl,
+                    UserName = c.User.UserName
+                }).ToList()
+            };
         }
 
         /// <summary>
@@ -147,8 +205,8 @@ namespace InstagramWebAPI.BLL
         public async Task<PaginationResponceModel<PostResponseDTO>> GetPostsListByIdAsync(RequestDTO<PostListRequestDTO> model)
         {
             IQueryable<PostResponseDTO> posts = _dbcontext.Posts
-                .Include(m => m.PostMappings)
-                .ThenInclude(m => m.MediaType).Include(m=>m.Likes).Include(m=>m.Comments).Include(m=>m.User)
+                .Include(m => m.Likes)
+                .Include(m => m.PostMappings).Include(m => m.Comments).Include(m => m.User)
                 .Where(m => m.IsDeleted == false && (model.Model.PostType == "Post" ? m.PostTypeId == 4 : m.PostTypeId == 3) && m.UserId == model.Model.UserId)
                 .OrderByDescending(p => p.CreatedDate)
                 .Select(post => new PostResponseDTO
@@ -165,23 +223,24 @@ namespace InstagramWebAPI.BLL
                         MediaURL = m.MediaUrl,
                         MediaName = m.MediaName
                     }).ToList(),
-                     PostLikes= post.Likes.Select(l => new PostLike
+                    PostLikes = post.Likes.Where(l => l.IsDeleted == false).Select(l => new PostLike
                     {
                         LikeId = l.LikeId,
                         UserId = l.UserId,
-                        Avtar = l.User.ProfilePictureUrl, 
-                        UserName = l.User.UserName 
+                        Avtar = l.User.ProfilePictureUrl,
+                        UserName = l.User.UserName
                     }).ToList(),
                     PostComments = post.Comments.Select(c => new PostComment
                     {
                         CommentId = c.CommentId,
                         UserId = c.UserId,
                         CommentText = c.CommentText,
-                        Avtar = c.User.ProfilePictureUrl, 
-                        UserName = c.User.UserName 
+                        Avtar = c.User.ProfilePictureUrl,
+                        UserName = c.User.UserName
                     }).ToList()
 
                 });
+
 
             int totalRecords = await posts.CountAsync();
             int requiredPages = (int)Math.Ceiling((decimal)totalRecords / model.PageSize);
@@ -224,6 +283,7 @@ namespace InstagramWebAPI.BLL
             }
             return false;
         }
+
 
         /// <summary>
         /// Likes or unlikes a post asynchronously based on the provided data in the <see cref="LikePostDTO"/> model.
@@ -291,7 +351,7 @@ namespace InstagramWebAPI.BLL
                 IsDeleted = false,
             };
             await _dbcontext.Comments.AddAsync(comment);
-            await _dbcontext.SaveChangesAsync();  
+            await _dbcontext.SaveChangesAsync();
             return true;
         }
 

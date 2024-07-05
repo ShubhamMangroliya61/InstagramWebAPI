@@ -43,9 +43,11 @@
         public const string MailNotSend = "Email Not Send";
         public const string ReserError = "Error occurred while Reset Password the user.";
         public const string PostError = "Error occurred while Create Post.";
+        public const string PostGetError = "Error occurred while Get Post.";
         public const string ReserPassword = "Reset Password Successfully";
         public const string ForgotPassword = "Forgot Password Successfully";
         public const string CreatePost = "Post Create Successfully";
+        public const string GetPost = "Post Get Successfully";
         public const string UpdatePost = "Post Update Successfully";
         public const string ValidationReset = "Validation failed for ResetPassword data.";
         public const string InvalidUserId = "Invalid UserId. UserId must be greater than zero.";

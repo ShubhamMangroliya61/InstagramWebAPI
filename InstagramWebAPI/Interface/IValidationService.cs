@@ -35,5 +35,6 @@ namespace InstagramWebAPI.Interface
         public List<ValidationError> ValidateHighLightId(long highLightId);
         List<ValidationError> ValidateAddStoryhighlight(long highLightId, long storyId, long userId);
         List<ValidationError> ValidateStoryHighLightId(long storyHighLightId);
+        List<ValidationError> ValidatePostById(long postId, string postType);
     }
 }

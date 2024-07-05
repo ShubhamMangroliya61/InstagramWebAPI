@@ -7,6 +7,7 @@ namespace InstagramWebAPI.Interface
     {
         Task<StoryResponseListDTO> AddStoryAsync(AddStoryDTO model);
         Task<bool> DeteleStoryAsync(long storyId);
+        Task<PaginationResponceModel<StoryResponseListDTO>> GetStoryListByIdAsync(PaginationRequestDTO model);
         Task<PaginationResponceModel<StoryResponseListDTO>> GetStoryListByUserIdAsync(RequestDTO<UserIdRequestDTO> model);
         Task<bool> StorySeenByUserIdAsync(long storyId);
         Task<StoryResponseListDTO> GetStoryById(long userId, long storyId);
