@@ -34,7 +34,7 @@ namespace InstagramWebAPI.Controllers
         /// <returns>An <see cref="ActionResult{T}"/> representing the result of the post creation operation.</returns>
         [HttpPost("CreatePostAsync")]
         [Authorize]
-        public async Task<ActionResult<ResponseModel>> CreatePostAsync([FromForm] CreatePostDTO model)
+        public async Task<ActionResult> CreatePostAsync([FromForm] CreatePostDTO model)
         {
             try
             {
@@ -46,7 +46,7 @@ namespace InstagramWebAPI.Controllers
                 PostResponseDTO responseDTO = await _postService.CreatePostAsync(model);
                 if (responseDTO == null)
                 {
-                    return BadRequest(_responseHandler.BadRequest(CustomErrorCode.IsPOst, CustomErrorMessage.PostError, model));
+                    return BadRequest(_responseHandler.BadRequest(CustomErrorCode.IsPOst, CustomErrorMessage.PostError, ""));
                 }
                 if (model.PostId <= 0)
                 {
@@ -65,20 +65,20 @@ namespace InstagramWebAPI.Controllers
                 }
                 else
                 {
-                    return BadRequest(_responseHandler.BadRequest(CustomErrorCode.IsPOst, ex.Message, model));
+                    return BadRequest(_responseHandler.BadRequest(CustomErrorCode.IsPOst, ex.Message, ""));
                 }
             }
         }
         [HttpPost("GetPostById")]
         [Authorize]
-        public async Task<ActionResult<ResponseModel>> GetPostByIdAsync([FromBody] long postId,string postType)
+        public async Task<ActionResult> GetPostByIdAsync([FromBody] long postId,string postType)
         {
             try
             {
                 List<ValidationError> errors = _validationService.ValidatePostById(postId,postType);
                 if (errors.Any())
                 {
-                    return BadRequest(_responseHandler.BadRequest(CustomErrorCode.IsValid, CustomErrorMessage.ValidationPost, errors));
+                    return BadRequest(_responseHandler.BadRequest(CustomErrorCode.IsValid, CustomErrorMessage.ValidationPost, ""));
                 }
                 PostResponseDTO responseDTO = await _postService.GetPostById(postId,postType);
                 if (responseDTO == null)
@@ -95,7 +95,7 @@ namespace InstagramWebAPI.Controllers
                 }
                 else
                 {
-                    return BadRequest(_responseHandler.BadRequest(CustomErrorCode.IsGetPOst, ex.Message, postId));
+                    return BadRequest(_responseHandler.BadRequest(CustomErrorCode.IsGetPOst, ex.Message, ""));
                 }
             }
         }
@@ -109,7 +109,7 @@ namespace InstagramWebAPI.Controllers
         /// </returns>
         [HttpPost("PostAndReelListById")]
         [Authorize]
-        public async Task<ActionResult<ResponseModel>> GetPostAndReelListByIdAsync([FromBody] RequestDTO<PostListRequestDTO> model)
+        public async Task<ActionResult> GetPostAndReelListByIdAsync([FromBody] RequestDTO<PostListRequestDTO> model)
         {
             try
             {
@@ -121,7 +121,7 @@ namespace InstagramWebAPI.Controllers
                 PaginationResponceModel<PostResponseDTO> data = await _postService.GetPostsListByIdAsync(model);
                 if (data == null)
                 {
-                    return BadRequest(_responseHandler.BadRequest(CustomErrorCode.IsGetLIst, CustomErrorMessage.GetFollowerList, model));
+                    return BadRequest(_responseHandler.BadRequest(CustomErrorCode.IsGetLIst, CustomErrorMessage.GetFollowerList, ""));
                 }
                 return Ok(_responseHandler.Success(CustomErrorMessage.GetPostListSucces, data));
             }
@@ -133,7 +133,7 @@ namespace InstagramWebAPI.Controllers
                 }
                 else
                 {
-                    return BadRequest(_responseHandler.BadRequest(CustomErrorCode.IsGetLIst, ex.Message, model));
+                    return BadRequest(_responseHandler.BadRequest(CustomErrorCode.IsGetLIst, ex.Message, ""));
                 }
             }
         }
@@ -148,7 +148,7 @@ namespace InstagramWebAPI.Controllers
         /// </returns>
         [HttpDelete("DeletePost")]
         [Authorize]
-        public async Task<ActionResult<ResponseModel>> DetelePostAsync([FromQuery] long postId)
+        public async Task<ActionResult> DetelePostAsync(long postId)
         {
             try
             {
@@ -160,7 +160,7 @@ namespace InstagramWebAPI.Controllers
                 bool isDeleted = await _postService.DetelePostAsync(postId);
                 if (!isDeleted)
                 {
-                    return BadRequest(_responseHandler.BadRequest(CustomErrorCode.IsPostDelete, CustomErrorMessage.PostDeleteError, errors));
+                    return BadRequest(_responseHandler.BadRequest(CustomErrorCode.IsPostDelete, CustomErrorMessage.PostDeleteError, ""));
                 }
                 return Ok(_responseHandler.Success(CustomErrorMessage.PostDelete, postId));
             }
@@ -172,7 +172,7 @@ namespace InstagramWebAPI.Controllers
                 }
                 else
                 {
-                    return BadRequest(_responseHandler.BadRequest(CustomErrorCode.IsPostDelete, ex.Message, postId));
+                    return BadRequest(_responseHandler.BadRequest(CustomErrorCode.IsPostDelete, ex.Message, ""));
                 }
             }
         }
@@ -187,7 +187,7 @@ namespace InstagramWebAPI.Controllers
         /// </returns>
         [HttpPost("LikeAndUnlikePost")]
         [Authorize]
-        public async Task<ActionResult<ResponseModel>> LikeAndUnlikePostAsync(LikePostDTO model)
+        public async Task<ActionResult> LikeAndUnlikePostAsync(LikePostDTO model)
         {
             try
             {
@@ -199,7 +199,7 @@ namespace InstagramWebAPI.Controllers
                 bool IsLike = await _postService.LikeAndUnlikePostAsync(model);
                 if (!IsLike)
                 {
-                    return BadRequest(_responseHandler.BadRequest(CustomErrorCode.IsPostLIke, CustomErrorMessage.PostLikeError, errors));
+                    return BadRequest(_responseHandler.BadRequest(CustomErrorCode.IsPostLIke, CustomErrorMessage.PostLikeError, ""));
                 }
                 return Ok(_responseHandler.Success(CustomErrorMessage.PostLike, model.PostId));
             }
@@ -211,7 +211,7 @@ namespace InstagramWebAPI.Controllers
                 }
                 else
                 {
-                    return BadRequest(_responseHandler.BadRequest(CustomErrorCode.IsPostLIke, ex.Message, model.PostId));
+                    return BadRequest(_responseHandler.BadRequest(CustomErrorCode.IsPostLIke, ex.Message, ""));
                 }
             }
         }
@@ -226,7 +226,7 @@ namespace InstagramWebAPI.Controllers
         /// </returns>
         [HttpPost("CommentPost")]
         [Authorize]
-        public async Task<ActionResult<ResponseModel>> CommentPostAsync(CommentPostDTO model)
+        public async Task<ActionResult> CommentPostAsync(CommentPostDTO model)
         {
             try
             {
@@ -247,7 +247,7 @@ namespace InstagramWebAPI.Controllers
                 }
                 else
                 {
-                    return BadRequest(_responseHandler.BadRequest(CustomErrorCode.IsPostComment, ex.Message, model.PostId));
+                    return BadRequest(_responseHandler.BadRequest(CustomErrorCode.IsPostComment, ex.Message, ""));
                 }
             }
         }
@@ -262,7 +262,7 @@ namespace InstagramWebAPI.Controllers
         /// </returns>
         [HttpPost("DeletePostComment")]
         [Authorize]
-        public async Task<ActionResult<ResponseModel>> DetelePostCommentAsync([FromQuery] long commentId)
+        public async Task<ActionResult> DetelePostCommentAsync(long commentId)
         {
             try
             {
@@ -274,7 +274,7 @@ namespace InstagramWebAPI.Controllers
                 bool isDeleted = await _postService.DetelePostCommentAsync(commentId);
                 if (!isDeleted)
                 {
-                    return BadRequest(_responseHandler.BadRequest(CustomErrorCode.IsPostComment, CustomErrorMessage.PostCommentError, errors));
+                    return BadRequest(_responseHandler.BadRequest(CustomErrorCode.IsPostComment, CustomErrorMessage.PostCommentError, ""));
                 }
                 return Ok(_responseHandler.Success(CustomErrorMessage.PostCommentDelete, commentId));
             }
@@ -286,7 +286,7 @@ namespace InstagramWebAPI.Controllers
                 }
                 else
                 {
-                    return BadRequest(_responseHandler.BadRequest(CustomErrorCode.IsPostDelete, ex.Message, commentId));
+                    return BadRequest(_responseHandler.BadRequest(CustomErrorCode.IsPostDelete, ex.Message, ""));
                 }
             }
         }

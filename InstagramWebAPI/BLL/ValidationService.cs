@@ -70,7 +70,17 @@ namespace InstagramWebAPI.BLL
             }
             else
             {
-                if (!DateTime.TryParseExact(dateOfBirth, "yyyy-MM-dd", CultureInfo.InvariantCulture, DateTimeStyles.None, out DateTime date))
+                string[] dateFormats = {
+                                            "yyyy-MM-dd",    // 2024-07-08
+                                            "dd-MM-yyyy",    // 08-07-2024
+                                            "MM/dd/yyyy",    // 07/08/2024
+                                            "yyyy/MM/dd",    // 2024/07/08
+                                            "dd MMM yyyy",   // 08 Jul 2024
+                                            "dd MMMM yyyy",  // 08 July 2024
+                                            "MMM dd, yyyy",  // Jul 08, 2024
+                                            "MMMM dd, yyyy"  // July 08, 2024
+                                        };
+                if (!DateTime.TryParseExact(dateOfBirth, dateFormats, CultureInfo.InvariantCulture, DateTimeStyles.None, out DateTime date))
                 {
                     errors.Add(new ValidationError()
                     {
@@ -654,9 +664,9 @@ namespace InstagramWebAPI.BLL
             }
             return errors;
         }
-        public List<ValidationError> ValidateFollowRequest(FollowRequestDTO model)
+        public List<ValidationError> ValidateFollowRequest(FollowRequestDTO model ,long fromUserId)
         {
-            if (model.FromUserId == model.ToUserId)
+            if (fromUserId== model.ToUserId)
             {
                 errors.Add(new ValidationError
                 {
@@ -666,16 +676,7 @@ namespace InstagramWebAPI.BLL
                     errorCode = CustomErrorCode.SameUserId
                 });
             }
-            if (model.FromUserId <= 0)
-            {
-                errors.Add(new ValidationError
-                {
-                    message = CustomErrorMessage.InvalidUserId,
-                    reference = "UserId",
-                    parameter = "UserId",
-                    errorCode = CustomErrorCode.InvalidFromUserId
-                });
-            }
+            
             if (model.ToUserId <= 0)
             {
                 errors.Add(new ValidationError
@@ -892,7 +893,7 @@ namespace InstagramWebAPI.BLL
             }
             return errors;
         }
-        public List<ValidationError> ValidatePostById(long postId,string postType)
+        public List<ValidationError> ValidatePostById(long postId, string postType)
         {
             ValidatePostId(postId);
             if (!(postType == "Post" || postType == "Reel"))

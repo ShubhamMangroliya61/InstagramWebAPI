@@ -36,7 +36,7 @@ namespace InstagramWebAPI.Controllers
         /// </returns>
         [HttpPost("AddStory")]
         [Authorize]
-        public async Task<ActionResult<ResponseModel>> AddStoryAsync([FromForm] AddStoryDTO model)
+        public async Task<ActionResult> AddStoryAsync([FromForm] AddStoryDTO model)
         {
             try
             {
@@ -49,7 +49,7 @@ namespace InstagramWebAPI.Controllers
                 StoryResponseListDTO storyResponse = await _storyService.AddStoryAsync(model);
                 if (storyResponse == null)
                 {
-                    return BadRequest(_responseHandler.BadRequest(CustomErrorCode.IsStory, CustomErrorMessage.UploadStoryError, model));
+                    return BadRequest(_responseHandler.BadRequest(CustomErrorCode.IsStory, CustomErrorMessage.UploadStoryError, ""));
                 }
                 return Ok(_responseHandler.Success(CustomErrorMessage.UploadStory, storyResponse));
             }
@@ -61,7 +61,7 @@ namespace InstagramWebAPI.Controllers
                 }
                 else
                 {
-                    return BadRequest(_responseHandler.BadRequest(CustomErrorCode.IsStory, ex.Message, model));
+                    return BadRequest(_responseHandler.BadRequest(CustomErrorCode.IsStory, ex.Message, ""));
                 }
             }
         }
@@ -76,7 +76,7 @@ namespace InstagramWebAPI.Controllers
         /// </returns>
         [HttpDelete("DeleteStory")]
         [Authorize]
-        public async Task<ActionResult<ResponseModel>> DeteleStoryAsync([FromQuery] long storyId)
+        public async Task<ActionResult> DeteleStoryAsync(long storyId)
         {
             try
             {
@@ -88,7 +88,7 @@ namespace InstagramWebAPI.Controllers
                 bool isDeleted = await _storyService.DeteleStoryAsync(storyId);
                 if (!isDeleted)
                 {
-                    return BadRequest(_responseHandler.BadRequest(CustomErrorCode.IsStoryDelete, CustomErrorMessage.StoryDeleteError, errors));
+                    return BadRequest(_responseHandler.BadRequest(CustomErrorCode.IsStoryDelete, CustomErrorMessage.StoryDeleteError, ""));
                 }
                 return Ok(_responseHandler.Success(CustomErrorMessage.StoryDelete, storyId));
             }
@@ -100,21 +100,21 @@ namespace InstagramWebAPI.Controllers
                 }
                 else
                 {
-                    return BadRequest(_responseHandler.BadRequest(CustomErrorCode.IsStoryDelete, ex.Message, storyId));
+                    return BadRequest(_responseHandler.BadRequest(CustomErrorCode.IsStoryDelete, ex.Message, ""));
                 }
             }
         }
 
         [HttpPost("GetStoryListById")]
         [Authorize]
-        public async Task<ActionResult<ResponseModel>> GetStoryListByIdAsync([FromBody] PaginationRequestDTO model)
+        public async Task<ActionResult> GetStoryListByIdAsync([FromBody] PaginationRequestDTO model)
         {
             try
             {
                 PaginationResponceModel<StoryResponseListDTO> data = await _storyService.GetStoryListByIdAsync(model);
                 if (data == null)
                 {
-                    return BadRequest(_responseHandler.BadRequest(CustomErrorCode.IsGetLIst, CustomErrorMessage.GetFollowerList, model));
+                    return BadRequest(_responseHandler.BadRequest(CustomErrorCode.IsGetLIst, CustomErrorMessage.GetFollowerList, ""));
                 }
                 return Ok(_responseHandler.Success(CustomErrorMessage.GetFollowerListSucces, data));
             }
@@ -126,7 +126,7 @@ namespace InstagramWebAPI.Controllers
                 }
                 else
                 {
-                    return BadRequest(_responseHandler.BadRequest(CustomErrorCode.IsGetLIst, ex.Message, model));
+                    return BadRequest(_responseHandler.BadRequest(CustomErrorCode.IsGetLIst, ex.Message, ""));
                 }
             }
         }
@@ -141,7 +141,7 @@ namespace InstagramWebAPI.Controllers
         /// </returns>
         [HttpPost("StoryListByUserId")]
         [Authorize]
-        public async Task<ActionResult<ResponseModel>> GetStoryListByUserIdAsync([FromBody] RequestDTO<UserIdRequestDTO> model)
+        public async Task<ActionResult> GetStoryListByUserIdAsync([FromBody] RequestDTO<UserIdRequestDTO> model)
         {
             try
             {
@@ -153,7 +153,7 @@ namespace InstagramWebAPI.Controllers
                 PaginationResponceModel<StoryResponseListDTO> data = await _storyService.GetStoryListByUserIdAsync(model);
                 if (data == null)
                 {
-                    return BadRequest(_responseHandler.BadRequest(CustomErrorCode.IsGetLIst, CustomErrorMessage.GetFollowerList, model));
+                    return BadRequest(_responseHandler.BadRequest(CustomErrorCode.IsGetLIst, CustomErrorMessage.GetFollowerList, ""));
                 }
                 return Ok(_responseHandler.Success(CustomErrorMessage.GetFollowerListSucces, data));
             }
@@ -165,7 +165,7 @@ namespace InstagramWebAPI.Controllers
                 }
                 else
                 {
-                    return BadRequest(_responseHandler.BadRequest(CustomErrorCode.IsGetLIst, ex.Message, model));
+                    return BadRequest(_responseHandler.BadRequest(CustomErrorCode.IsGetLIst, ex.Message, ""));
                 }
             }
         }
@@ -180,7 +180,7 @@ namespace InstagramWebAPI.Controllers
         /// </returns>
         [HttpPost("StorySeen")]
         [Authorize]
-        public async Task<ActionResult<ResponseModel>> StorySeenByUserIdAsync([FromForm] long storyId)
+        public async Task<ActionResult> StorySeenByUserIdAsync([FromForm] long storyId)
         {
             try
             {
@@ -193,7 +193,7 @@ namespace InstagramWebAPI.Controllers
                 bool isSuccess = await _storyService.StorySeenByUserIdAsync(storyId);
                 if (isSuccess == false)
                 {
-                    return BadRequest(_responseHandler.BadRequest(CustomErrorCode.IsStory, CustomErrorMessage.UploadStoryError, storyId));
+                    return BadRequest(_responseHandler.BadRequest(CustomErrorCode.IsStory, CustomErrorMessage.UploadStoryError, ""));
                 }
                 return Ok(_responseHandler.Success(CustomErrorMessage.SeenStory, storyId));
             }
@@ -205,7 +205,7 @@ namespace InstagramWebAPI.Controllers
                 }
                 else
                 {
-                    return BadRequest(_responseHandler.BadRequest(CustomErrorCode.IsStory, ex.Message, storyId));
+                    return BadRequest(_responseHandler.BadRequest(CustomErrorCode.IsStory, ex.Message, ""));
                 }
             }
         }
@@ -221,7 +221,7 @@ namespace InstagramWebAPI.Controllers
         /// </returns>
         [HttpGet("GetStoryById")]
         [Authorize]
-        public async Task<ActionResult<ResponseModel>> GetStoryByIdAsync([FromQuery] long userId,long storyId)
+        public async Task<ActionResult> GetStoryByIdAsync([FromQuery] long userId,long storyId)
         {
             try
             {
@@ -233,7 +233,7 @@ namespace InstagramWebAPI.Controllers
                 StoryResponseListDTO data = await _storyService.GetStoryById(userId,storyId);
                 if (data == null)
                 {
-                    return BadRequest(_responseHandler.BadRequest(CustomErrorCode.IsNotStory, CustomErrorMessage.ExitsPost, userId));
+                    return BadRequest(_responseHandler.BadRequest(CustomErrorCode.IsNotStory, CustomErrorMessage.ExitsPost, ""));
                 }
                 return Ok(_responseHandler.Success(CustomErrorMessage.GetStory, data));
             }
@@ -245,7 +245,7 @@ namespace InstagramWebAPI.Controllers
                 }
                 else
                 {
-                    return BadRequest(_responseHandler.BadRequest(CustomErrorCode.IsNotStory, ex.Message, storyId));
+                    return BadRequest(_responseHandler.BadRequest(CustomErrorCode.IsNotStory, ex.Message, ""));
                 }
             }
         }
@@ -261,7 +261,7 @@ namespace InstagramWebAPI.Controllers
         /// </returns>
         [HttpPost("LikeStory")]
         [Authorize]
-        public async Task<ActionResult<ResponseModel>> LikeStoryAsync([FromForm] long storyId,bool isLike)
+        public async Task<ActionResult> LikeStoryAsync([FromForm] long storyId,bool isLike)
         {
             try
             {
@@ -274,7 +274,7 @@ namespace InstagramWebAPI.Controllers
                 bool isSuccess = await _storyService.LikeStoryAsync(storyId,isLike);
                 if (isSuccess == false)
                 {
-                    return BadRequest(_responseHandler.BadRequest(CustomErrorCode.IsLIkeStory, CustomErrorMessage.LikeStoryError, storyId));
+                    return BadRequest(_responseHandler.BadRequest(CustomErrorCode.IsLIkeStory, CustomErrorMessage.LikeStoryError, ""));
                 }
                 return Ok(_responseHandler.Success(CustomErrorMessage.LIkeStory, storyId));
             }
@@ -286,14 +286,14 @@ namespace InstagramWebAPI.Controllers
                 }
                 else
                 {
-                    return BadRequest(_responseHandler.BadRequest(CustomErrorCode.IsLIkeStory, ex.Message, storyId));
+                    return BadRequest(_responseHandler.BadRequest(CustomErrorCode.IsLIkeStory, ex.Message, ""));
                 }
             }
         }
 
         [HttpPost("UpsertHighlight")]
         [Authorize]
-        public async Task<ActionResult<ResponseModel>> UpsertHighlightAsync([FromForm] HighLightRequestDTO model)
+        public async Task<ActionResult> UpsertHighlightAsync([FromForm] HighLightRequestDTO model)
         {
             try
             {
@@ -306,7 +306,7 @@ namespace InstagramWebAPI.Controllers
                 HighlightDTO response = await _storyService.UpsertHighlightAsync(model);
                 if (response == null)
                 {
-                    return BadRequest(_responseHandler.BadRequest(CustomErrorCode.IsHighlight, CustomErrorMessage.HighlightError, model));
+                    return BadRequest(_responseHandler.BadRequest(CustomErrorCode.IsHighlight, CustomErrorMessage.HighlightError, ""));
                 }
                 return Ok(_responseHandler.Success(CustomErrorMessage.AddHighLight, response));
             }
@@ -318,14 +318,14 @@ namespace InstagramWebAPI.Controllers
                 }
                 else
                 {
-                    return BadRequest(_responseHandler.BadRequest(CustomErrorCode.IsHighlight, ex.Message, model));
+                    return BadRequest(_responseHandler.BadRequest(CustomErrorCode.IsHighlight, ex.Message, ""));
                 }
             }
         }
 
         [HttpDelete("DeteleHighLight")]
         [Authorize]
-        public async Task<ActionResult<ResponseModel>> DeteleHighLightAsync([FromQuery] long highLightId)
+        public async Task<ActionResult> DeteleHighLightAsync([FromQuery] long highLightId)
         {
             try
             {
@@ -337,7 +337,7 @@ namespace InstagramWebAPI.Controllers
                 bool isDeleted = await _storyService.DeleteStoryHighLightAsync(highLightId);
                 if (!isDeleted)
                 {
-                    return BadRequest(_responseHandler.BadRequest(CustomErrorCode.IsHighlight, CustomErrorMessage.HighlightDeleteError, errors));
+                    return BadRequest(_responseHandler.BadRequest(CustomErrorCode.IsHighlight, CustomErrorMessage.HighlightDeleteError, ""));
                 }
                 return Ok(_responseHandler.Success(CustomErrorMessage.HighlightDelete, highLightId));
             }
@@ -349,14 +349,14 @@ namespace InstagramWebAPI.Controllers
                 }
                 else
                 {
-                    return BadRequest(_responseHandler.BadRequest(CustomErrorCode.IsHighlight, ex.Message, highLightId));
+                    return BadRequest(_responseHandler.BadRequest(CustomErrorCode.IsHighlight, ex.Message, ""));
                 }
             }
         }
 
         [HttpPost("AddStoryHighLight")]
         [Authorize]
-        public async Task<ActionResult<ResponseModel>> AddStoryHighLightAsync([FromQuery] long highLightId,long storyId)
+        public async Task<ActionResult> AddStoryHighLightAsync([FromQuery] long highLightId,long storyId)
         {
             try
             {
@@ -369,7 +369,7 @@ namespace InstagramWebAPI.Controllers
                 bool isDeleted = await _storyService.AddStoryHighLightAsync(highLightId,storyId);
                 if (!isDeleted)
                 {
-                    return BadRequest(_responseHandler.BadRequest(CustomErrorCode.IsHighlight, CustomErrorMessage.StoryHighlightAddError, errors));
+                    return BadRequest(_responseHandler.BadRequest(CustomErrorCode.IsHighlight, CustomErrorMessage.StoryHighlightAddError, ""));
                 }
                 return Ok(_responseHandler.Success(CustomErrorMessage.StoryHighlightAdd, highLightId));
             }
@@ -381,14 +381,14 @@ namespace InstagramWebAPI.Controllers
                 }
                 else
                 {
-                    return BadRequest(_responseHandler.BadRequest(CustomErrorCode.IsHighlight, ex.Message, highLightId));
+                    return BadRequest(_responseHandler.BadRequest(CustomErrorCode.IsHighlight, ex.Message, ""));
                 }
             }
         }
 
         [HttpDelete("DeleteStoryHighLight")]
         [Authorize]
-        public async Task<ActionResult<ResponseModel>> DeleteStoryHighLightAsync([FromQuery] long storyHighLightId)
+        public async Task<ActionResult> DeleteStoryHighLightAsync([FromQuery] long storyHighLightId)
         {
             try
             {
@@ -400,7 +400,7 @@ namespace InstagramWebAPI.Controllers
                 bool isDeleted = await _storyService.DeleteStoryHighLightAsync(storyHighLightId);
                 if (!isDeleted)
                 {
-                    return BadRequest(_responseHandler.BadRequest(CustomErrorCode.IsHighlight, CustomErrorMessage.StoryHighlightDeleteError, errors));
+                    return BadRequest(_responseHandler.BadRequest(CustomErrorCode.IsHighlight, CustomErrorMessage.StoryHighlightDeleteError, ""));
                 }
                 return Ok(_responseHandler.Success(CustomErrorMessage.StoryHighlightDelete, storyHighLightId));
             }
@@ -412,13 +412,13 @@ namespace InstagramWebAPI.Controllers
                 }
                 else
                 {
-                    return BadRequest(_responseHandler.BadRequest(CustomErrorCode.IsHighlight, ex.Message, storyHighLightId));
+                    return BadRequest(_responseHandler.BadRequest(CustomErrorCode.IsHighlight, ex.Message, ""));
                 }
             }
         }
         [HttpPost("HighLightListByUserId")]
         [Authorize]
-        public async Task<ActionResult<ResponseModel>> GetHighLightListByUserId([FromBody] RequestDTO<UserIdRequestDTO> model)
+        public async Task<ActionResult> GetHighLightListByUserId([FromBody] RequestDTO<UserIdRequestDTO> model)
         {
             try
             {
@@ -430,7 +430,7 @@ namespace InstagramWebAPI.Controllers
                 PaginationResponceModel<HighlightDTO> data = await _storyService.GetHighLightListByUserId(model);
                 if (data == null)
                 {
-                    return BadRequest(_responseHandler.BadRequest(CustomErrorCode.IsGetLIst, CustomErrorMessage.GetFollowerList, model));
+                    return BadRequest(_responseHandler.BadRequest(CustomErrorCode.IsGetLIst, CustomErrorMessage.GetFollowerList, ""));
                 }
                 return Ok(_responseHandler.Success(CustomErrorMessage.GetFollowerListSucces, data));
             }
@@ -442,7 +442,7 @@ namespace InstagramWebAPI.Controllers
                 }
                 else
                 {
-                    return BadRequest(_responseHandler.BadRequest(CustomErrorCode.IsGetLIst, ex.Message, model));
+                    return BadRequest(_responseHandler.BadRequest(CustomErrorCode.IsGetLIst, ex.Message, ""));
                 }
             }
         }

@@ -27,6 +27,9 @@ public partial class Like
     [Required]
     public bool? IsLike { get; set; }
 
+    [InverseProperty("Like")]
+    public virtual ICollection<Notification> Notifications { get; set; } = new List<Notification>();
+
     [ForeignKey("PostId")]
     [InverseProperty("Likes")]
     public virtual Post Post { get; set; } = null!;

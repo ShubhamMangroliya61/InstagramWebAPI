@@ -74,11 +74,11 @@ public partial class User
     [InverseProperty("User")]
     public virtual ICollection<Like> Likes { get; set; } = new List<Like>();
 
-    [InverseProperty("NotifireUser")]
-    public virtual ICollection<Notification> NotificationNotifireUsers { get; set; } = new List<Notification>();
+    [InverseProperty("FromUser")]
+    public virtual ICollection<Notification> NotificationFromUsers { get; set; } = new List<Notification>();
 
-    [InverseProperty("User")]
-    public virtual ICollection<Notification> NotificationUsers { get; set; } = new List<Notification>();
+    [InverseProperty("ToUser")]
+    public virtual ICollection<Notification> NotificationToUsers { get; set; } = new List<Notification>();
 
     [InverseProperty("User")]
     public virtual ICollection<Post> Posts { get; set; } = new List<Post>();

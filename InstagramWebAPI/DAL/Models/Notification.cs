@@ -12,15 +12,19 @@ public partial class Notification
     [Key]
     public long NotificationId { get; set; }
 
-    public long UserId { get; set; }
+    public long FromUserId { get; set; }
 
-    public long NotifireUserId { get; set; }
+    public long ToUserId { get; set; }
 
-    [StringLength(20)]
-    [Unicode(false)]
-    public string NotificationType { get; set; } = null!;
+    public int NotificationType { get; set; }
 
     public long? PostId { get; set; }
+
+    public long? LikeId { get; set; }
+
+    public long? CommentId { get; set; }
+
+    public long? StoryId { get; set; }
 
     public bool IsDeleted { get; set; }
 
@@ -30,15 +34,33 @@ public partial class Notification
     [Column(TypeName = "datetime")]
     public DateTime? ModifiedDate { get; set; }
 
-    [ForeignKey("NotifireUserId")]
-    [InverseProperty("NotificationNotifireUsers")]
-    public virtual User NotifireUser { get; set; } = null!;
+    public long? RequestId { get; set; }
+
+    [ForeignKey("CommentId")]
+    [InverseProperty("Notifications")]
+    public virtual Comment? Comment { get; set; }
+
+    [ForeignKey("FromUserId")]
+    [InverseProperty("NotificationFromUsers")]
+    public virtual User FromUser { get; set; } = null!;
+
+    [ForeignKey("LikeId")]
+    [InverseProperty("Notifications")]
+    public virtual Like? Like { get; set; }
 
     [ForeignKey("PostId")]
     [InverseProperty("Notifications")]
     public virtual Post? Post { get; set; }
 
-    [ForeignKey("UserId")]
-    [InverseProperty("NotificationUsers")]
-    public virtual User User { get; set; } = null!;
+    [ForeignKey("RequestId")]
+    [InverseProperty("Notifications")]
+    public virtual Request? Request { get; set; }
+
+    [ForeignKey("StoryId")]
+    [InverseProperty("Notifications")]
+    public virtual Story? Story { get; set; }
+
+    [ForeignKey("ToUserId")]
+    [InverseProperty("NotificationToUsers")]
+    public virtual User ToUser { get; set; } = null!;
 }

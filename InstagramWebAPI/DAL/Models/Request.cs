@@ -32,6 +32,9 @@ public partial class Request
     [InverseProperty("RequestFromUsers")]
     public virtual User FromUser { get; set; } = null!;
 
+    [InverseProperty("Request")]
+    public virtual ICollection<Notification> Notifications { get; set; } = new List<Notification>();
+
     [ForeignKey("ToUserId")]
     [InverseProperty("RequestToUsers")]
     public virtual User ToUser { get; set; } = null!;

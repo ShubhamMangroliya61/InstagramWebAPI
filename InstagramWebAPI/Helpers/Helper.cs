@@ -3,16 +3,20 @@ using System.Net;
 using InstagramWebAPI.DAL.Models;
 using System.Security.Claims;
 using InstagramWebAPI.DTO;
+using InstagramWebAPI.Utils;
+using static InstagramWebAPI.Utils.Enum;
+using Microsoft.EntityFrameworkCore;
 
 namespace InstagramWebAPI.Helpers
 {
     public class Helper
     {
         private readonly IHttpContextAccessor _httpContextAccessor;
-
-        public Helper(IHttpContextAccessor httpContextAccessor)
+        private readonly ApplicationDbContext _dbcontext;
+        public Helper(IHttpContextAccessor httpContextAccessor, ApplicationDbContext db)
         {
             _httpContextAccessor = httpContextAccessor;
+            _dbcontext = db;
         }
         public async Task<bool> EmailSender(string email, string subject, string htmlMessage)
         {
@@ -72,10 +76,56 @@ namespace InstagramWebAPI.Helpers
                 ProfilePictureUrl = user.ProfilePictureUrl ?? string.Empty,
                 ContactNumber = user.ContactNumber ?? string.Empty,
                 IsPrivate = user.IsPrivate,
-                IsVerified = user.IsVerified
+                IsVerified = user.IsVerified,
                 // Map other properties as needed
             };
             return userDTO;
+        }
+
+        public async Task CreateNotification(NotificationDTO model)
+        {
+            IQueryable<Notification> data = _dbcontext.Notifications.Where(m => m.FromUserId == model.FromUserId && m.ToUserId == model.ToUserId);
+
+            Notification? obj = model.NotificationTypeId switch
+            {
+                NotificationTypeId.PostId => await  data.FirstOrDefaultAsync(m => m.PostId == model.Id),
+                NotificationTypeId.LikeId =>await data.FirstOrDefaultAsync(m => m.LikeId == model.Id),
+                NotificationTypeId.CommentId =>await data.FirstOrDefaultAsync(m => m.CommentId == model.Id),
+                NotificationTypeId.RequestId =>await data.FirstOrDefaultAsync(m => m.RequestId == model.Id),
+                NotificationTypeId.StoryId =>await data.FirstOrDefaultAsync(m => m.StoryId == model.Id),
+                _ => throw new ArgumentOutOfRangeException(nameof(model.NotificationId), "Unknown NotificationId type"),
+            };
+
+            Notification notification = obj ?? new Notification();
+
+            notification.FromUserId = model.FromUserId;
+            notification.ToUserId = model.ToUserId;
+            notification.NotificationType = (int)model.NotificationType;
+            notification.CreatedDate = DateTime.Now;
+            notification.IsDeleted= model.IsDeleted;
+            if (obj == null)
+            {
+                switch (model.NotificationTypeId)
+                {
+                    case NotificationTypeId.PostId:
+                        notification.PostId = model.Id;
+                        break;
+                    case NotificationTypeId.LikeId:
+                        notification.LikeId = model.Id;
+                        break;
+                    case NotificationTypeId.CommentId:
+                        notification.CommentId = model.Id;
+                        break;
+                    case NotificationTypeId.RequestId:
+                        notification.RequestId = model.Id;
+                        break;
+                    case NotificationTypeId.StoryId:
+                        notification.StoryId = model.Id;
+                        break;
+                }
+                _dbcontext.Notifications.Add(notification);
+            }
+            await _dbcontext.SaveChangesAsync();
         }
     }
 }

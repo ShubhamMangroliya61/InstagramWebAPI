@@ -6,6 +6,8 @@ using InstagramWebAPI.Helpers;
 using InstagramWebAPI.Interface;
 using InstagramWebAPI.Utils;
 using Microsoft.EntityFrameworkCore;
+using System.ComponentModel;
+using static InstagramWebAPI.Utils.Enum;
 using static System.Runtime.InteropServices.JavaScript.JSType;
 
 namespace InstagramWebAPI.BLL
@@ -227,7 +229,7 @@ namespace InstagramWebAPI.BLL
                     {
                         LikeId = l.LikeId,
                         UserId = l.UserId,
-                        Avtar = l.User.ProfilePictureUrl,
+                        Avtar = l.User.ProfilePictureName,
                         UserName = l.User.UserName
                     }).ToList(),
                     PostComments = post.Comments.Select(c => new PostComment
@@ -235,7 +237,7 @@ namespace InstagramWebAPI.BLL
                         CommentId = c.CommentId,
                         UserId = c.UserId,
                         CommentText = c.CommentText,
-                        Avtar = c.User.ProfilePictureUrl,
+                        Avtar = c.User.ProfilePictureName,
                         UserName = c.User.UserName
                     }).ToList()
 
@@ -297,39 +299,36 @@ namespace InstagramWebAPI.BLL
         public async Task<bool> LikeAndUnlikePostAsync(LikePostDTO model)
         {
             Like? like = await _dbcontext.Likes.FirstOrDefaultAsync(m => m.UserId == model.UserId && m.PostId == model.PostId);
+            Like obj = like ?? new();
+
+            obj.UserId = model.UserId;
+            obj.PostId = model.PostId;
+            obj.IsLike = model.IsLike;
 
             if (like != null)
             {
-                if (model.IsLike != like.IsLike)
-                {
-                    like.IsLike = model.IsLike;
-                    like.IsDeleted = !model.IsLike;
-                    like.ModifiedDate = DateTime.Now;
+                like.IsDeleted = !model.IsLike;
+                like.ModifiedDate = DateTime.Now;
 
-                    _dbcontext.Likes.Update(like);
-                    await _dbcontext.SaveChangesAsync();
-                }
-                return true;
+                _dbcontext.Likes.Update(like);
             }
             else
             {
-                if (model.IsLike)
-                {
-                    Like newLike = new()
-                    {
-                        UserId = model.UserId,
-                        PostId = model.PostId,
-                        IsLike = true,
-                        IsDeleted = false,
-                        CreatedDate = DateTime.Now,
-                    };
-
-                    await _dbcontext.Likes.AddAsync(newLike);
-                    await _dbcontext.SaveChangesAsync();
-                    return true;
-                }
-                return false;
+                obj.CreatedDate = DateTime.Now;
+                await _dbcontext.Likes.AddAsync(obj);
             }
+            await _dbcontext.SaveChangesAsync();
+
+            await _helper.CreateNotification(new NotificationDTO()
+            {
+                FromUserId = model.UserId,
+                ToUserId = _dbcontext.Posts.FirstOrDefaultAsync(m=>m.PostId == model.PostId && !m.IsDeleted).Result?.UserId??0,
+                NotificationType = NotificationType.PostLiked,
+                NotificationTypeId = NotificationTypeId.LikeId,
+                Id = obj.LikeId,
+                IsDeleted = obj.IsDeleted,
+            });
+            return true;
         }
 
         /// <summary>
@@ -352,6 +351,16 @@ namespace InstagramWebAPI.BLL
             };
             await _dbcontext.Comments.AddAsync(comment);
             await _dbcontext.SaveChangesAsync();
+
+            await _helper.CreateNotification(new NotificationDTO()
+            {
+                FromUserId = model.UserId,
+                ToUserId = _dbcontext.Posts.FirstOrDefaultAsync(m => m.PostId == model.PostId && !m.IsDeleted).Result?.UserId ?? 0,
+                NotificationType = NotificationType.PostCommented,
+                NotificationTypeId = NotificationTypeId.CommentId,
+                Id = comment.CommentId,
+                IsDeleted = comment.IsDeleted,
+            });
             return true;
         }
 
@@ -375,6 +384,15 @@ namespace InstagramWebAPI.BLL
                 _dbcontext.Comments.Update(comment);
                 await _dbcontext.SaveChangesAsync();
 
+                await _helper.CreateNotification(new NotificationDTO()
+                {
+                    FromUserId = comment.UserId,
+                    ToUserId = _dbcontext.Posts.FirstOrDefaultAsync(m => m.PostId == comment.PostId && !m.IsDeleted).Result?.UserId ?? 0,
+                    NotificationType = NotificationType.PostCommented,
+                    NotificationTypeId = NotificationTypeId.CommentId,
+                    Id = comment.CommentId,
+                    IsDeleted = comment.IsDeleted,
+                });
                 return true;
             }
             return false;

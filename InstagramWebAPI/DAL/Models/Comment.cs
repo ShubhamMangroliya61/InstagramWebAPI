@@ -27,6 +27,9 @@ public partial class Comment
     [Column(TypeName = "datetime")]
     public DateTime? ModifiedDate { get; set; }
 
+    [InverseProperty("Comment")]
+    public virtual ICollection<Notification> Notifications { get; set; } = new List<Notification>();
+
     [ForeignKey("PostId")]
     [InverseProperty("Comments")]
     public virtual Post Post { get; set; } = null!;

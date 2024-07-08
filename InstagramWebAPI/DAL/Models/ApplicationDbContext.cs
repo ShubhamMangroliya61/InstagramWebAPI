@@ -89,17 +89,25 @@ public partial class ApplicationDbContext : DbContext
 
         modelBuilder.Entity<Notification>(entity =>
         {
-            entity.HasKey(e => e.NotificationId).HasName("PK__Notifica__20CF2E12FEA68E1B");
+            entity.HasKey(e => e.NotificationId).HasName("PK__Notifica__20CF2E12BC647EA9");
 
-            entity.HasOne(d => d.NotifireUser).WithMany(p => p.NotificationNotifireUsers)
+            entity.HasOne(d => d.Comment).WithMany(p => p.Notifications).HasConstraintName("FK__Notificat__Comme__2BC97F7C");
+
+            entity.HasOne(d => d.FromUser).WithMany(p => p.NotificationFromUsers)
                 .OnDelete(DeleteBehavior.ClientSetNull)
-                .HasConstraintName("FK__Notificat__Notif__1A9EF37A");
+                .HasConstraintName("FK__Notificat__FromU__27F8EE98");
 
-            entity.HasOne(d => d.Post).WithMany(p => p.Notifications).HasConstraintName("FK__Notificat__PostI__1B9317B3");
+            entity.HasOne(d => d.Like).WithMany(p => p.Notifications).HasConstraintName("FK__Notificat__LikeI__2AD55B43");
 
-            entity.HasOne(d => d.User).WithMany(p => p.NotificationUsers)
+            entity.HasOne(d => d.Post).WithMany(p => p.Notifications).HasConstraintName("FK__Notificat__PostI__29E1370A");
+
+            entity.HasOne(d => d.Request).WithMany(p => p.Notifications).HasConstraintName("FK__Notificat__Reque__2DB1C7EE");
+
+            entity.HasOne(d => d.Story).WithMany(p => p.Notifications).HasConstraintName("FK__Notificat__Story__2CBDA3B5");
+
+            entity.HasOne(d => d.ToUser).WithMany(p => p.NotificationToUsers)
                 .OnDelete(DeleteBehavior.ClientSetNull)
-                .HasConstraintName("FK__Notificat__UserI__19AACF41");
+                .HasConstraintName("FK__Notificat__ToUse__28ED12D1");
         });
 
         modelBuilder.Entity<Post>(entity =>

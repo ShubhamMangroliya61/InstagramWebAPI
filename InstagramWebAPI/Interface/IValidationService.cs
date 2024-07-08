@@ -15,7 +15,7 @@ namespace InstagramWebAPI.Interface
         List<ValidationError> ValidateForgotPasswordData(ForgotPasswordDTO model);
         List<ValidationError> ValidateProfileFile(IFormFile ProfilePhoto, long userId);
         List<ValidationError> ValidateProfileData(UserDTO model);
-        List<ValidationError> ValidateFollowRequest(FollowRequestDTO model);
+        public List<ValidationError> ValidateFollowRequest(FollowRequestDTO model, long fromUserId);
         List<ValidationError> ValidateFollowerList(RequestDTO<FollowerListRequestDTO> model);
         List<ValidationError> ValidateRequestList(RequestDTO<FollowRequestDTO> model);
         List<ValidationError> ValidateGetUserById(long userId);

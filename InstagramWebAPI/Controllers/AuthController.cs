@@ -35,7 +35,7 @@ namespace InstagramWebAPI.Controllers
         /// <response code="200">Returns when the registration is successful.</response>
         /// <response code="400">Returns when there are validation errors or registration fails.</response>
         [HttpPost("Register")]
-        public async Task<ActionResult<ResponseModel>> UserRegisterAsync([FromBody] UserDTO model)
+        public async Task<ActionResult> UserRegisterAsync([FromBody] UserDTO model)
         {
             try
             {
@@ -48,14 +48,14 @@ namespace InstagramWebAPI.Controllers
                 UserDTO? user = await _authService.UpSertUserAsync(model);
                 if (user == null)
                 {
-                    return BadRequest(_responseHandler.BadRequest(CustomErrorCode.IsRegister, CustomErrorMessage.RegistrationError, model));
+                    return BadRequest(_responseHandler.BadRequest(CustomErrorCode.IsRegister, CustomErrorMessage.RegistrationError,""));
                 }
 
                 return Ok(_responseHandler.Success(CustomErrorMessage.RegistrationSucces, user));
             }
             catch (Exception ex)
             {
-                return BadRequest(_responseHandler.BadRequest(CustomErrorCode.IsRegister, ex.Message, model));
+                return BadRequest(_responseHandler.BadRequest(CustomErrorCode.IsRegister, ex.Message, ""));
             }
         }
 
@@ -67,7 +67,7 @@ namespace InstagramWebAPI.Controllers
         /// <response code="200">Returns when the login is successful.</response>
         /// <response code="400">Returns when there are validation errors or login fails.</response>
         [HttpPost("Login")]
-        public async Task<ActionResult<ResponseModel>> UserLoginAsync([FromBody] LoginRequestDTO model)
+        public async Task<ActionResult> UserLoginAsync([FromBody] LoginRequestDTO model)
         {
             try
             {
@@ -80,14 +80,14 @@ namespace InstagramWebAPI.Controllers
                 LoginResponseDTO loginResponse = await _authService.UserLoginAsync(model);
                 if (string.IsNullOrEmpty(loginResponse.Token))
                 {
-                    return BadRequest(_responseHandler.BadRequest(CustomErrorCode.IsLogin, CustomErrorMessage.InvalidUsernameOrPassword, loginResponse));
+                    return BadRequest(_responseHandler.BadRequest(CustomErrorCode.IsLogin, CustomErrorMessage.InvalidUsernameOrPassword, ""));
                 }
 
                 return Ok(_responseHandler.Success(CustomErrorMessage.LoginSucces, loginResponse));
             }
             catch (Exception ex)
             {
-                return BadRequest(_responseHandler.BadRequest(CustomErrorCode.LoginError, ex.Message, model));
+                return BadRequest(_responseHandler.BadRequest(CustomErrorCode.LoginError, ex.Message, ""));
             }
         }
 
@@ -99,7 +99,7 @@ namespace InstagramWebAPI.Controllers
         /// <response code="200">Returns when the password reset email is successfully sent.</response>
         /// <response code="400">Returns when there are validation errors, the email fails to send, or other errors occur.</response>
         [HttpPost("ForgotPassword")]
-        public async Task<ActionResult<ResponseModel>> ForgotPasswordAsync([FromBody] ForgotPasswordDTO model)
+        public async Task<ActionResult> ForgotPasswordAsync([FromBody] ForgotPasswordDTO model)
         {
             try
             {
@@ -142,14 +142,14 @@ namespace InstagramWebAPI.Controllers
                 // Send email using EmailSender method
                 if (!await _helper.EmailSender(user.Email??string.Empty, subject, htmlMessage))
                 {
-                    return BadRequest(_responseHandler.BadRequest(CustomErrorCode.MailNotSend, CustomErrorMessage.MailNotSend, model));
+                    return BadRequest(_responseHandler.BadRequest(CustomErrorCode.MailNotSend, CustomErrorMessage.MailNotSend, ""));
                 }
                 return Ok(_responseHandler.Success(CustomErrorMessage.MailSend, model));
 
             }
             catch (Exception ex)
             {
-                return BadRequest(_responseHandler.BadRequest(CustomErrorCode.IsNotExits, ex.Message, model));
+                return BadRequest(_responseHandler.BadRequest(CustomErrorCode.IsNotExits, ex.Message, ""));
             }
         }
 
@@ -161,7 +161,7 @@ namespace InstagramWebAPI.Controllers
         /// <response code="200">Returns when the password is successfully reset.</response>
         /// <response code="400">Returns when there are validation errors or the password reset operation fails.</response>
         [HttpPost("ForgotPasswordUpdate")]
-        public async Task<ActionResult<ResponseModel>> ForgotPasswordUpdateAsync([FromBody] ForgotPasswordDTO model)
+        public async Task<ActionResult> ForgotPasswordUpdateAsync([FromBody] ForgotPasswordDTO model)
         {
             try
             {
@@ -179,13 +179,13 @@ namespace InstagramWebAPI.Controllers
 
                 if (!IsData)
                 {
-                    return BadRequest(_responseHandler.BadRequest(CustomErrorCode.IsReset, CustomErrorMessage.ReserError, model));
+                    return BadRequest(_responseHandler.BadRequest(CustomErrorCode.IsReset, CustomErrorMessage.ReserError, ""));
                 }
                 return Ok(_responseHandler.Success(CustomErrorMessage.ForgotPassword, model));
             }
             catch
             {
-                return BadRequest(_responseHandler.BadRequest(CustomErrorCode.IsReset, CustomErrorMessage.ReserError, model));
+                return BadRequest(_responseHandler.BadRequest(CustomErrorCode.IsReset, CustomErrorMessage.ReserError, ""));
             }
         }
 
@@ -196,7 +196,7 @@ namespace InstagramWebAPI.Controllers
         /// <returns>An <see cref="ActionResult{T}"/> representing the result of the password reset operation.</returns>
         [HttpPost("ResetPasswordAsync")]
         [Authorize]
-        public async Task<ActionResult<ResponseModel>> ResetPasswordAsync([FromBody] ResetPasswordRequestDTO model)
+        public async Task<ActionResult> ResetPasswordAsync([FromBody] ResetPasswordRequestDTO model)
         {
             try
             {
@@ -209,13 +209,13 @@ namespace InstagramWebAPI.Controllers
 
                 if (!IsData)
                 {
-                    return BadRequest(_responseHandler.BadRequest(CustomErrorCode.IsReset, CustomErrorMessage.ReserError, model));
+                    return BadRequest(_responseHandler.BadRequest(CustomErrorCode.IsReset, CustomErrorMessage.ReserError, ""));
                 }
                 return Ok(_responseHandler.Success(CustomErrorMessage.ReserPassword, model));
             }
             catch
             {
-                return BadRequest(_responseHandler.BadRequest(CustomErrorCode.IsReset, CustomErrorMessage.ReserError, model));
+                return BadRequest(_responseHandler.BadRequest(CustomErrorCode.IsReset, CustomErrorMessage.ReserError, ""));
             }
         }
     }

@@ -6,6 +6,8 @@ using InstagramWebAPI.Helpers;
 using InstagramWebAPI.Interface;
 using InstagramWebAPI.Utils;
 using Microsoft.EntityFrameworkCore;
+using Org.BouncyCastle.Ocsp;
+using static InstagramWebAPI.Utils.Enum;
 using static System.Runtime.InteropServices.JavaScript.JSType;
 
 namespace InstagramWebAPI.BLL
@@ -93,12 +95,12 @@ namespace InstagramWebAPI.BLL
         /// </summary>
         /// <param name="model">The data transfer object containing follow request details.</param>
         /// <returns>A boolean indicating whether the follow request operation was successful.</returns>
-        public async Task<bool> FollowRequestAsync(FollowRequestDTO model)
-        {
+        public async Task<bool> FollowRequestAsync(FollowRequestDTO model,long FromUserId)
+         {
             try
             {
                 if (!await _dbcontext.Users.AnyAsync(m => m.UserId == model.ToUserId) ||
-                    !await _dbcontext.Users.AnyAsync(m => m.UserId == model.FromUserId))
+                    !await _dbcontext.Users.AnyAsync(m => m.UserId == FromUserId))
                 {
                     throw new ValidationException(CustomErrorMessage.ExitsUser, CustomErrorCode.IsNotExits, new List<ValidationError>
                     {
@@ -112,61 +114,55 @@ namespace InstagramWebAPI.BLL
                     });
                 }
 
-                Request data = await _dbcontext.Requests.FirstOrDefaultAsync(m => m.FromUserId == model.FromUserId && m.ToUserId == model.ToUserId)
-                             ?? new();
+                Request? data = await _dbcontext.Requests.FirstOrDefaultAsync(m => m.FromUserId == FromUserId && m.ToUserId == model.ToUserId);
+                      Request obj  = data ?? new();
 
-                data.FromUserId = model.FromUserId;
-                data.ToUserId = model.ToUserId;
+                obj.FromUserId = FromUserId;
+                obj.ToUserId = model.ToUserId;
+                obj.CreatedDate = DateTime.Now;
 
-                var user = _dbcontext.Users.FirstOrDefault(m => m.UserId == model.ToUserId && m.IsDeleted == false);
-                var isPublicUser = true;
+                bool isPrivateUser = _dbcontext.Users.FirstOrDefault(m => m.UserId == model.ToUserId && m.IsDeleted == false)?.IsPrivate ??false;
 
-                if (user != null && user.IsPrivate == true)
+                if(!isPrivateUser)
                 {
-                    isPublicUser = false;
+                    obj.IsAccepted = true;
                 }
 
-                if (data.RequestId > 0)
+                if(data == null)
                 {
-                    if (isPublicUser)
-                    {
-                        data.ModifiedDate = DateTime.Now;
-                        data.IsDeleted = !(data.IsDeleted);
-                        if (data.IsDeleted == true)
-                        {
-                            data.IsAccepted = false;
-                        }
-                        else
-                        {
-                            data.IsAccepted = true;
-                        }
-                    }
-                    else
-                    {
-                        data.ModifiedDate = DateTime.Now;
-                        data.IsDeleted = !(data.IsDeleted);
-                        if (data.IsDeleted == true)
-                        {
-                            data.IsAccepted = false;
-                        }
-                    }
-
-
-                    _dbcontext.Requests.Update(data);
+                   await _dbcontext.Requests.AddAsync(obj);
                 }
                 else
                 {
-                    if (isPublicUser)
-                    {
-                        data.CreatedDate = DateTime.Now;
-                        data.IsAccepted = true;
-                    }
-                    else
-                    {
-                        data.CreatedDate = DateTime.Now;
-                    }
+                    obj.ModifiedDate = DateTime.Now;
+                    obj.IsAccepted = !data.IsAccepted;
+                    obj.IsDeleted = !data.IsDeleted;
+                }
+               await _dbcontext.SaveChangesAsync();
 
-                    await _dbcontext.Requests.AddAsync(data);
+                if(isPrivateUser)
+                {
+                    await _helper.CreateNotification(new NotificationDTO()
+                    {
+                        FromUserId = FromUserId,
+                        ToUserId = model.ToUserId,
+                        NotificationType = NotificationType.FollowRequest,
+                        NotificationTypeId = NotificationTypeId.RequestId,
+                        Id = obj.RequestId,
+                        IsDeleted = obj.IsDeleted,
+                    });
+                }
+                else
+                {
+                    await _helper.CreateNotification(new NotificationDTO()
+                    {
+                        FromUserId = FromUserId,
+                        ToUserId = model.ToUserId,
+                        NotificationType = NotificationType.FollowRequestAccepted,
+                        NotificationTypeId = NotificationTypeId.RequestId,
+                        Id = obj.RequestId,
+                        IsDeleted = obj.IsDeleted,
+                    });
                 }
                 await _dbcontext.SaveChangesAsync();
                 return true;
@@ -227,6 +223,47 @@ namespace InstagramWebAPI.BLL
             };
         }
 
+        public async Task<PaginationResponceModel<UserDTO>> GetUserListByUserNameAsync(RequestDTO<UserIdRequestDTO> model)
+        {
+            IQueryable<UserDTO> data = _dbcontext.Users
+                 .Where(m => m.IsDeleted == false &&
+                            (string.IsNullOrEmpty(model.SearchName) ||
+                            (m.UserName ?? string.Empty).ToLower().Contains(model.SearchName.ToLower())))
+                 .Select(m => new UserDTO
+                 {
+                     UserId = m.UserId,
+                     UserName = m.UserName,
+                     Email = m.Email,
+                     Name = m.Name,
+                     Bio = m.Bio,
+                     Link = m.Link,
+                     Gender = m.Gender ?? string.Empty,
+                     ProfilePictureName = m.ProfilePictureName,
+                     ProfilePictureUrl = m.ProfilePictureUrl,
+                     ContactNumber = m.ContactNumber,
+                     IsPrivate = m.IsPrivate,
+                     IsVerified = m.IsVerified,
+                 });
+
+
+            int totalRecords = await data.CountAsync();
+            int requiredPages = (int)Math.Ceiling((decimal)totalRecords / model.PageSize);
+
+            // Paginate the data
+            List<UserDTO> records = await data
+                .Skip((model.PageNumber - 1) * model.PageSize)
+                .Take(model.PageSize)
+                .ToListAsync();
+
+            return new PaginationResponceModel<UserDTO>
+            {
+                Totalrecord = totalRecords,
+                PageSize = model.PageSize,
+                PageNumber = model.PageNumber,
+                RequirdPage = requiredPages,
+                Record = records,
+            };
+        }
         /// <summary>
         /// Retrieves a paginated list of requests made to a user.
         /// </summary>
@@ -235,28 +272,32 @@ namespace InstagramWebAPI.BLL
         public async Task<PaginationResponceModel<RequestListResponseDTO>> GetRequestListByIdAsync(RequestDTO<FollowRequestDTO> model)
         {
             IQueryable<RequestListResponseDTO> data = _dbcontext.Requests
-                .Include(m => m.ToUser)
-                .Where(m => m.ToUserId == model.Model.UserId && m.IsDeleted == false && m.IsAccepted == true)
+                .Include(m => m.FromUser) // Ensure FromUser is included for UserDTO
+                .Where(m => m.ToUserId == model.Model.UserId && m.IsDeleted == false && m.IsAccepted == false)
                 .OrderByDescending(r => r.CreatedDate)
                 .Select(r => new RequestListResponseDTO
                 {
                     RequestId = r.RequestId,
                     User = new UserDTO
                     {
-                        UserId = r.ToUser.UserId,
-                        UserName = r.ToUser.UserName,
-                        Email = r.ToUser.Email,
-                        Name = r.ToUser.Name,
-                        Bio = r.ToUser.Bio,
-                        Link = r.ToUser.Link,
-                        Gender = r.ToUser.Gender ?? string.Empty,
-                        ProfilePictureName = r.ToUser.ProfilePictureName ?? string.Empty,
-                        ProfilePictureUrl = r.ToUser.ProfilePictureUrl ?? string.Empty,
-                        ContactNumber = r.ToUser.ContactNumber ?? string.Empty,
-                        IsPrivate = r.ToUser.IsPrivate,
-                        IsVerified = r.ToUser.IsVerified
+                        UserId = r.FromUser.UserId,
+                        UserName = r.FromUser.UserName,
+                        Email = r.FromUser.Email,
+                        Name = r.FromUser.Name,
+                        Bio = r.FromUser.Bio,
+                        Link = r.FromUser.Link,
+                        Gender = r.FromUser.Gender ?? string.Empty,
+                        ProfilePictureName = r.FromUser.ProfilePictureName ?? string.Empty,
+                        ProfilePictureUrl = r.FromUser.ProfilePictureUrl ?? string.Empty,
+                        ContactNumber = r.FromUser.ContactNumber ?? string.Empty,
+                        IsPrivate = r.FromUser.IsPrivate,
+                        IsVerified = r.FromUser.IsVerified,
+                        IsFollower = _dbcontext.Requests.Any(req => req.FromUserId == r.FromUser.UserId && req.ToUserId == model.Model.UserId && req.IsAccepted == true && req.IsDeleted == false),
+                        IsFollowing = _dbcontext.Requests.Any(req => req.FromUserId == model.Model.UserId && req.ToUserId == r.FromUser.UserId && req.IsAccepted == true && req.IsDeleted == false),
+                        IsRequest = _dbcontext.Requests.Any(req => req.FromUserId == model.Model.UserId && req.ToUserId == r.FromUser.UserId && req.IsAccepted == false && req.IsDeleted == false),
                     }
                 });
+
 
             List<RequestListResponseDTO> requests = await data
                 .Skip((model.PageNumber - 1) * model.PageSize)
@@ -282,21 +323,41 @@ namespace InstagramWebAPI.BLL
         /// <returns>A UserDTO object representing the user.</returns>
         public async Task<UserDTO> GetUserByIdAsync(long userId)
         {
-            User user = await _dbcontext.Users.FirstOrDefaultAsync(m => m.UserId == userId && m.IsDeleted != true) ??
-               throw new ValidationException(CustomErrorMessage.ExitsUser, CustomErrorCode.IsNotExits, new List<ValidationError>
-               {
+            long logInUserId = _helper.GetUserIdClaim();
+            User user = await _dbcontext.Users.FirstOrDefaultAsync(m => m.UserId == userId && !m.IsDeleted)
+                        ?? throw new ValidationException(CustomErrorMessage.ExitsUser, CustomErrorCode.IsNotExits, new List<ValidationError>
+                        {
                     new ValidationError
                     {
                         message = CustomErrorMessage.ExitsUser,
-                        reference = "UserName",
-                        parameter = "UserName",
+                        reference = "userId",
+                        parameter = "userId",
                         errorCode = CustomErrorCode.IsNotExits
                     }
-               });
+                        });
 
-            UserDTO userDTO = _helper.UserMapper(user);
+            UserDTO userDTO = new ()
+            {
+                UserId = user.UserId,
+                UserName = user.UserName,
+                Email = user.Email,
+                Name = user.Name,
+                Bio = user.Bio,
+                Link = user.Link,
+                Gender = user.Gender ?? string.Empty,
+                ProfilePictureName = user.ProfilePictureName,
+                ProfilePictureUrl = user.ProfilePictureUrl,
+                ContactNumber = user.ContactNumber,
+                IsPrivate = user.IsPrivate,
+                IsVerified = user.IsVerified,
+                IsFollower = await _dbcontext.Requests.AnyAsync(r => r.FromUserId == user.UserId && r.ToUserId == logInUserId && r.IsAccepted == true && r.IsDeleted == false),
+                IsFollowing = await _dbcontext.Requests.AnyAsync(r => r.FromUserId == logInUserId && r.ToUserId == user.UserId && r.IsAccepted == true && r.IsDeleted == false),
+                IsRequest = await _dbcontext.Requests.AnyAsync(r => r.FromUserId == logInUserId && r.ToUserId == user.UserId && r.IsAccepted == false && r.IsDeleted == false),
+            };
+
             return userDTO;
         }
+
 
         /// <summary>
         /// Accepts or cancels a request asynchronously.
@@ -327,6 +388,15 @@ namespace InstagramWebAPI.BLL
                 request.IsAccepted = false;
                 request.IsDeleted = true;
             }
+            await _helper.CreateNotification(new NotificationDTO()
+            {
+                FromUserId = request.FromUserId,
+                ToUserId = request.ToUserId,
+                NotificationType = NotificationType.FollowRequestAccepted,
+                NotificationTypeId = NotificationTypeId.RequestId,
+                Id = requestId,
+                IsDeleted = request.IsDeleted,
+            });
             _dbcontext.Requests.Update(request);
             await _dbcontext.SaveChangesAsync();
             return true;

@@ -39,7 +39,7 @@ namespace InstagramWebAPI.Controllers
         /// <returns>An <see cref="ActionResult{T}"/> representing the result of the profile photo upload operation.</returns>
         [HttpPost("UploadProfilePhoto")]
         [Authorize]
-        public async Task<ActionResult<ResponseModel>> UploadProfilePhotoAsync(IFormFile? ProfilePhoto)
+        public async Task<ActionResult> UploadProfilePhotoAsync(IFormFile? ProfilePhoto)
         {
             try
             {
@@ -53,7 +53,7 @@ namespace InstagramWebAPI.Controllers
                 ProfilePhotoResponseDTO profilePhotoDTO = await _userService.UploadProfilePhotoAsync(ProfilePhoto, userId);
                 if (profilePhotoDTO == null)
                 {
-                    return BadRequest(_responseHandler.BadRequest(CustomErrorCode.IsUpload, CustomErrorMessage.UploadError, ProfilePhoto));
+                    return BadRequest(_responseHandler.BadRequest(CustomErrorCode.IsUpload, CustomErrorMessage.UploadError, ""));
                 }
                 return Ok(_responseHandler.Success(CustomErrorMessage.UploadPhoto, profilePhotoDTO));
             }
@@ -65,7 +65,7 @@ namespace InstagramWebAPI.Controllers
                 }
                 else
                 {
-                    return BadRequest(_responseHandler.BadRequest(CustomErrorCode.IsUpload, ex.Message, ProfilePhoto));
+                    return BadRequest(_responseHandler.BadRequest(CustomErrorCode.IsUpload, ex.Message, ""));
                 }
             }
         }
@@ -77,7 +77,7 @@ namespace InstagramWebAPI.Controllers
         /// <returns>An <see cref="ActionResult{T}"/> representing the result of the profile update operation.</returns>
         [Authorize]
         [HttpPost("UpdateProfile")]
-        public async Task<ActionResult<ResponseModel>> UpdateProfileAsync(UserDTO model)
+        public async Task<ActionResult> UpdateProfileAsync(UserDTO model)
         {
             try
             {
@@ -91,7 +91,7 @@ namespace InstagramWebAPI.Controllers
                 UserDTO? user = await _authService.UpSertUserAsync(model);
                 if (user == null)
                 {
-                    return BadRequest(_responseHandler.BadRequest(CustomErrorCode.IsUpdate, CustomErrorMessage.UpdateProfile, model));
+                    return BadRequest(_responseHandler.BadRequest(CustomErrorCode.IsUpdate, CustomErrorMessage.UpdateProfile, ""));
                 }
                 return Ok(_responseHandler.Success(CustomErrorMessage.UpdateProfileSuccess, user));
             }
@@ -103,7 +103,7 @@ namespace InstagramWebAPI.Controllers
                 }
                 else
                 {
-                    return BadRequest(_responseHandler.BadRequest(CustomErrorCode.IsUpload, ex.Message, model));
+                    return BadRequest(_responseHandler.BadRequest(CustomErrorCode.IsUpload, ex.Message, ""));
                 }
             }
         }
@@ -115,20 +115,20 @@ namespace InstagramWebAPI.Controllers
         /// <returns>An <see cref="ActionResult{T}"/> representing the result of the follow request operation.</returns>
         [HttpPost("FollowRequest")]
         [Authorize]
-        public async Task<ActionResult<ResponseModel>> FollowRequestAsync(FollowRequestDTO model)
+        public async Task<ActionResult> FollowRequestAsync(FollowRequestDTO model)
         {
             try
             {
-                model.FromUserId = _helper.GetUserIdClaim();
-                List<ValidationError> errors = _validationService.ValidateFollowRequest(model);
+                long fromUserId = _helper.GetUserIdClaim();
+                List<ValidationError> errors = _validationService.ValidateFollowRequest(model,fromUserId);
                 if (errors.Any())
                 {
                     return BadRequest(_responseHandler.BadRequest(CustomErrorCode.IsValid, CustomErrorMessage.ValidationRequest, errors));
                 }
-                bool isFollow = await _userService.FollowRequestAsync(model);
+                bool isFollow = await _userService.FollowRequestAsync(model,fromUserId);
                 if (!isFollow)
                 {
-                    return BadRequest(_responseHandler.BadRequest(CustomErrorCode.IsRequest, CustomErrorMessage.RequestError, errors));
+                    return BadRequest(_responseHandler.BadRequest(CustomErrorCode.IsRequest, CustomErrorMessage.RequestError, ""));
                 }
                 return Ok(_responseHandler.Success(CustomErrorMessage.RequestSuccess, model));
             }
@@ -140,7 +140,7 @@ namespace InstagramWebAPI.Controllers
                 }
                 else
                 {
-                    return BadRequest(_responseHandler.BadRequest(CustomErrorCode.IsUpload, ex.Message, model));
+                    return BadRequest(_responseHandler.BadRequest(CustomErrorCode.IsUpload, ex.Message, ""));
                 }
             }
         }
@@ -152,7 +152,7 @@ namespace InstagramWebAPI.Controllers
         /// <returns>An <see cref="ActionResult{T}"/> representing the result of the operation, containing a pagination response of user data.</returns>
         [HttpPost("FollowerORFollowingListById")]
         [Authorize]
-        public async Task<ActionResult<ResponseModel>> GetFollowerORFollowingListByIdAsync([FromBody] RequestDTO<FollowerListRequestDTO> model)
+        public async Task<ActionResult> GetFollowerORFollowingListByIdAsync([FromBody] RequestDTO<FollowerListRequestDTO> model)
         {
             try
             {
@@ -164,7 +164,7 @@ namespace InstagramWebAPI.Controllers
                 PaginationResponceModel<UserDTO> data = await _userService.GetFollowerORFollowingListAsync(model);
                 if (data == null)
                 {
-                    return BadRequest(_responseHandler.BadRequest(CustomErrorCode.IsGetLIst, CustomErrorMessage.GetFollowerList, model));
+                    return BadRequest(_responseHandler.BadRequest(CustomErrorCode.IsGetLIst, CustomErrorMessage.GetFollowerList, ""));
                 }
                 return Ok(_responseHandler.Success(CustomErrorMessage.GetFollowerListSucces, data));
             }
@@ -176,7 +176,7 @@ namespace InstagramWebAPI.Controllers
                 }
                 else
                 {
-                    return BadRequest(_responseHandler.BadRequest(CustomErrorCode.IsGetLIst, ex.Message, model));
+                    return BadRequest(_responseHandler.BadRequest(CustomErrorCode.IsGetLIst, ex.Message, ""));
                 }
             }
         }
@@ -188,7 +188,7 @@ namespace InstagramWebAPI.Controllers
         /// <returns>An <see cref="ActionResult{T}"/> representing the result of the request list retrieval operation.</returns>
         [HttpPost("RequestListById")]
         [Authorize]
-        public async Task<ActionResult<ResponseModel>> GetRequestListByIdAsync([FromBody] RequestDTO<FollowRequestDTO> model)
+        public async Task<ActionResult> GetRequestListByIdAsync([FromBody] RequestDTO<FollowRequestDTO> model)
         {
             try
             {
@@ -200,7 +200,7 @@ namespace InstagramWebAPI.Controllers
                 PaginationResponceModel<RequestListResponseDTO> data = await _userService.GetRequestListByIdAsync(model);
                 if (data == null)
                 {
-                    return BadRequest(_responseHandler.BadRequest(CustomErrorCode.IsGetLIst, CustomErrorMessage.GetFollowerList, model));
+                    return BadRequest(_responseHandler.BadRequest(CustomErrorCode.IsGetLIst, CustomErrorMessage.GetFollowerList, ""));
                 }
                 return Ok(_responseHandler.Success(CustomErrorMessage.GetFollowerListSucces, data));
             }
@@ -212,7 +212,37 @@ namespace InstagramWebAPI.Controllers
                 }
                 else
                 {
-                    return BadRequest(_responseHandler.BadRequest(CustomErrorCode.IsGetLIst, ex.Message, model));
+                    return BadRequest(_responseHandler.BadRequest(CustomErrorCode.IsGetLIst, ex.Message, ""));
+                }
+            }
+        }
+        [HttpPost("GetUserListByUserName")]
+        [Authorize]
+        public async Task<ActionResult> GetUserListByUserNameAsync([FromBody] RequestDTO<UserIdRequestDTO> model)
+        {
+            try
+            {
+                List<ValidationError> errors = _validationService.ValidateGetUserById(model.Model.UserId);
+                if (errors.Any())
+                {
+                    return BadRequest(_responseHandler.BadRequest(CustomErrorCode.IsValid, CustomErrorMessage.ValidationList, errors));
+                }
+                PaginationResponceModel<UserDTO> data = await _userService.GetUserListByUserNameAsync(model);
+                if (data == null)
+                {
+                    return BadRequest(_responseHandler.BadRequest(CustomErrorCode.IsGetLIst, CustomErrorMessage.GetFollowerList, ""));
+                }
+                return Ok(_responseHandler.Success(CustomErrorMessage.GetFollowerListSucces, data));
+            }
+            catch (Exception ex)
+            {
+                if (ex is ValidationException vx)
+                {
+                    return BadRequest(_responseHandler.BadRequest(vx.ErrorCode, vx.Message, vx.Errors));
+                }
+                else
+                {
+                    return BadRequest(_responseHandler.BadRequest(CustomErrorCode.IsGetLIst, ex.Message, ""));
                 }
             }
         }
@@ -224,7 +254,7 @@ namespace InstagramWebAPI.Controllers
         /// <returns>An <see cref="ActionResult{T}"/> representing the result of the user retrieval operation.</returns>
         [HttpGet("GetUserById")]
         [Authorize]
-        public async Task<ActionResult<ResponseModel>> GetUserById([FromQuery] long userId)
+        public async Task<ActionResult> GetUserById(long userId)
         {
             try
             {
@@ -236,7 +266,7 @@ namespace InstagramWebAPI.Controllers
                 UserDTO data = await _userService.GetUserByIdAsync(userId);
                 if (data == null)
                 {
-                    return BadRequest(_responseHandler.BadRequest(CustomErrorCode.IsNotExits, CustomErrorMessage.ExitsUser, userId));
+                    return BadRequest(_responseHandler.BadRequest(CustomErrorCode.IsNotExits, CustomErrorMessage.ExitsUser, ""));
                 }
                 return Ok(_responseHandler.Success(CustomErrorMessage.GetUser, data));
             }
@@ -248,7 +278,7 @@ namespace InstagramWebAPI.Controllers
                 }
                 else
                 {
-                    return BadRequest(_responseHandler.BadRequest(CustomErrorCode.IsGetLIst, ex.Message, userId));
+                    return BadRequest(_responseHandler.BadRequest(CustomErrorCode.IsGetLIst, ex.Message, ""));
                 }
             }
         }
@@ -261,7 +291,7 @@ namespace InstagramWebAPI.Controllers
         /// <returns>An <see cref="ActionResult{T}"/> representing the result of the request accept or cancel operation.</returns>
         [HttpPost("RequestAcceptOrCancel")]
         [Authorize]
-        public async Task<ActionResult<ResponseModel>> RequestAcceptOrCancelAsync([FromQuery] long requestId, string accpetType)
+        public async Task<ActionResult> RequestAcceptOrCancelAsync([FromQuery] long requestId, string accpetType)
         {
             try
             {
@@ -273,7 +303,7 @@ namespace InstagramWebAPI.Controllers
                 bool isAccept = await _userService.RequestAcceptOrCancelAsync(requestId, accpetType);
                 if (!isAccept)
                 {
-                    return BadRequest(_responseHandler.BadRequest(CustomErrorCode.IsValid, CustomErrorMessage.ValidationReqType, errors));
+                    return BadRequest(_responseHandler.BadRequest(CustomErrorCode.IsValid, CustomErrorMessage.ValidationReqType, ""));
                 }
                 return Ok(_responseHandler.Success(CustomErrorMessage.AccpteUpdate, requestId));
             }
@@ -285,7 +315,7 @@ namespace InstagramWebAPI.Controllers
                 }
                 else
                 {
-                    return BadRequest(_responseHandler.BadRequest(CustomErrorCode.IsGetLIst, ex.Message, requestId));
+                    return BadRequest(_responseHandler.BadRequest(CustomErrorCode.IsGetLIst, ex.Message, ""));
                 }
             }
         }
@@ -295,9 +325,9 @@ namespace InstagramWebAPI.Controllers
         /// </summary>
         /// <param name="userId">The ID of the user to retrieve follower and following counts.</param>
         /// <returns>An <see cref="ActionResult{T}"/> representing the result of retrieving follower and following counts.</returns>
-        [HttpGet("FollowerAndFollowingAndPostCountById")]
+        [HttpGet("FollowerAndFollowingAndPostCountById/{userId}")]
         [Authorize]
-        public async Task<ActionResult<ResponseModel>> GetFollowerAndFollowingAndPostCountByIdAsync([FromQuery] long userId)
+        public async Task<ActionResult> GetFollowerAndFollowingAndPostCountByIdAsync(long userId)
         {
             try
             {
@@ -309,7 +339,7 @@ namespace InstagramWebAPI.Controllers
                 CountResponseDTO count = await _userService.GetFollowerAndFollowingCountByIdAsync(userId);
                 if (count == null)
                 {
-                    return BadRequest(_responseHandler.BadRequest(CustomErrorCode.IsCount, CustomErrorMessage.CountError, userId));
+                    return BadRequest(_responseHandler.BadRequest(CustomErrorCode.IsCount, CustomErrorMessage.CountError, ""));
                 }
 
                 return Ok(_responseHandler.Success(CustomErrorMessage.CountSucces, count));
@@ -322,7 +352,7 @@ namespace InstagramWebAPI.Controllers
                 }
                 else
                 {
-                    return BadRequest(_responseHandler.BadRequest(CustomErrorCode.IsGetLIst, ex.Message, userId));
+                    return BadRequest(_responseHandler.BadRequest(CustomErrorCode.IsGetLIst, ex.Message, ""));
                 }
             }
         }
@@ -337,7 +367,7 @@ namespace InstagramWebAPI.Controllers
         /// </returns>
         [HttpPost("MutualFriendAsync")]
         [Authorize]
-        public async Task<ActionResult<ResponseModel>> MutualFriendAsync([FromBody] RequestDTO<UserIdRequestDTO> model)
+        public async Task<ActionResult> MutualFriendAsync([FromBody] RequestDTO<UserIdRequestDTO> model)
         {
             try
             {
@@ -349,7 +379,7 @@ namespace InstagramWebAPI.Controllers
                 PaginationResponceModel<MutualFriendDTO> data = await _userService.GetMutualFriendsWithDetailsAsync(model);
                 if (data == null)
                 {
-                    return BadRequest(_responseHandler.BadRequest(CustomErrorCode.IsMutual, CustomErrorMessage.MutualError, model));
+                    return BadRequest(_responseHandler.BadRequest(CustomErrorCode.IsMutual, CustomErrorMessage.MutualError, ""));
                 }
 
                 return Ok(_responseHandler.Success(CustomErrorMessage.mutualSucces, data));
@@ -362,7 +392,7 @@ namespace InstagramWebAPI.Controllers
                 }
                 else
                 {
-                    return BadRequest(_responseHandler.BadRequest(CustomErrorCode.IsMutual, ex.Message, model));
+                    return BadRequest(_responseHandler.BadRequest(CustomErrorCode.IsMutual, ex.Message, ""));
                 }
             }
         }

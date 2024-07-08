@@ -86,6 +86,7 @@ namespace InstagramWebAPI.BLL
 
             await _dbcontext.Stories.AddAsync(story);
             await _dbcontext.SaveChangesAsync();
+            
 
             StoryResponseListDTO storyResponseDTO = await GetStoryById(UserId, story.StoryId);
             return storyResponseDTO;

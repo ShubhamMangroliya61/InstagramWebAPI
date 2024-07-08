@@ -42,6 +42,9 @@ public partial class Story
     public DateTime? ModifiedDate { get; set; }
 
     [InverseProperty("Story")]
+    public virtual ICollection<Notification> Notifications { get; set; } = new List<Notification>();
+
+    [InverseProperty("Story")]
     public virtual ICollection<StoryHighlight> StoryHighlights { get; set; } = new List<StoryHighlight>();
 
     [ForeignKey("StoryTypeId")]

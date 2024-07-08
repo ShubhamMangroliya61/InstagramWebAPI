@@ -16,6 +16,9 @@
         public bool IsVerified { get; set; }= false;
         public bool IsPrivate { get; set; }= false;
         public bool IsDeleted { get; set; } = false;
+        public bool IsFollower { get; set; } = false;
+        public bool IsFollowing { get; set; } = false;
+        public bool IsRequest { get; set; } = false;
         public string? Password { get; set; }
        
     }
