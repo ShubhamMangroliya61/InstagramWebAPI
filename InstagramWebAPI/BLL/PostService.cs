@@ -178,19 +178,19 @@ namespace InstagramWebAPI.BLL
                     MediaURL = m.MediaUrl,
                     MediaName = m.MediaName
                 }).ToList(),
-                PostLikes = post.Likes.Select(l => new PostLike
+                PostLikes = post.Likes.Where(l => l.IsDeleted == false).Select(l => new PostLike
                 {
                     LikeId = l.LikeId,
                     UserId = l.UserId,
-                    Avtar = l.User.ProfilePictureUrl,
+                    Avtar = l.User.ProfilePictureName,
                     UserName = l.User.UserName
                 }).ToList(),
-                PostComments = post.Comments.Select(c => new PostComment
+                PostComments = post.Comments.Where(l => l.IsDeleted == false).Select(c => new PostComment
                 {
                     CommentId = c.CommentId,
                     UserId = c.UserId,
                     CommentText = c.CommentText,
-                    Avtar = c.User.ProfilePictureUrl,
+                    Avtar = c.User.ProfilePictureName,
                     UserName = c.User.UserName
                 }).ToList()
             };
@@ -232,7 +232,7 @@ namespace InstagramWebAPI.BLL
                         Avtar = l.User.ProfilePictureName,
                         UserName = l.User.UserName
                     }).ToList(),
-                    PostComments = post.Comments.Select(c => new PostComment
+                    PostComments = post.Comments.Where(l => l.IsDeleted == false).Select(c => new PostComment
                     {
                         CommentId = c.CommentId,
                         UserId = c.UserId,

@@ -146,7 +146,7 @@ namespace InstagramWebAPI.Controllers
         /// An asynchronous task that returns an <see cref="ActionResult{T}"/> where T is <see cref="ResponseModel"/>.
         /// If successful, returns an <see cref="ActionResult"/> with a success message indicating the post was deleted.
         /// </returns>
-        [HttpDelete("DeletePost")]
+        [HttpPost("DeletePost")]
         [Authorize]
         public async Task<ActionResult> DetelePostAsync(long postId)
         {

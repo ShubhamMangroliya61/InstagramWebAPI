@@ -6,6 +6,7 @@ using InstagramWebAPI.DTO;
 using InstagramWebAPI.Utils;
 using static InstagramWebAPI.Utils.Enum;
 using Microsoft.EntityFrameworkCore;
+using NotificationApp.Hubs;
 
 namespace InstagramWebAPI.Helpers
 {
@@ -13,10 +14,13 @@ namespace InstagramWebAPI.Helpers
     {
         private readonly IHttpContextAccessor _httpContextAccessor;
         private readonly ApplicationDbContext _dbcontext;
-        public Helper(IHttpContextAccessor httpContextAccessor, ApplicationDbContext db)
+        private readonly NotificationHub _notificationHub;
+
+        public Helper(IHttpContextAccessor httpContextAccessor, ApplicationDbContext db, NotificationHub notificationHub)
         {
             _httpContextAccessor = httpContextAccessor;
             _dbcontext = db;
+            _notificationHub = notificationHub;
         }
         public async Task<bool> EmailSender(string email, string subject, string htmlMessage)
         {
@@ -126,6 +130,15 @@ namespace InstagramWebAPI.Helpers
                 _dbcontext.Notifications.Add(notification);
             }
             await _dbcontext.SaveChangesAsync();
+
+            await _notificationHub.SendNotificationToUser((int)model.ToUserId, new
+            {
+                FromUserId = model.FromUserId,
+                ToUserId = model.ToUserId,
+                NotificationType = model.NotificationTypeId,
+                Id = model.Id,
+                CreatedDate = notification.CreatedDate
+            });
         }
     }
 }

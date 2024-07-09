@@ -11,6 +11,7 @@ using Microsoft.IdentityModel.Tokens;
 using Microsoft.OpenApi.Models;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Serialization;
+using NotificationApp.Hubs;
 using Serilog;
 using System.Text;
 
@@ -19,7 +20,7 @@ var builder = WebApplication.CreateBuilder(args);
 // Add services to the container.
 builder.Services.AddDbContext<ApplicationDbContext>(options =>
     options.UseSqlServer(builder.Configuration.GetConnectionString("DefaultConnection")));
-
+builder.Services.AddSignalR();
 builder.Services.AddScoped<IAuthService, AuthService>();
 builder.Services.AddScoped<IUserService, UserService>();
 builder.Services.AddScoped<IPostService, PostService>();
@@ -28,6 +29,7 @@ builder.Services.AddScoped<INotificationService ,NotificationService>();
 builder.Services.AddScoped<IValidationService, ValidationService>();
 builder.Services.AddScoped<ResponseHandler>();
 builder.Services.AddScoped<Helper>();
+builder.Services.AddScoped<NotificationHub>();
 builder.Services.AddScoped<IJWTService, JWTService>();
 builder.Services.AddSingleton<IHttpContextAccessor, HttpContextAccessor>();
 var key = builder.Configuration.GetValue<string>("Jwt:Key");
@@ -108,6 +110,7 @@ app.UseAuthentication();
 app.UseAuthorization();
 
 app.MapControllers();
+app.MapHub<NotificationHub>("/notificationHub");
 
 
 try

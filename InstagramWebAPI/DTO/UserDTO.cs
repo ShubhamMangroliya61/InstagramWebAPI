@@ -20,6 +20,7 @@
         public bool IsFollowing { get; set; } = false;
         public bool IsRequest { get; set; } = false;
         public string? Password { get; set; }
-       
+
+        
     }
 }

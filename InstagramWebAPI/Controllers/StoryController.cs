@@ -74,7 +74,7 @@ namespace InstagramWebAPI.Controllers
         /// An asynchronous task that returns an <see cref="ActionResult{T}"/> where T is <see cref="ResponseModel"/>.
         /// If successful, returns an <see cref="ActionResult"/> with a success message indicating the story was deleted.
         /// </returns>
-        [HttpDelete("DeleteStory")]
+        [HttpPost("DeleteStory")]
         [Authorize]
         public async Task<ActionResult> DeteleStoryAsync(long storyId)
         {
@@ -323,7 +323,7 @@ namespace InstagramWebAPI.Controllers
             }
         }
 
-        [HttpDelete("DeteleHighLight")]
+        [HttpPost("DeteleHighLight")]
         [Authorize]
         public async Task<ActionResult> DeteleHighLightAsync([FromQuery] long highLightId)
         {
@@ -386,7 +386,7 @@ namespace InstagramWebAPI.Controllers
             }
         }
 
-        [HttpDelete("DeleteStoryHighLight")]
+        [HttpPost("DeleteStoryHighLight")]
         [Authorize]
         public async Task<ActionResult> DeleteStoryHighLightAsync([FromQuery] long storyHighLightId)
         {

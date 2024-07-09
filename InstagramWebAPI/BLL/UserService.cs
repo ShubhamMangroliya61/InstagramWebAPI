@@ -135,7 +135,7 @@ namespace InstagramWebAPI.BLL
                 else
                 {
                     obj.ModifiedDate = DateTime.Now;
-                    obj.IsAccepted = !data.IsAccepted;
+                    obj.IsAccepted = false;
                     obj.IsDeleted = !data.IsDeleted;
                 }
                await _dbcontext.SaveChangesAsync();
@@ -180,14 +180,25 @@ namespace InstagramWebAPI.BLL
         /// <returns>A pagination response model containing the list of users (followers or followings).</returns>
         public async Task<PaginationResponceModel<UserDTO>> GetFollowerORFollowingListAsync(RequestDTO<FollowerListRequestDTO> model)
         {
-            IQueryable<Request> query = model.Model.FollowerOrFollowing switch
+            IQueryable<UserDTO> Data = model.Model.FollowerOrFollowing switch
             {
-                "Follower" => _dbcontext.Requests.Include(m => m.ToUser).Where(m => m.ToUserId == model.Model.UserId && m.IsAccepted != false && m.IsDeleted != true),
-                "Following" => _dbcontext.Requests.Include(m => m.ToUser).Where(m => m.FromUserId == model.Model.UserId && m.IsAccepted != false && m.IsDeleted != true),
-                _ => throw new ArgumentException("Invalid FollowerOrFollowing value")
-            };
-
-            IQueryable<UserDTO> Data = query
+                "Follower" => _dbcontext.Requests.Include(m => m.FromUser).Where(m => m.ToUserId == model.Model.UserId && m.IsAccepted != false && m.IsDeleted != true)
+                .Select(m => new UserDTO
+                {
+                    UserId = m.FromUser.UserId,
+                    UserName = m.FromUser.UserName,
+                    Email = m.FromUser.Email,
+                    Name = m.FromUser.Name,
+                    Bio = m.FromUser.Bio,
+                    Link = m.FromUser.Link,
+                    Gender = m.FromUser.Gender ?? string.Empty,
+                    ProfilePictureName = m.FromUser.ProfilePictureName,
+                    ProfilePictureUrl = m.FromUser.ProfilePictureUrl,
+                    ContactNumber = m.FromUser.ContactNumber,
+                    IsPrivate = m.FromUser.IsPrivate,
+                    IsVerified = m.FromUser.IsVerified,
+                }),
+                "Following" => _dbcontext.Requests.Include(m => m.ToUser).Where(m => m.FromUserId == model.Model.UserId && m.IsAccepted != false && m.IsDeleted != true)
                 .Select(m => new UserDTO
                 {
                     UserId = m.ToUser.UserId,
@@ -202,7 +213,9 @@ namespace InstagramWebAPI.BLL
                     ContactNumber = m.ToUser.ContactNumber,
                     IsPrivate = m.ToUser.IsPrivate,
                     IsVerified = m.ToUser.IsVerified,
-                });
+                }),
+                _ => throw new ArgumentException("Invalid FollowerOrFollowing value")
+            };
 
             int totalRecords = await Data.CountAsync();
             int requiredPages = (int)Math.Ceiling((decimal)totalRecords / model.PageSize);
@@ -344,6 +357,7 @@ namespace InstagramWebAPI.BLL
                 Name = user.Name,
                 Bio = user.Bio,
                 Link = user.Link,
+                DateOfBirth= user.DateOfBirth.HasValue ? user.DateOfBirth.Value.ToString("yyyy-MM-dd") : string.Empty,
                 Gender = user.Gender ?? string.Empty,
                 ProfilePictureName = user.ProfilePictureName,
                 ProfilePictureUrl = user.ProfilePictureUrl,
