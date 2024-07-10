@@ -39,11 +39,12 @@ namespace InstagramWebAPI.BLL
                 user.Bio = model.Bio;
                 user.Link = model.Link;
                 user.Gender = model.Gender;
-
+              
                 if (user.UserId > 0)
                 {
                     user.DateOfBirth = DateTime.TryParseExact(model.DateOfBirth, "yyyy-MM-dd", CultureInfo.InvariantCulture, DateTimeStyles.None, out DateTime dob) ? dob : DateTime.MinValue;
                     user.ModifiedDate = DateTime.Now;
+                    user.IsPrivate= model.IsPrivate;
                     _dbcontext.Users.Update(user);
                 }
                 else

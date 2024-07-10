@@ -25,6 +25,7 @@ builder.Services.AddScoped<IAuthService, AuthService>();
 builder.Services.AddScoped<IUserService, UserService>();
 builder.Services.AddScoped<IPostService, PostService>();
 builder.Services.AddScoped<IStoryService ,StoryService>();
+builder.Services.AddScoped<IUserid ,Userid>();
 builder.Services.AddScoped<INotificationService ,NotificationService>();
 builder.Services.AddScoped<IValidationService, ValidationService>();
 builder.Services.AddScoped<ResponseHandler>();
@@ -42,6 +43,7 @@ builder.Services.AddCors(options =>
             builder.AllowAnyOrigin()
                 .AllowAnyMethod()
                 .AllowAnyHeader();
+                //.AllowCredentials();
         });
 });
 

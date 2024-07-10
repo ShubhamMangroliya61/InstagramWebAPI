@@ -11,6 +11,7 @@ namespace InstagramWebAPI.DTO
         public long Id { get; set; }
         public NotificationTypeId NotificationTypeId { get; set; }
         public bool IsDeleted { get; set; }
+        public long? PostId { get; set; }
       
     }
 }

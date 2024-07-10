@@ -135,8 +135,12 @@ namespace InstagramWebAPI.BLL
                 else
                 {
                     obj.ModifiedDate = DateTime.Now;
-                    obj.IsAccepted = false;
+                   
                     obj.IsDeleted = !data.IsDeleted;
+                    if(obj.IsDeleted == true)
+                    {
+                        obj.IsAccepted = false;
+                    }
                 }
                await _dbcontext.SaveChangesAsync();
 

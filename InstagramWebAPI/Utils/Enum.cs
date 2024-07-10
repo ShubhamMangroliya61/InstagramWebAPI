@@ -14,7 +14,6 @@
         }
         public enum NotificationTypeId
         {
-            PostId,
             LikeId,
             CommentId,
             RequestId,

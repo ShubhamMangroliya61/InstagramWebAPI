@@ -1119,5 +1119,39 @@ namespace InstagramWebAPI.BLL
             return errors;
         }
 
+        public List<ValidationError> ValidateNotificationIds(List<long> notificationIds)
+        {
+            if (notificationIds == null || !notificationIds.Any())
+            {
+                errors.Add(new ValidationError
+                {
+                    message = CustomErrorMessage.NullNotificationId,
+                    reference = "notificationIds",
+                    parameter = "notificationIds",
+                    errorCode = CustomErrorCode.NullNotificationId
+                });
+                return errors;
+            }
+
+            foreach (var id in notificationIds)
+            {
+                bool exists = _dbcontext.Notifications.Any(n => n.NotificationId == id);
+                if (!exists)
+                {
+                    errors.Add(new ValidationError
+                    {
+                        message = CustomErrorMessage.ExitsNotification,
+                        reference = "notificationId",
+                        parameter = "notificationId",
+                        errorCode = CustomErrorCode.ExitsNotification
+                    });
+                    return errors;
+                }
+            }
+
+            return errors;
+        }
+
+
     }
 }

@@ -319,15 +319,20 @@ namespace InstagramWebAPI.BLL
             }
             await _dbcontext.SaveChangesAsync();
 
-            await _helper.CreateNotification(new NotificationDTO()
+            long toUserId = _dbcontext.Posts.FirstOrDefaultAsync(m => m.PostId == model.PostId && !m.IsDeleted).Result?.UserId ?? 0;
+            if (toUserId != model.UserId)
             {
-                FromUserId = model.UserId,
-                ToUserId = _dbcontext.Posts.FirstOrDefaultAsync(m=>m.PostId == model.PostId && !m.IsDeleted).Result?.UserId??0,
-                NotificationType = NotificationType.PostLiked,
-                NotificationTypeId = NotificationTypeId.LikeId,
-                Id = obj.LikeId,
-                IsDeleted = obj.IsDeleted,
-            });
+                await _helper.CreateNotification(new NotificationDTO()
+                {
+                    FromUserId = model.UserId,
+                    ToUserId = toUserId,
+                    NotificationType = NotificationType.PostLiked,
+                    NotificationTypeId = NotificationTypeId.LikeId,
+                    Id = obj.LikeId,
+                    IsDeleted = obj.IsDeleted,
+                    PostId = model.PostId,
+                });
+            }
             return true;
         }
 
@@ -352,15 +357,20 @@ namespace InstagramWebAPI.BLL
             await _dbcontext.Comments.AddAsync(comment);
             await _dbcontext.SaveChangesAsync();
 
-            await _helper.CreateNotification(new NotificationDTO()
+            long toUserId = _dbcontext.Posts.FirstOrDefaultAsync(m => m.PostId == model.PostId && !m.IsDeleted).Result?.UserId ?? 0;
+            if (toUserId != model.UserId)
             {
-                FromUserId = model.UserId,
-                ToUserId = _dbcontext.Posts.FirstOrDefaultAsync(m => m.PostId == model.PostId && !m.IsDeleted).Result?.UserId ?? 0,
-                NotificationType = NotificationType.PostCommented,
-                NotificationTypeId = NotificationTypeId.CommentId,
-                Id = comment.CommentId,
-                IsDeleted = comment.IsDeleted,
-            });
+                await _helper.CreateNotification(new NotificationDTO()
+                {
+                    FromUserId = model.UserId,
+                    ToUserId = toUserId,
+                    NotificationType = NotificationType.PostCommented,
+                    NotificationTypeId = NotificationTypeId.CommentId,
+                    Id = comment.CommentId,
+                    IsDeleted = comment.IsDeleted,
+                    PostId = model.PostId,
+                });
+            }
             return true;
         }
 
@@ -392,6 +402,7 @@ namespace InstagramWebAPI.BLL
                     NotificationTypeId = NotificationTypeId.CommentId,
                     Id = comment.CommentId,
                     IsDeleted = comment.IsDeleted,
+                    PostId = comment.PostId,
                 });
                 return true;
             }

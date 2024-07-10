@@ -35,6 +35,7 @@
         public const string ExitsUser = "User Not Exits";
         public const string ExitsPOstComment = "comment Not Exits";
         public const string ExitsPost = "Post Not Exits";
+        public const string ExitsNotification = "Notification Not Exits";
         public const string ExitHighlight = "HighLight Not Exits";
         public const string ExitStoryHighlight = "StoryHighLight Not Exits";
         public const string ExitsStory = "Story Not Exits";
@@ -62,6 +63,7 @@
         public const string ValidationProfile = "Validation failed for Profile data.";
         public const string ValidationHighLight = "Validation failed for HighLight data.";
         public const string ValidationPost = "Validation failed for Post data.";
+        public const string ValidationNotification = "Validation failed for Notification data.";
         public const string ValidationStory = "Validation failed for Story data.";
         public const string UploadPhoto = "Profile Upload Successfully";
         public const string UploadStory = "Story Upload Successfully";
@@ -106,6 +108,7 @@
         public const string ValidationReqType = "Validation failed for Request  data.";
         public const string AccpteUpdate = "Update Successfully";
         public const string PostDelete = "Post Delete Successfully";
+        public const string NotificationDelete = "Notification Delete Successfully";
         public const string StoryDelete = "Story Delete Successfully";
         public const string HighlightDelete = "HighLight Delete Successfully";
         public const string StoryHighlightAdd = "Story HighLight Add Successfully";
@@ -116,6 +119,7 @@
         public const string CountSucces = "Get Count Successfully";
         public const string mutualSucces = "Mutual Friend List Get Successfully";
         public const string PostDeleteError = "Error occurred while Delete Post.";
+        public const string NotificationDeleteError = "Error occurred while Delete Notification.";
         public const string StoryDeleteError = "Error occurred while Delete Story.";
         public const string HighlightDeleteError = "Error occurred while Delete HighLight.";
         public const string StoryHighlightDeleteError = "Error occurred while Delete Story HighLight.";
@@ -126,7 +130,7 @@
         public const string GetSuccess = "retrieved successfully";
         public const string FileSizeLimitExceeded = "Please Upload Photo size less than 1 MB";
         public const string VideoFileSizeLimitExceeded = "Please Upload Video size less than 3 MB";
-
+        public const string NullNotificationId = "NotificationId is required";
 
 
 

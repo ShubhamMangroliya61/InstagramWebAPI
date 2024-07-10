@@ -37,6 +37,7 @@
         public const string IsNotStoryHighlight = "STORYHIGHLIGHT_NOT_EXITS";
         public const string IsNotStory = "STORY_NOT_EXITS";
         public const string IsNotRequest = "REQUEST_NOT_EXITS";
+        public const string ExitsNotification = "NOTIFICATION_NOT_EXITS";
         public const string MailNotSend = "MAIL_NOT_SEND";
         public const string IsReset = "RESET_ERROR";
         public const string IsPOst = "CREATE_POST_ERROR";
@@ -71,6 +72,7 @@
         public const string InvalidPostType = "INVALID_Post_TYPE";
         public const string IsGetLIst = "GET_LIST_ERROR";
         public const string IsPostDelete = "POST_DELETE_ERROR";
+        public const string IsNotificationDelete = "NOTIFICATION_DELETE_ERROR";
         public const string IsStoryDelete = "STORY_DELETE_ERROR";
         public const string IsPostLIke = "LIKE_ERROR";
         public const string IsPostComment = "COMMENT_ERROR";
@@ -80,6 +82,7 @@
         public const string NullStoryHighLightId = "NULL_STORYHIGHLIGHTID";
         public const string NullHighLightName = "NULL_HIGHLIGHTNAME";
         public const string NullStoryId = "NULL_STORYID";
+        public const string NullNotificationId = "NULL_NOTIFICATIONID";
         public const string FileSizeLimitExceeded = "INVALID__SIZE";
 
 

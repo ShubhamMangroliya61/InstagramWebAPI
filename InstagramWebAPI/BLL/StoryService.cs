@@ -8,6 +8,7 @@ using InstagramWebAPI.Utils;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata.Internal;
 using System.Net;
+using static InstagramWebAPI.Utils.Enum;
 using static Microsoft.EntityFrameworkCore.DbLoggerCategory;
 using static System.Runtime.InteropServices.JavaScript.JSType;
 
@@ -181,56 +182,61 @@ namespace InstagramWebAPI.BLL
         }
         public async Task<PaginationResponceModel<StoryResponseListDTO>> GetStoryListByIdAsync(PaginationRequestDTO model)
         {
-            long userId = _helper.GetUserIdClaim();  // Ensure this retrieves the current user's ID correctly
+            long userId = _helper.GetUserIdClaim();
             DateTime cutoffDate = DateTime.UtcNow.AddDays(-1);
+
             // Querying stories for the user
-            IQueryable<StoryResponseListDTO> stories = _dbcontext.Stories
-                .Include(m => m.User)
-                .Include(m => m.StoryViews)
-                .Where(m => m.UserId == userId && m.IsDeleted == false && m.CreatedDate >= cutoffDate)
-                .Select(story => new StoryResponseListDTO
-                {
-                    UserId = story.UserId,
-                    UserName = story.User.UserName,
-                    ProfilePictureName = story.User.ProfilePictureName,
-                    Stories = story.StoryViews.Select(view => new StoryList
-                    {
-                        StoryId = story.StoryId,
-                        StoryUrl = story.StoryUrl,
-                        StoryName = story.StoryName,
-                        Caption = story.Caption,
-                        StoryType = story.StoryTypeId == 1 ? "Image" : "Video",
-                        IsSeen = view.StoryViewUserId == userId,
-                        CreatedDate = story.CreatedDate,
-                        StoryViewList = story.StoryViews.Select(sv => new StoryViewByUserList
-                        {
-                            UserId = sv.Story.UserId,
-                            UserName = sv.Story.User.UserName,
-                            ProfilePictureName = sv.Story.User.ProfilePictureName,
-                            IsLike = sv.IsLike
-                        }).ToList()
-                    }).ToList()
-                });
+            IQueryable<Story> storiesList =_dbcontext.Stories
+                .Include(s => s.User)
+                .Include(s => s.StoryViews)
+                .Where(s => s.UserId == userId && !s.IsDeleted && s.CreatedDate >= cutoffDate)
+                .OrderByDescending(s => s.CreatedDate);
+              
+            int totalRecords =await storiesList.CountAsync();
 
-            int totalRecords = await stories.CountAsync();
-            int requiredPages = (int)Math.Ceiling((decimal)totalRecords / model.PageSize);
-
-            // Paginate the data
-            List<StoryResponseListDTO> records = await stories
-            .Skip((model.PageNumber - 1) * model.PageSize)
+            List<Story> stories =await storiesList.Skip((model.PageNumber - 1) * model.PageSize)
                 .Take(model.PageSize)
                 .ToListAsync();
 
-            return new PaginationResponceModel<StoryResponseListDTO>
+            List<StoryList> storyListData = stories.Select(story => new StoryList
+            {
+                StoryId = story.StoryId,
+                StoryUrl = story.StoryUrl,
+                StoryName = story.StoryName,
+                Caption = story.Caption,
+                StoryType = story.StoryTypeId == 1 ? "Image" : "Video",
+                CreatedDate = story.CreatedDate,
+                IsSeen = story.StoryViews.Any(view => view.StoryViewUserId == userId),
+                StoryViewList = story.StoryViews.Select(view => new StoryViewByUserList
+                {
+                    UserId = view.Story.UserId,
+                    UserName = view.Story.User.UserName,
+                    ProfilePictureName = view.Story.User.ProfilePictureName,
+                    IsLike = view.IsLike
+                }).ToList()
+            }).ToList();
+
+            StoryResponseListDTO data = new ()
+            {
+                UserId = userId,
+                UserName = stories.FirstOrDefault()?.User.UserName,
+                ProfilePictureName = stories.FirstOrDefault()?.User.ProfilePictureName,
+                Stories = storyListData
+            };
+
+            var requiredPages = (int)Math.Ceiling((decimal)totalRecords / model.PageSize);
+
+            var paginationResponse = new PaginationResponceModel<StoryResponseListDTO>
             {
                 Totalrecord = totalRecords,
                 PageSize = model.PageSize,
                 PageNumber = model.PageNumber,
                 RequirdPage = requiredPages,
-                Record = records,
+                Record = new List<StoryResponseListDTO> { data }
             };
-        }
 
+            return paginationResponse;
+        }
 
         /// <summary>
         /// Retrieves a paginated list of stories for a specified user ID asynchronously.
@@ -323,35 +329,37 @@ namespace InstagramWebAPI.BLL
         {
             long userId = _helper.GetUserIdClaim();
             StoryView? story = await _dbcontext.StoryViews.FirstOrDefaultAsync(m => m.StoryId == storyId && m.StoryViewUserId == userId);
+            StoryView obj = story ?? new();
+
+            obj.StoryId = storyId;
+            obj.StoryViewUserId = userId;
+            obj.IsLike = isLike;
 
             if (story != null)
             {
-                if (isLike != story.IsLike)
-                {
-                    story.IsLike = isLike;
-                    _dbcontext.StoryViews.Update(story);
-                    await _dbcontext.SaveChangesAsync();
-                }
-                return true;
+                _dbcontext.StoryViews.Update(story);
             }
             else
             {
-                if (isLike)
-                {
-                    StoryView storyView = new()
-                    {
-                        StoryId = storyId,
-                        StoryViewUserId = userId,
-                        CreatedDate = DateTime.Now,
-                        IsLike = isLike,
-                    };
-
-                    await _dbcontext.StoryViews.AddAsync(storyView);
-                    await _dbcontext.SaveChangesAsync();
-                    return true;
-                }
-                return false;
+                obj.CreatedDate = DateTime.Now;
+                await _dbcontext.StoryViews.AddAsync(obj);
             }
+            await _dbcontext.SaveChangesAsync();
+
+            long toUserId = _dbcontext.Stories.FirstOrDefaultAsync(m => m.StoryId == storyId && m.IsDeleted == false).Result?.UserId ?? 0;
+            if (toUserId != userId)
+            {
+                await _helper.CreateNotification(new NotificationDTO()
+                {
+                    FromUserId = userId,
+                    ToUserId = toUserId,
+                    NotificationType = NotificationType.StoryLiked,
+                    NotificationTypeId = NotificationTypeId.StoryId,
+                    Id = obj.StoryId,
+                    IsDeleted = (bool)obj.IsLike,
+                });
+            }
+            return true;
         }
 
         public async Task<HighlightDTO> UpsertHighlightAsync(HighLightRequestDTO model)
