@@ -25,7 +25,6 @@ builder.Services.AddScoped<IAuthService, AuthService>();
 builder.Services.AddScoped<IUserService, UserService>();
 builder.Services.AddScoped<IPostService, PostService>();
 builder.Services.AddScoped<IStoryService ,StoryService>();
-builder.Services.AddScoped<IUserid ,Userid>();
 builder.Services.AddScoped<INotificationService ,NotificationService>();
 builder.Services.AddScoped<IValidationService, ValidationService>();
 builder.Services.AddScoped<ResponseHandler>();
@@ -58,6 +57,24 @@ builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
             IssuerSigningKey = new SymmetricSecurityKey(Encoding.ASCII.GetBytes(key ?? string.Empty)),
             ValidateIssuer = false,
             ValidateAudience = false
+        };
+
+        options.Events = new JwtBearerEvents
+        {
+            OnMessageReceived = context =>
+            {
+                var accessToken = context.Request.Query["access_token"];
+
+                // If the request is for our hub...
+                var path = context.HttpContext.Request.Path;
+                if (!string.IsNullOrEmpty(accessToken) &&
+                    (path.StartsWithSegments("/notificationHub")))
+                {
+                    // Read the token out of the query string
+                    context.Token = accessToken;
+                }
+                return Task.CompletedTask;
+            }
         };
     });
 

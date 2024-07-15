@@ -105,6 +105,15 @@ namespace InstagramWebAPI.Controllers
             }
         }
 
+        /// <summary>
+        /// Retrieves a paginated list of stories for the logged-in user.
+        /// </summary>
+        /// <param name="model">Pagination parameters including page number and page size.</param>
+        /// <returns>
+        /// An ActionResult representing the result of the operation.
+        /// If successful, returns HTTP 200 (OK) with a pagination response containing the story list.
+        /// If validation fails or an error occurs, returns HTTP 400 (Bad Request) with an error message.
+        /// </returns>
         [HttpPost("GetStoryListById")]
         [Authorize]
         public async Task<ActionResult> GetStoryListByIdAsync([FromBody] PaginationRequestDTO model)
@@ -291,6 +300,15 @@ namespace InstagramWebAPI.Controllers
             }
         }
 
+        /// <summary>
+        /// Creates or updates a highlight for the logged-in user.
+        /// </summary>
+        /// <param name="model">Form data containing the highlight details.</param>
+        /// <returns>
+        /// An ActionResult representing the result of the operation.
+        /// If successful, returns HTTP 200 (OK) with the created or updated highlight details.
+        /// If validation fails or an error occurs, returns HTTP 400 (Bad Request) with an error message.
+        /// </returns>
         [HttpPost("UpsertHighlight")]
         [Authorize]
         public async Task<ActionResult> UpsertHighlightAsync([FromForm] HighLightRequestDTO model)
@@ -323,6 +341,15 @@ namespace InstagramWebAPI.Controllers
             }
         }
 
+        /// <summary>
+        /// Deletes a highlight identified by its ID.
+        /// </summary>
+        /// <param name="highLightId">The ID of the highlight to delete.</param>
+        /// <returns>
+        /// An ActionResult representing the result of the operation.
+        /// If successful, returns HTTP 200 (OK) with the ID of the deleted highlight.
+        /// If validation fails or an error occurs, returns HTTP 400 (Bad Request) with an error message.
+        /// </returns>
         [HttpPost("DeteleHighLight")]
         [Authorize]
         public async Task<ActionResult> DeteleHighLightAsync([FromQuery] long highLightId)
@@ -354,6 +381,16 @@ namespace InstagramWebAPI.Controllers
             }
         }
 
+        /// <summary>
+        /// Adds a story to a highlight identified by their IDs.
+        /// </summary>
+        /// <param name="highLightId">The ID of the highlight to which the story will be added.</param>
+        /// <param name="storyId">The ID of the story to add to the highlight.</param>
+        /// <returns>
+        /// An ActionResult representing the result of the operation.
+        /// If successful, returns HTTP 200 (OK) with the ID of the updated highlight.
+        /// If validation fails or an error occurs, returns HTTP 400 (Bad Request) with an error message.
+        /// </returns>
         [HttpPost("AddStoryHighLight")]
         [Authorize]
         public async Task<ActionResult> AddStoryHighLightAsync([FromQuery] long highLightId,long storyId)
@@ -386,6 +423,15 @@ namespace InstagramWebAPI.Controllers
             }
         }
 
+        /// <summary>
+        /// Deletes a story highlight by its ID.
+        /// </summary>
+        /// <param name="storyHighLightId">The ID of the story highlight to delete.</param>
+        /// <returns>
+        /// An ActionResult representing the result of the operation.
+        /// If successful, returns HTTP 200 (OK) with the ID of the deleted story highlight.
+        /// If validation fails or an error occurs, returns HTTP 400 (Bad Request) with an error message.
+        /// </returns>
         [HttpPost("DeleteStoryHighLight")]
         [Authorize]
         public async Task<ActionResult> DeleteStoryHighLightAsync([FromQuery] long storyHighLightId)
@@ -416,6 +462,16 @@ namespace InstagramWebAPI.Controllers
                 }
             }
         }
+
+        /// <summary>
+        /// Retrieves a paginated list of highlights for a user based on the provided user ID.
+        /// </summary>
+        /// <param name="model">Request DTO containing the user ID and pagination parameters.</param>
+        /// <returns>
+        /// An ActionResult representing the result of the operation.
+        /// If successful, returns HTTP 200 (OK) with a pagination response model containing the list of highlights.
+        /// If validation fails or an error occurs, returns HTTP 400 (Bad Request) with an error message.
+        /// </returns>
         [HttpPost("HighLightListByUserId")]
         [Authorize]
         public async Task<ActionResult> GetHighLightListByUserId([FromBody] RequestDTO<UserIdRequestDTO> model)

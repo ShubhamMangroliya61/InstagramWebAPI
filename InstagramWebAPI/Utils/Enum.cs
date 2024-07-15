@@ -4,13 +4,13 @@
     {
         public enum NotificationType
         {
-            FollowRequest=1,
+            FollowRequest = 1,
             FollowRequestAccepted,
             FollowRequestDeleted,
             PostLiked,
             PostCommented,
             StoryLiked
-            
+
         }
         public enum NotificationTypeId
         {
@@ -19,8 +19,5 @@
             RequestId,
             StoryId
         }
-}
-
-    
-
+    }
 }

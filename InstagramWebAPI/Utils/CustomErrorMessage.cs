@@ -26,6 +26,7 @@
         public const string RegistrationError = "Error occurred while registering the user.";
         public const string CountError = "Error occurred while count the Follower and Follwing.";
         public const string MutualError = "Error occurred while get mutual friend.";
+        public const string  SuggestionError = "Error occurred while get Suggestion friend.";
         public const string ModelIsNull = "All fields are required.";
         public const string LoginError = "Error occurred while logging in.";
         public const string ValidationRegistrtion = "Validation failed for registration data.";
@@ -37,7 +38,10 @@
         public const string ExitsPost = "Post Not Exits";
         public const string ExitsNotification = "Notification Not Exits";
         public const string ExitHighlight = "HighLight Not Exits";
+        public const string ExitCollection = "Collection Not Exits";
+        public const string ExitSearch = "Search User Not Exits";
         public const string ExitStoryHighlight = "StoryHighLight Not Exits";
+        public const string ExitPostCollection = "PostCollection Not Exits";
         public const string ExitsStory = "Story Not Exits";
         public const string ExitsRequest = "Request Not Exits";
         public const string MailSend = "Email send successfully";
@@ -62,12 +66,15 @@
         public const string InvalidPhotoExtension = "Invalid file extension. Allowed extensions are: {0}";
         public const string ValidationProfile = "Validation failed for Profile data.";
         public const string ValidationHighLight = "Validation failed for HighLight data.";
+        public const string ValidationCollection = "Validation failed for Collection data.";
+        public const string ValidationSearchUser = "Validation failed for Serach User Data.";
         public const string ValidationPost = "Validation failed for Post data.";
         public const string ValidationNotification = "Validation failed for Notification data.";
         public const string ValidationStory = "Validation failed for Story data.";
         public const string UploadPhoto = "Profile Upload Successfully";
         public const string UploadStory = "Story Upload Successfully";
         public const string AddHighLight = "HightLIght Add Successfully";
+        public const string AddCollection = "Collection Add Successfully";
         public const string SeenStory = "Story Seen Add Successfully";
         public const string LIkeStory = "Story Like Successfully";
         public const string GetStory = "Story Get Successfully";
@@ -75,13 +82,16 @@
         public const string UploadStoryError = "Error occurred while Upload Story the user.";
         public const string LikeStoryError = "Error occurred while Like Story.";
         public const string HighlightError = "Error occurred while Add Highlight.";
+        public const string CollectionError = "Error occurred while Add Collection.";
         public const string UpdateProfile = "Error occurred while Update Profile the user.";
         public const string ValidationUpdateProfile = "Validation failed for Update Profile data.";
         public const string UpdateProfileSuccess = "Profile Update Successfully";
         public const string ValidationRequest = "Validation failed for Follow Request data.";
         public const string RequestSuccess = "Request Send Successfully";
+        public const string SearchUSerSuccess = "Search User Add Successfully";
         public const string DeleteSuccess = "Profile Photo Delete Successfully";
         public const string RequestError = "Error occurred while Fllow Request the user.";
+        public const string SearchUserError = "Error occurred while Search UserId";
         public const string Deleteprofile = "Error occurred while delete profile the user.";
         public const string NullDateOfBirth = "Date of birth is required";
         public const string InvalidDateOfBirthFormat = "Date of birth should be in yyyy-MM-dd format";
@@ -97,8 +107,12 @@
         public const string NullRequestId = "Requestid is required";
         public const string NullPostId = "PostId is required";
         public const string NullHighLighttId = "HighLightId is required";
+        public const string NullCollectionId = "CollectionId is required";
+        public const string NullsearchId = "SearchId is required";
         public const string NullStoryHighLighttId = "StoryHighLightId is required";
+        public const string NullPostCollectionId = "PostCollectionId is required";
         public const string NullHighLightName = "HighLightName is required";
+        public const string NullcollectionName = "ColletionName is required";
         public const string NullStoryId = "StoryId is required";
         public const string InvalidRequestId = "Invalid RequestId. requestId must be greater than zero.";
         public const string InvalidPostId = "Invalid PostId.PostId must be greater than zero.";
@@ -111,19 +125,26 @@
         public const string NotificationDelete = "Notification Delete Successfully";
         public const string StoryDelete = "Story Delete Successfully";
         public const string HighlightDelete = "HighLight Delete Successfully";
+        public const string SearchUserDelete = "Search User Delete Successfully";
         public const string StoryHighlightAdd = "Story HighLight Add Successfully";
+        public const string PostCollectionAdd = "Post Collection Add Successfully";
         public const string StoryHighlightDelete = "Story HighLight Delete Successfully";
+        public const string PostColllectionDelete = "Post Collection Delete Successfully";
         public const string PostCommentDelete = "Comment Delete Successfully";
         public const string PostLike = "Post Like Or Unlike Successfully";
         public const string PostComment = "Post Comment Successfully";
         public const string CountSucces = "Get Count Successfully";
         public const string mutualSucces = "Mutual Friend List Get Successfully";
+        public const string suggestionSucces = "Suggestion Friend List Get Successfully";
         public const string PostDeleteError = "Error occurred while Delete Post.";
         public const string NotificationDeleteError = "Error occurred while Delete Notification.";
         public const string StoryDeleteError = "Error occurred while Delete Story.";
         public const string HighlightDeleteError = "Error occurred while Delete HighLight.";
+        public const string CollectionDeleteError = "Error occurred while Delete Collection.";
+        public const string SearchUserError1 = "Error occurred while Delete Search User.";
         public const string StoryHighlightDeleteError = "Error occurred while Delete Story HighLight.";
         public const string StoryHighlightAddError = "Error occurred while Add story HighLight.";
+        public const string postcollectionAddError = "Error occurred while Add Post Collection.";
         public const string PostLikeError = "Error occurred while Like Post.";
         public const string PostCommentError = "Error occurred while Comment Post.";
         public const string PathNotExits = "Path Not Found";
@@ -131,21 +152,5 @@
         public const string FileSizeLimitExceeded = "Please Upload Photo size less than 1 MB";
         public const string VideoFileSizeLimitExceeded = "Please Upload Video size less than 3 MB";
         public const string NullNotificationId = "NotificationId is required";
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
     }
 }

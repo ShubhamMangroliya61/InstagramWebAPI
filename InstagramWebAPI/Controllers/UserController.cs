@@ -1,4 +1,5 @@
 ﻿using DataAccess.CustomModel;
+using InstagramWebAPI.BLL;
 using InstagramWebAPI.Common;
 using InstagramWebAPI.DAL.Models;
 using InstagramWebAPI.DTO;
@@ -216,6 +217,16 @@ namespace InstagramWebAPI.Controllers
                 }
             }
         }
+
+        /// <summary>
+        /// Retrieves a paginated list of users based on the provided username search criteria.
+        /// </summary>
+        /// <param name="model">Request DTO containing the user ID and pagination parameters.</param>
+        /// <returns>
+        /// An ActionResult representing the result of the operation.
+        /// If successful, returns HTTP 200 (OK) with a pagination response model containing the list of users.
+        /// If validation fails or an error occurs, returns HTTP 400 (Bad Request) with an error message.
+        /// </returns>
         [HttpPost("GetUserListByUserName")]
         [Authorize]
         public async Task<ActionResult> GetUserListByUserNameAsync([FromBody] RequestDTO<UserIdRequestDTO> model)
@@ -393,6 +404,157 @@ namespace InstagramWebAPI.Controllers
                 else
                 {
                     return BadRequest(_responseHandler.BadRequest(CustomErrorCode.IsMutual, ex.Message, ""));
+                }
+            }
+        }
+
+        /// <summary>
+        /// Retrieves a paginated list of suggested users based on the logged-in user's profile.
+        /// </summary>
+        /// <param name="model">Pagination parameters including page number and page size.</param>
+        /// <returns>
+        /// An ActionResult representing the result of the operation.
+        /// If successful, returns HTTP 200 (OK) with a pagination response containing the list of suggested users.
+        /// If there are no suggestions or an error occurs, returns HTTP 400 (Bad Request) with an error message.
+        /// </returns>
+        [HttpPost("GetSuggestionList")]
+        [Authorize]
+        public async Task<ActionResult> GetSuggestionListAsync([FromBody] PaginationRequestDTO model)
+        {
+            try
+            {
+                PaginationResponceModel<UserDTO> data = await _userService.GetSuggestionListAsync(model);
+                if (data == null)
+                {
+                    return BadRequest(_responseHandler.BadRequest(CustomErrorCode.IsSuggestion, CustomErrorMessage.SuggestionError, ""));
+                }
+
+                return Ok(_responseHandler.Success(CustomErrorMessage.suggestionSucces, data));
+            }
+            catch (Exception ex)
+            {
+                if (ex is ValidationException vx)
+                {
+                    return BadRequest(_responseHandler.BadRequest(vx.ErrorCode, vx.Message, vx.Errors));
+                }
+                else
+                {
+                    return BadRequest(_responseHandler.BadRequest(CustomErrorCode.IsSuggestion, ex.Message, ""));
+                }
+            }
+        }
+
+        /// <summary>
+        /// Upserts a search user by their ID, indicating the logged-in user's interest in following or unfollowing them.
+        /// </summary>
+        /// <param name="searchUserId">The ID of the user to be followed or unfollowed.</param>
+        /// <returns>
+        /// An ActionResult representing the result of the operation.
+        /// If successful, returns HTTP 200 (OK) with a success message.
+        /// If the user ID is invalid or an error occurs, returns HTTP 400 (Bad Request) with an error message.
+        /// </returns>
+        [HttpPost("UpsertSearchUserById")]
+        [Authorize]
+        public async Task<ActionResult> UpsertSearchUserByIdAsync(long searchUserId)
+        {
+            try
+            {
+                List<ValidationError> errors = _validationService.ValidateGetUserById(searchUserId);
+                if (errors.Any())
+                {
+                    return BadRequest(_responseHandler.BadRequest(CustomErrorCode.IsValid, CustomErrorMessage.ExitsUser, errors));
+                }
+                bool isFollow = await _userService.UpsertSearchUserById(searchUserId);
+                if (!isFollow)
+                {
+                    return BadRequest(_responseHandler.BadRequest(CustomErrorCode.IsUser, CustomErrorMessage.SearchUserError, ""));
+                }
+                return Ok(_responseHandler.Success(CustomErrorMessage.SearchUSerSuccess, searchUserId));
+            }
+            catch (Exception ex)
+            {
+                if (ex is ValidationException vx)
+                {
+                    return BadRequest(_responseHandler.BadRequest(vx.ErrorCode, vx.Message, vx.Errors));
+                }
+                else
+                {
+                    return BadRequest(_responseHandler.BadRequest(CustomErrorCode.IsUser, ex.Message, ""));
+                }
+            }
+        }
+
+        /// <summary>
+        /// Retrieves a paginated list of search records based on the provided pagination parameters.
+        /// </summary>
+        /// <param name="model">Pagination parameters including page number and page size.</param>
+        /// <returns>
+        /// An ActionResult representing the result of the operation.
+        /// If successful, returns HTTP 200 (OK) with a pagination response containing the list of search records.
+        /// If the request fails validation or an error occurs, returns HTTP 400 (Bad Request) with an error message.
+        /// </returns>
+        [HttpPost("GetSearchUserList")]
+        [Authorize]
+        public async Task<ActionResult> GetSearchUserListAsync([FromBody] PaginationRequestDTO model)
+        {
+            try
+            {
+                PaginationResponceModel<SearchDTO> data = await _userService.GetSearchUserList(model);
+                if (data == null)
+                {
+                    return BadRequest(_responseHandler.BadRequest(CustomErrorCode.IsGetLIst, CustomErrorMessage.GetFollowerList, ""));
+                }
+                return Ok(_responseHandler.Success(CustomErrorMessage.GetFollowerListSucces, data));
+            }
+            catch (Exception ex)
+            {
+                if (ex is ValidationException vx)
+                {
+                    return BadRequest(_responseHandler.BadRequest(vx.ErrorCode, vx.Message, vx.Errors));
+                }
+                else
+                {
+                    return BadRequest(_responseHandler.BadRequest(CustomErrorCode.IsGetLIst, ex.Message, ""));
+                }
+            }
+        }
+
+        /// <summary>
+        /// Deletes a search record identified by the provided search ID.
+        /// </summary>
+        /// <param name="searchId">The ID of the search record to delete.</param>
+        /// <returns>
+        /// An ActionResult representing the result of the operation.
+        /// If successful, returns HTTP 200 (OK) with a success message indicating the deletion of the search record.
+        /// If the request fails validation or an error occurs, returns HTTP 400 (Bad Request) with an error message.
+        /// </returns>
+        [HttpPost("DeteleSearchUser")]
+        [Authorize]
+        public async Task<ActionResult> DeteleSearchUserAsync([FromQuery] long searchId)
+        {
+            try
+            {
+                List<ValidationError> errors = _validationService.ValidateSerachId(searchId);
+                if (errors.Any())
+                {
+                    return BadRequest(_responseHandler.BadRequest(CustomErrorCode.IsValid, CustomErrorMessage.ValidationSearchUser, errors)); ;
+                }
+                bool isDeleted = await _userService.DeleteSearchUser(searchId);
+                if (!isDeleted)
+                {
+                    return BadRequest(_responseHandler.BadRequest(CustomErrorCode.IsUser, CustomErrorMessage.SearchUserError1, ""));
+                }
+                return Ok(_responseHandler.Success(CustomErrorMessage.SearchUserDelete, searchId));
+            }
+            catch (Exception ex)
+            {
+                if (ex is ValidationException vx)
+                {
+                    return BadRequest(_responseHandler.BadRequest(vx.ErrorCode, vx.Message, vx.Errors));
+                }
+                else
+                {
+                    return BadRequest(_responseHandler.BadRequest(CustomErrorCode.IsUser, ex.Message, ""));
                 }
             }
         }

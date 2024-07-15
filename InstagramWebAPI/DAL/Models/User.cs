@@ -66,6 +66,9 @@ public partial class User
     public DateTime? ModifiedDate { get; set; }
 
     [InverseProperty("User")]
+    public virtual ICollection<Collection> Collections { get; set; } = new List<Collection>();
+
+    [InverseProperty("User")]
     public virtual ICollection<Comment> Comments { get; set; } = new List<Comment>();
 
     [InverseProperty("User")]
@@ -88,6 +91,12 @@ public partial class User
 
     [InverseProperty("ToUser")]
     public virtual ICollection<Request> RequestToUsers { get; set; } = new List<Request>();
+
+    [InverseProperty("LoginUser")]
+    public virtual ICollection<Search> SearchLoginUsers { get; set; } = new List<Search>();
+
+    [InverseProperty("SearchUser")]
+    public virtual ICollection<Search> SearchSearchUsers { get; set; } = new List<Search>();
 
     [InverseProperty("User")]
     public virtual ICollection<Story> Stories { get; set; } = new List<Story>();

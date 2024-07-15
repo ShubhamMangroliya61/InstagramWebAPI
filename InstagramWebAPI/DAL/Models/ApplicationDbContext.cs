@@ -15,6 +15,8 @@ public partial class ApplicationDbContext : DbContext
     {
     }
 
+    public virtual DbSet<Collection> Collections { get; set; }
+
     public virtual DbSet<Comment> Comments { get; set; }
 
     public virtual DbSet<Highlight> Highlights { get; set; }
@@ -27,9 +29,13 @@ public partial class ApplicationDbContext : DbContext
 
     public virtual DbSet<Post> Posts { get; set; }
 
+    public virtual DbSet<PostCollection> PostCollections { get; set; }
+
     public virtual DbSet<PostMapping> PostMappings { get; set; }
 
     public virtual DbSet<Request> Requests { get; set; }
+
+    public virtual DbSet<Search> Searches { get; set; }
 
     public virtual DbSet<Story> Stories { get; set; }
 
@@ -45,6 +51,15 @@ public partial class ApplicationDbContext : DbContext
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
+        modelBuilder.Entity<Collection>(entity =>
+        {
+            entity.HasKey(e => e.CollectionId).HasName("PK__Collecti__7DE6BC044241DF8B");
+
+            entity.HasOne(d => d.User).WithMany(p => p.Collections)
+                .OnDelete(DeleteBehavior.ClientSetNull)
+                .HasConstraintName("FK__Collectio__UserI__318258D2");
+        });
+
         modelBuilder.Entity<Comment>(entity =>
         {
             entity.HasKey(e => e.CommentId).HasName("PK__Comment__C3B4DFCA1FFEA2EA");
@@ -123,6 +138,19 @@ public partial class ApplicationDbContext : DbContext
                 .HasConstraintName("FK__Post__UserId__6EC0713C");
         });
 
+        modelBuilder.Entity<PostCollection>(entity =>
+        {
+            entity.HasKey(e => e.PostCollectionId).HasName("PK__PostColl__251EAA4584A25737");
+
+            entity.HasOne(d => d.Collection).WithMany(p => p.PostCollections)
+                .OnDelete(DeleteBehavior.ClientSetNull)
+                .HasConstraintName("FK__PostColle__Colle__3552E9B6");
+
+            entity.HasOne(d => d.Post).WithMany(p => p.PostCollections)
+                .OnDelete(DeleteBehavior.ClientSetNull)
+                .HasConstraintName("FK__PostColle__PostI__36470DEF");
+        });
+
         modelBuilder.Entity<PostMapping>(entity =>
         {
             entity.HasKey(e => e.PostMappingId).HasName("PK__PostMapp__F267038701C597D5");
@@ -147,6 +175,19 @@ public partial class ApplicationDbContext : DbContext
             entity.HasOne(d => d.ToUser).WithMany(p => p.RequestToUsers)
                 .OnDelete(DeleteBehavior.ClientSetNull)
                 .HasConstraintName("FK__Request__ToUserI__0880433F");
+        });
+
+        modelBuilder.Entity<Search>(entity =>
+        {
+            entity.HasKey(e => e.SearchId).HasName("PK__Search__21C535F4B22B53A3");
+
+            entity.HasOne(d => d.LoginUser).WithMany(p => p.SearchLoginUsers)
+                .OnDelete(DeleteBehavior.ClientSetNull)
+                .HasConstraintName("FK__Search__LoginUse__3A179ED3");
+
+            entity.HasOne(d => d.SearchUser).WithMany(p => p.SearchSearchUsers)
+                .OnDelete(DeleteBehavior.ClientSetNull)
+                .HasConstraintName("FK__Search__SearchUs__3B0BC30C");
         });
 
         modelBuilder.Entity<Story>(entity =>

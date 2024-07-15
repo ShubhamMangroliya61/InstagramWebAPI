@@ -22,6 +22,7 @@ namespace InstagramWebAPI.BLL
             _dbcontext = db;
             _helper = helper;
         }
+
         /// <summary>
         /// Creates or updates a post asynchronously.
         /// </summary>
@@ -140,6 +141,14 @@ namespace InstagramWebAPI.BLL
             };
             return responseDTO;
         }
+
+        /// <summary>
+        /// Retrieves a post by its ID and type asynchronously.
+        /// </summary>
+        /// <param name="postId">The ID of the post to retrieve.</param>
+        /// <param name="postType">The type of the post ("Post" or "Reel").</param>
+        /// <returns>A task that represents the asynchronous operation. The task result contains a PostResponseDTO which includes the post details such as post ID, user information, caption, location, media, likes, and comments.</returns>
+        /// <exception cref="ValidationException">Thrown when the post is not found.</exception>
         public async Task<PostResponseDTO> GetPostById(long postId, string postType)
         {
             Post post = await _dbcontext.Posts
@@ -168,6 +177,8 @@ namespace InstagramWebAPI.BLL
             {
                 PostId = post.PostId,
                 UserId = post.UserId,
+                UserName = post.User.UserName,
+                ProfilePhotoName = post.User.ProfilePictureName,
                 Caption = post.Caption,
                 Location = post.Location,
                 PostType = post.PostTypeId == 3 ? "Reel" : "Post",
@@ -215,6 +226,8 @@ namespace InstagramWebAPI.BLL
                 {
                     PostId = post.PostId,
                     UserId = post.UserId,
+                    UserName = post.User.UserName,
+                    ProfilePhotoName = post.User.ProfilePictureName,
                     Caption = post.Caption,
                     Location = post.Location,
                     PostType = post.PostTypeId == 3 ? "Reel" : "Post",
@@ -285,7 +298,6 @@ namespace InstagramWebAPI.BLL
             }
             return false;
         }
-
 
         /// <summary>
         /// Likes or unlikes a post asynchronously based on the provided data in the <see cref="LikePostDTO"/> model.
@@ -407,6 +419,221 @@ namespace InstagramWebAPI.BLL
                 return true;
             }
             return false;
+        }
+
+        /// <summary>
+        /// Retrieves a paginated list of posts for the current user based on accepted requests and non-private users asynchronously.
+        /// </summary>
+        /// <param name="model">The pagination request details, including page number and page size.</param>
+        /// <returns>A task that represents the asynchronous operation. The task result contains a PaginationResponceModel of PostResponseDTO which includes total records, page size, page number, required pages, and a list of post response DTOs.</returns>
+        public async Task<PaginationResponceModel<PostResponseDTO>> GetPostListByUserIdAsync(PaginationRequestDTO model)
+        {
+            long userId = _helper.GetUserIdClaim();
+
+            List<long> requestUserIds = await _dbcontext.Requests
+                 .Where(m => m.FromUserId == userId && m.IsDeleted == false && m.IsAccepted == true)
+                 .Select(m => m.ToUserId)
+                 .ToListAsync();
+
+            List<long> userUserIds = await _dbcontext.Users
+                .Where(u => u.IsDeleted == false && u.IsPrivate == false)
+                .Select(m => m.UserId)
+                .ToListAsync();
+
+            List<long> combinedUserIds = requestUserIds.Concat(userUserIds).Distinct().ToList();
+
+            IQueryable<PostResponseDTO> posts = _dbcontext.Posts
+                .Include(m => m.Likes)
+                .Include(m => m.PostMappings)
+                .Include(m => m.Comments)
+                .Include(m => m.User)
+                .Where(m => !m.IsDeleted && combinedUserIds.Contains(m.UserId))
+                .OrderByDescending(p => p.CreatedDate)
+                .Select(post => new PostResponseDTO
+                {
+                    PostId = post.PostId,
+                    UserId = post.UserId,
+                    UserName = post.User.UserName,
+                    ProfilePhotoName = post.User.ProfilePictureName,
+                    Caption = post.Caption,
+                    Location = post.Location,
+                    PostType = post.PostTypeId == 3 ? "Reel" : "Post",
+                    Medias = post.PostMappings.Select(m => new Media
+                    {
+                        PostMappingId = m.PostMappingId,
+                        MediaType = m.MediaTypeId == 1 ? "Images" : "Video",
+                        MediaURL = m.MediaUrl,
+                        MediaName = m.MediaName
+                    }).ToList(),
+                    PostLikes = post.Likes.Where(l => !l.IsDeleted).Select(l => new PostLike
+                    {
+                        LikeId = l.LikeId,
+                        UserId = l.UserId,
+                        Avtar = l.User.ProfilePictureName,
+                        UserName = l.User.UserName
+                    }).ToList(),
+                    PostComments = post.Comments.Where(l => !l.IsDeleted).Select(c => new PostComment
+                    {
+                        CommentId = c.CommentId,
+                        UserId = c.UserId,
+                        CommentText = c.CommentText,
+                        Avtar = c.User.ProfilePictureName,
+                        UserName = c.User.UserName
+                    }).ToList()
+                });
+
+            int totalRecords = await posts.CountAsync();
+            int requiredPages = (int)Math.Ceiling((decimal)totalRecords / model.PageSize);
+
+            List<PostResponseDTO> postResponses = await posts
+                .Skip((model.PageNumber - 1) * model.PageSize)
+                .Take(model.PageSize)
+                .ToListAsync();
+
+            return new PaginationResponceModel<PostResponseDTO>
+            {
+                Totalrecord = totalRecords,
+                PageSize = model.PageSize,
+                PageNumber = model.PageNumber,
+                RequirdPage = requiredPages,
+                Record = postResponses
+            };
+        }
+
+        /// <summary>
+        /// Inserts or updates a collection asynchronously based on the provided collection request details.
+        /// </summary>
+        /// <param name="model">The collection request details, including collection ID and collection name.</param>
+        /// <returns>A task that represents the asynchronous operation. The task result contains the upserted CollectionDTO which includes the collection ID and collection name.</returns>
+        public async Task<CollectionDTO> UpsertCollectionAsync(CollectionRequestDTO model)
+        {
+            long userId = _helper.GetUserIdClaim();
+            Collection collection = await _dbcontext.Collections.FirstOrDefaultAsync(m => m.CollectionId == model.CollectionId && m.UserId == userId && m.IsDeleted == false) ?? new();
+
+            collection.CollectionName = model.CollectionName ?? string.Empty;
+            collection.UserId = userId;
+
+            if (model.CollectionId > 0)
+            {
+                collection.ModifiedDate = DateTime.Now;
+                _dbcontext.Collections.Update(collection);
+                await _dbcontext.SaveChangesAsync();
+            }
+            else
+            {
+                collection.CreatedDate = DateTime.Now;
+                await _dbcontext.Collections.AddAsync(collection);
+                await _dbcontext.SaveChangesAsync();
+            }
+
+            return new CollectionDTO()
+            {
+                CollectionId = collection.CollectionId,
+                CollectionName = collection.CollectionName,
+            };
+        }
+
+        /// <summary>
+        /// Deletes a collection asynchronously by marking it as deleted based on the provided collection ID.
+        /// </summary>
+        /// <param name="collectionId">The ID of the collection to delete.</param>
+        /// <returns>A task that represents the asynchronous operation. The task result is a boolean indicating whether the collection was successfully marked as deleted.</returns>
+        public async Task<bool> DeteleCollectionAsync(long colletionId)
+        {
+            long userId = _helper.GetUserIdClaim();
+            Collection? collection = await _dbcontext.Collections.FirstOrDefaultAsync(m => m.CollectionId == colletionId && m.UserId == userId && m.IsDeleted == false);
+
+            if (collection != null)
+            {
+                collection.IsDeleted = true;
+                collection.ModifiedDate = DateTime.UtcNow;
+
+                _dbcontext.Collections.Update(collection);
+                await _dbcontext.SaveChangesAsync();
+                return true;
+            }
+            return false;
+        }
+
+        /// <summary>
+        /// Adds a post to a collection asynchronously based on the provided collection ID and post ID.
+        /// </summary>
+        /// <param name="collectionId">The ID of the collection to which the post will be added.</param>
+        /// <param name="postId">The ID of the post to be added to the collection.</param>
+        /// <returns>A task that represents the asynchronous operation. The task result is a boolean indicating whether the post was successfully added to the collection.</returns>
+        public async Task<bool> AddPostCollectionAsync(long collectionId, long postId)
+        {
+            PostCollection data = new()
+            {
+                PostId = postId,
+                CollectionId = collectionId,
+                CreatedDate = DateTime.Now,
+            };
+            await _dbcontext.PostCollections.AddAsync(data);
+            await _dbcontext.SaveChangesAsync();
+            return true;
+        }
+
+        /// <summary>
+        /// Deletes a post from a collection asynchronously by marking it as deleted based on the provided post collection ID.
+        /// </summary>
+        /// <param name="postCollectionId">The ID of the post collection to delete.</param>
+        /// <returns>A task that represents the asynchronous operation. The task result is a boolean indicating whether the post collection was successfully marked as deleted.</returns>
+        public async Task<bool> DeletePostCollectionAsync(long postCollectionId)
+        {
+            PostCollection? postCollection = await _dbcontext.PostCollections.FirstOrDefaultAsync(m => m.PostCollectionId == postCollectionId && m.IsDeleted == false);
+
+            if (postCollection != null)
+            {
+                postCollection.IsDeleted = true;
+                postCollection.ModifiedDate = DateTime.UtcNow;
+
+                _dbcontext.PostCollections.Update(postCollection);
+                await _dbcontext.SaveChangesAsync();
+                return true;
+            }
+            return false;
+        }
+
+        /// <summary>
+        /// Retrieves a paginated list of collections for a specified user asynchronously.
+        /// </summary>
+        /// <param name="model">The request details, including the user ID, page number, and page size.</param>
+        /// <returns>A task that represents the asynchronous operation. The task result contains a PaginationResponceModel of CollectionDTO which includes total records, page size, page number, required pages, and a list of collection DTOs.</returns>
+        public async Task<PaginationResponceModel<CollectionDTO>> GetcollectionListByUserId(RequestDTO<UserIdRequestDTO> model)
+        {
+            IQueryable<CollectionDTO> data = _dbcontext.Collections
+                        .Include(m => m.PostCollections).ThenInclude(m => m.Post)
+                        .Where(m => m.UserId == model.Model.UserId)
+                        .Select(m => new CollectionDTO
+                        {
+                            CollectionId = m.CollectionId,
+                            CollectionName = m.CollectionName,
+                            PostCollectionList = m.PostCollections.Select(s => new PostCollectionList
+                            {
+                                PostCollectionId = s.PostCollectionId,
+                                PostId = s.PostId,
+                                CreatedDate = s.Post.CreatedDate
+                            }).ToList()
+                        });
+
+            int totalRecords = await data.CountAsync();
+            int requiredPages = (int)Math.Ceiling((decimal)totalRecords / model.PageSize);
+
+            // Paginate the data
+            List<CollectionDTO> records = await data
+                .Skip((model.PageNumber - 1) * model.PageSize)
+                .Take(model.PageSize)
+                .ToListAsync();
+
+            return new PaginationResponceModel<CollectionDTO>
+            {
+                Totalrecord = totalRecords,
+                PageSize = model.PageSize,
+                PageNumber = model.PageNumber,
+                RequirdPage = requiredPages,
+                Record = records,
+            };
         }
     }
 }

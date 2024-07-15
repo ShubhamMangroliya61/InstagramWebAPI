@@ -20,6 +20,11 @@ namespace InstagramWebAPI.BLL
             _helper = helper;
         }
 
+        /// <summary>
+        /// Retrieves a paginated list of notifications for the current user asynchronously.
+        /// </summary>
+        /// <param name="model">The pagination request details, including page number and page size.</param>
+        /// <returns>A task that represents the asynchronous operation. The task result contains a PaginationResponceModel of NotificationResponseDTO which includes total records, page size, page number, required pages, and a list of notification response DTOs.</returns>
         public async Task<PaginationResponceModel<NotificationResponseDTO>> GetNotificationListById(PaginationRequestDTO model)
         {
             long userId = _helper.GetUserIdClaim();

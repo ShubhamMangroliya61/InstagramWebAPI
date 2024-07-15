@@ -240,26 +240,36 @@ namespace InstagramWebAPI.BLL
             };
         }
 
+        /// <summary>
+        /// Retrieves a paginated list of users based on the provided search criteria asynchronously.
+        /// </summary>
+        /// <param name="model">The request details, including the search name, page number, and page size.</param>
+        /// <returns>A task that represents the asynchronous operation. The task result contains a PaginationResponceModel of UserDTO which includes total records, page size, page number, required pages, and a list of user DTOs matching the search criteria.</returns>
         public async Task<PaginationResponceModel<UserDTO>> GetUserListByUserNameAsync(RequestDTO<UserIdRequestDTO> model)
         {
+            long logInUserId = _helper.GetUserIdClaim();
             IQueryable<UserDTO> data = _dbcontext.Users
-                 .Where(m => m.IsDeleted == false &&
+                 .Where(m => m.IsDeleted == false && m.UserId != logInUserId &&
                             (string.IsNullOrEmpty(model.SearchName) ||
                             (m.UserName ?? string.Empty).ToLower().Contains(model.SearchName.ToLower())))
-                 .Select(m => new UserDTO
+                 .Select(user => new UserDTO
                  {
-                     UserId = m.UserId,
-                     UserName = m.UserName,
-                     Email = m.Email,
-                     Name = m.Name,
-                     Bio = m.Bio,
-                     Link = m.Link,
-                     Gender = m.Gender ?? string.Empty,
-                     ProfilePictureName = m.ProfilePictureName,
-                     ProfilePictureUrl = m.ProfilePictureUrl,
-                     ContactNumber = m.ContactNumber,
-                     IsPrivate = m.IsPrivate,
-                     IsVerified = m.IsVerified,
+                     UserId = user.UserId,
+                     UserName = user.UserName,
+                     Email = user.Email,
+                     Name = user.Name,
+                     Bio = user.Bio,
+                     Link = user.Link,
+                     DateOfBirth = user.DateOfBirth.HasValue ? user.DateOfBirth.Value.ToString("yyyy-MM-dd") : string.Empty,
+                     Gender = user.Gender ?? string.Empty,
+                     ProfilePictureName = user.ProfilePictureName,
+                     ProfilePictureUrl = user.ProfilePictureUrl,
+                     ContactNumber = user.ContactNumber,
+                     IsPrivate = user.IsPrivate,
+                     IsVerified = user.IsVerified,
+                     IsFollower =  _dbcontext.Requests.Any(r => r.FromUserId == user.UserId && r.ToUserId == logInUserId && r.IsAccepted == true && r.IsDeleted == false),
+                     IsFollowing =  _dbcontext.Requests.Any(r => r.FromUserId == logInUserId && r.ToUserId == user.UserId && r.IsAccepted == true && r.IsDeleted == false),
+                     IsRequest =  _dbcontext.Requests.Any(r => r.FromUserId == logInUserId && r.ToUserId == user.UserId && r.IsAccepted == false && r.IsDeleted == false),
                  });
 
 
@@ -288,6 +298,7 @@ namespace InstagramWebAPI.BLL
         /// <returns>A pagination response model containing the list of
         public async Task<PaginationResponceModel<RequestListResponseDTO>> GetRequestListByIdAsync(RequestDTO<FollowRequestDTO> model)
         {
+
             IQueryable<RequestListResponseDTO> data = _dbcontext.Requests
                 .Include(m => m.FromUser) // Ensure FromUser is included for UserDTO
                 .Where(m => m.ToUserId == model.Model.UserId && m.IsDeleted == false && m.IsAccepted == false)
@@ -375,7 +386,6 @@ namespace InstagramWebAPI.BLL
 
             return userDTO;
         }
-
 
         /// <summary>
         /// Accepts or cancels a request asynchronously.
@@ -496,6 +506,165 @@ namespace InstagramWebAPI.BLL
             int totalRecords = await mutualFriends.CountAsync();
             int requiredPages = (int)Math.Ceiling((decimal)totalRecords / model.PageSize);
             return new PaginationResponceModel<MutualFriendDTO>
+            {
+                Totalrecord = totalRecords,
+                PageSize = model.PageSize,
+                PageNumber = model.PageNumber,
+                RequirdPage = requiredPages,
+                Record = result
+            };
+        }
+
+        /// <summary>
+        /// Retrieves a paginated list of suggested users asynchronously based on the current user's interactions and relationships.
+        /// </summary>
+        /// <param name="model">The pagination request details, including page number and page size.</param>
+        /// <returns>A task that represents the asynchronous operation. The task result contains a PaginationResponceModel of UserDTO which includes total records, page size, page number, required pages, and a list of suggested user DTOs.</returns>
+        public async Task<PaginationResponceModel<UserDTO>> GetSuggestionListAsync(PaginationRequestDTO model)
+        {
+            long userId = _helper.GetUserIdClaim();
+
+            List<long> acceptedRequests = await _dbcontext.Requests
+                .Where(r => r.FromUserId == userId && !r.IsDeleted && r.IsAccepted)
+                .Select(r => r.ToUserId)
+                .ToListAsync();
+
+            List<long> pendingRequestsToCurrentUser = await _dbcontext.Requests
+                .Where(r => r.ToUserId == userId && !r.IsDeleted && !r.IsAccepted)
+                .Select(r => r.FromUserId)
+                .ToListAsync();
+
+            List<long> pendingRequestsByCurrentUser = await _dbcontext.Requests
+                .Where(r => r.FromUserId == userId && !r.IsDeleted && !r.IsAccepted)
+                .Select(r => r.ToUserId)
+                .ToListAsync();
+
+            List<long> suggestedUserIds = await _dbcontext.Users
+                .Where(u => !u.IsDeleted
+                            && u.UserId != userId
+                            && !acceptedRequests.Contains(u.UserId)
+                            && !pendingRequestsToCurrentUser.Contains(u.UserId)
+                            && !pendingRequestsByCurrentUser.Contains(u.UserId))
+                .Select(u => u.UserId)
+                .ToListAsync();
+
+            IQueryable<UserDTO> suggestedUsersQuery = _dbcontext.Users
+                .Where(m => !m.IsDeleted && suggestedUserIds.Contains(m.UserId))
+                .Select(user => new UserDTO
+                {
+                    UserId = user.UserId,
+                    UserName = user.UserName,
+                    Email = user.Email,
+                    Name = user.Name,
+                    Bio = user.Bio,
+                    Link = user.Link,
+                    DateOfBirth = user.DateOfBirth.HasValue ? user.DateOfBirth.Value.ToString("yyyy-MM-dd") : string.Empty,
+                    Gender = user.Gender ?? string.Empty,
+                    ProfilePictureName = user.ProfilePictureName,
+                    ProfilePictureUrl = user.ProfilePictureUrl,
+                    ContactNumber = user.ContactNumber,
+                    IsPrivate = user.IsPrivate,
+                    IsVerified = user.IsVerified,
+                    IsFollower = _dbcontext.Requests.Any(r => r.FromUserId == user.UserId && r.ToUserId == userId && r.IsAccepted && !r.IsDeleted),
+                    IsFollowing = _dbcontext.Requests.Any(r => r.FromUserId == userId && r.ToUserId == user.UserId && r.IsAccepted && !r.IsDeleted),
+                    IsRequest = _dbcontext.Requests.Any(r => r.FromUserId == userId && r.ToUserId == user.UserId && !r.IsAccepted && !r.IsDeleted)
+                });
+
+            List<UserDTO> result = await suggestedUsersQuery
+                .Skip((model.PageNumber - 1) * model.PageSize)
+                .Take(model.PageSize)
+                .ToListAsync();
+
+            int totalRecords = await suggestedUsersQuery.CountAsync();
+            int requiredPages = (int)Math.Ceiling((decimal)totalRecords / model.PageSize);
+
+            return new PaginationResponceModel<UserDTO>
+            {
+                Totalrecord = totalRecords,
+                PageSize = model.PageSize,
+                PageNumber = model.PageNumber,
+                RequirdPage = requiredPages,
+                Record = result
+            };
+        }
+
+        /// <summary>
+        /// Inserts or updates a record in the searches table to indicate that a user has been searched for by the logged-in user.
+        /// </summary>
+        /// <param name="searchUserId">The ID of the user being searched for.</param>
+        /// <returns>A task that represents the asynchronous operation. The task result indicates whether the operation was successful.</returns>
+        public async Task<bool> UpsertSearchUserById(long searchUserId)
+        {
+            long logInUserId = _helper.GetUserIdClaim();
+
+            Search? search =await _dbcontext.Searches.FirstOrDefaultAsync(m => m.SearchUserId == searchUserId && m.LoginUserId == logInUserId);
+            Search obj = search ?? new Search();
+
+            obj.LoginUserId = logInUserId;
+            obj.SearchUserId = searchUserId;
+
+            if (search != null)
+            {
+                obj.ModifiedDate = DateTime.Now;
+                obj.IsDeleted = false;
+                _dbcontext.Searches.Update(obj);
+            }
+            else
+            {
+                obj.CreatedDate = DateTime.Now;
+                await _dbcontext.Searches.AddAsync(obj);
+            }
+            await _dbcontext.SaveChangesAsync();
+            return true;
+        }
+
+        /// <summary>
+        /// Marks a search record as deleted for the specified search ID and logged-in user ID.
+        /// </summary>
+        /// <param name="searchId">The ID of the search record to delete.</param>
+        /// <returns>A task that represents the asynchronous operation. The task result indicates whether the deletion was successful.</returns>
+        public async Task<bool> DeleteSearchUser(long searchId)
+        {
+            long userId = _helper.GetUserIdClaim();
+            Search? search = await _dbcontext.Searches.FirstOrDefaultAsync(m => m.SearchId == searchId && m.LoginUserId == userId && m.IsDeleted == false);
+
+            if (search != null)
+            {
+                search.IsDeleted = true;
+                search.ModifiedDate = DateTime.UtcNow;
+
+                _dbcontext.Searches.Update(search);
+                await _dbcontext.SaveChangesAsync();
+                return true;
+            }
+            return false;
+        }
+
+        /// <summary>
+        /// Retrieves a paginated list of search records for the logged-in user.
+        /// </summary>
+        /// <param name="model">Pagination parameters including page number and page size.</param>
+        /// <returns>A task that represents the asynchronous operation. The task result contains a pagination response model with the list of search records.</returns>
+        public async Task<PaginationResponceModel<SearchDTO>> GetSearchUserList(PaginationRequestDTO model)
+        {
+            long userId = _helper.GetUserIdClaim();
+
+            IQueryable<SearchDTO> data = _dbcontext.Searches.Where(m => m.LoginUserId == userId && m.IsDeleted == false)
+                .Select(m => new SearchDTO
+                {
+                    SearchId = m.SearchId,
+                    SearchUserId = m.SearchUserId,
+                });
+
+            List<SearchDTO> result = await data
+               .Skip((model.PageNumber - 1) * model.PageSize)
+               .Take(model.PageSize)
+               .ToListAsync();
+
+            int totalRecords = await data.CountAsync();
+            int requiredPages = (int)Math.Ceiling((decimal)totalRecords / model.PageSize);
+
+            return new PaginationResponceModel<SearchDTO>
             {
                 Totalrecord = totalRecords,
                 PageSize = model.PageSize,

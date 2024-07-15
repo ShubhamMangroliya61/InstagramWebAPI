@@ -27,6 +27,14 @@ namespace InstagramWebAPI.Controllers
 
         [HttpPost("GetNotificationListById")]
         [Authorize]
+        /// <summary>
+        /// Retrieves a paginated list of search records for the logged-in user.
+        /// </summary>
+        /// <param name="model">Pagination parameters including page number and page size.</param>
+        /// <returns>
+        /// A task that represents the asynchronous operation. 
+        /// The task result contains a pagination response model with the list of search records.
+        /// </returns>
         public async Task<ActionResult> GetNotificationListByIdAsync([FromBody] PaginationRequestDTO model)
         {
             try
@@ -53,6 +61,15 @@ namespace InstagramWebAPI.Controllers
 
         [HttpPost("DeleteNotification")]
         [Authorize]
+        /// <summary>
+        /// Deletes notifications identified by their IDs.
+        /// </summary>
+        /// <param name="notificationId">A list of notification IDs to delete.</param>
+        /// <returns>
+        /// An ActionResult representing the result of the operation.
+        /// If successful, returns HTTP 200 (OK) with a success message.
+        /// If validation fails or an error occurs, returns HTTP 400 (Bad Request) with an error message.
+        /// </returns>
         public async Task<ActionResult> DeleteNotificationAsync(List<long> notificationId)
         {
             try

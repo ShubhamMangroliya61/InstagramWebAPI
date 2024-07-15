@@ -43,6 +43,9 @@ public partial class Post
     public virtual ICollection<Notification> Notifications { get; set; } = new List<Notification>();
 
     [InverseProperty("Post")]
+    public virtual ICollection<PostCollection> PostCollections { get; set; } = new List<PostCollection>();
+
+    [InverseProperty("Post")]
     public virtual ICollection<PostMapping> PostMappings { get; set; } = new List<PostMapping>();
 
     [ForeignKey("PostTypeId")]

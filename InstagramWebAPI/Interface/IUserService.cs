@@ -15,6 +15,10 @@ namespace InstagramWebAPI.Interface
         Task<bool> RequestAcceptOrCancelAsync(long requestId, string acceptType);
         Task<CountResponseDTO> GetFollowerAndFollowingCountByIdAsync(long userId);
         Task<PaginationResponceModel<MutualFriendDTO>> GetMutualFriendsWithDetailsAsync(RequestDTO<UserIdRequestDTO> model);
+        Task<PaginationResponceModel<UserDTO>> GetSuggestionListAsync(PaginationRequestDTO model);
         string GetContentType(string fileExtension);
+        Task<bool> UpsertSearchUserById(long searchUserId);
+        Task<bool> DeleteSearchUser(long searchId);
+        Task<PaginationResponceModel<SearchDTO>> GetSearchUserList(PaginationRequestDTO model);
     }
 }

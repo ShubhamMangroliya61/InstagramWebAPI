@@ -180,6 +180,12 @@ namespace InstagramWebAPI.BLL
                 }
             };
         }
+
+        /// <summary>
+        /// Retrieves a paginated list of stories for the current user asynchronously.
+        /// </summary>
+        /// <param name="model">The pagination request details, including page number and page size.</param>
+        /// <returns>A task that represents the asynchronous operation. The task result contains a PaginationResponceModel of StoryResponseListDTO which includes total records, page size, page number, required pages, and a list of story response DTOs.</returns>
         public async Task<PaginationResponceModel<StoryResponseListDTO>> GetStoryListByIdAsync(PaginationRequestDTO model)
         {
             long userId = _helper.GetUserIdClaim();
@@ -362,6 +368,11 @@ namespace InstagramWebAPI.BLL
             return true;
         }
 
+        /// <summary>
+        /// Inserts or updates a highlight asynchronously based on the provided highlight request details.
+        /// </summary>
+        /// <param name="model">The highlight request details, including highlight ID and highlight name.</param>
+        /// <returns>A task that represents the asynchronous operation. The task result contains the upserted HighlightDTO which includes the highlight ID and highlight name.</returns>
         public async Task<HighlightDTO> UpsertHighlightAsync(HighLightRequestDTO model)
         {
             long userId = _helper.GetUserIdClaim();
@@ -390,6 +401,11 @@ namespace InstagramWebAPI.BLL
             };
         }
 
+        /// <summary>
+        /// Deletes a highlight asynchronously by marking it as deleted based on the provided highlight ID.
+        /// </summary>
+        /// <param name="highLightId">The ID of the highlight to delete.</param>
+        /// <returns>A task that represents the asynchronous operation. The task result is a boolean indicating whether the highlight was successfully marked as deleted.</returns>
         public async Task<bool> DeteleHighLightAsync(long highLightId)
         {
             long userId = _helper.GetUserIdClaim();
@@ -407,6 +423,12 @@ namespace InstagramWebAPI.BLL
             return false;
         }
 
+        /// <summary>
+        /// Associates a story with a highlight asynchronously based on the provided highlight ID and story ID.
+        /// </summary>
+        /// <param name="highLightId">The ID of the highlight to which the story will be associated.</param>
+        /// <param name="storyId">The ID of the story to be associated with the highlight.</param>
+        /// <returns>A task that represents the asynchronous operation. The task result is a boolean indicating whether the story was successfully associated with the highlight.</returns>
         public async Task<bool> AddStoryHighLightAsync(long highLightId, long storyId)
         {
             StoryHighlight data = new()
@@ -420,6 +442,11 @@ namespace InstagramWebAPI.BLL
             return true;
         }
 
+        /// <summary>
+        /// Deletes a story-highlight association asynchronously by marking it as deleted based on the provided story highlight ID.
+        /// </summary>
+        /// <param name="storyHighLightId">The ID of the story-highlight association to delete.</param>
+        /// <returns>A task that represents the asynchronous operation. The task result is a boolean indicating whether the story-highlight association was successfully marked as deleted.</returns>
         public async Task<bool> DeleteStoryHighLightAsync(long storyHighLightId)
         {
             StoryHighlight? highlight = await _dbcontext.StoryHighlights.FirstOrDefaultAsync(m => m.StoryHighlightId == storyHighLightId && m.IsDeleted == false);
@@ -436,6 +463,11 @@ namespace InstagramWebAPI.BLL
             return false;
         }
 
+        /// <summary>
+        /// Retrieves a paginated list of highlights for a specified user asynchronously.
+        /// </summary>
+        /// <param name="model">The request details, including the user ID, page number, and page size.</param>
+        /// <returns>A task that represents the asynchronous operation. The task result contains a PaginationResponceModel of HighlightDTO which includes total records, page size, page number, required pages, and a list of highlight DTOs.</returns>
         public async Task<PaginationResponceModel<HighlightDTO>> GetHighLightListByUserId(RequestDTO<UserIdRequestDTO> model)
         {
             IQueryable<HighlightDTO> data = _dbcontext.Highlights

@@ -9,6 +9,7 @@
         public const string IsRegister = "REGISTRATION_ERROR";
         public const string IsCount = "COUNT_ERROR";
         public const string IsMutual = "MUTUAL_FRIEND_GET_ERROR";
+        public const string IsSuggestion = "SUGGESTION_FRIEND_GET_ERROR";
         public const string IsPath = "PATH_ERROR";
         public const string IsLogin = "INVALID_USERNAME_OR_PASSWORD";
         public const string LoginError = "LOGIN_ERROR";
@@ -34,7 +35,10 @@
         public const string IsNotComment = "COMMENT_NOT_EXITS";
         public const string IsNotPost = "POST_NOT_EXITS";
         public const string IsNotHighlight = "HIGHLIGHT_NOT_EXITS";
+        public const string IsNotCollection = "COLLECTION_NOT_EXITS";
+        public const string IsNotSearchId = "SEARCH_USER_NOT_EXITS";
         public const string IsNotStoryHighlight = "STORYHIGHLIGHT_NOT_EXITS";
+        public const string IsNotPostCollection = "POSTCOLLECTION_NOT_EXITS";
         public const string IsNotStory = "STORY_NOT_EXITS";
         public const string IsNotRequest = "REQUEST_NOT_EXITS";
         public const string ExitsNotification = "NOTIFICATION_NOT_EXITS";
@@ -60,9 +64,11 @@
         public const string IsStory = "UPLOAD_STORY_ERROR";
         public const string IsLIkeStory = "STORY_LIKE_ERROR";
         public const string IsHighlight = "HIGHLIGHT_ERROR";
+        public const string IsCollection = "COLLECTION_ERROR";
         public const string InvalidFromUserId = "INVALID_FROM_USERID";
         public const string InvalidToUserId = "INVALID_TO_USERID";
         public const string IsRequest = "FOLLOW_REQUEST_ERROR";
+        public const string IsUser = "SEARCHUSER_ERROR";
         public const string SameUserId = "MATCH_USERID";
         public const string NullDateOfBirth = "NULL_DATEOFBIRTH";
         public const string InvalidDateOfBirthFormat = "INVALID_DATEOFBIRTH_FORMAT";
@@ -79,14 +85,14 @@
         public const string NullRequestId = "NULL_REQUESTID";
         public const string NullPostId = "NULL_POSTID";
         public const string NullHighLightId = "NULL_HIGHLIGHTID";
+        public const string NullCollectionId = "NULL_COLLECTIONID";
+        public const string NullSearchId = "NULL_SEARCHID";
         public const string NullStoryHighLightId = "NULL_STORYHIGHLIGHTID";
+        public const string NullPostCollectionId = "NULL_POSTCOLLECTIONID";
         public const string NullHighLightName = "NULL_HIGHLIGHTNAME";
+        public const string NullCollectionName = "NULL_COLLECTIONNAME";
         public const string NullStoryId = "NULL_STORYID";
         public const string NullNotificationId = "NULL_NOTIFICATIONID";
         public const string FileSizeLimitExceeded = "INVALID__SIZE";
-
-
-
-
     }
 }

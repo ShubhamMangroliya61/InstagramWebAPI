@@ -302,7 +302,54 @@ namespace InstagramWebAPI.BLL
             }
             return errors;
         }
-
+        public List<ValidationError> ValidateColletionId(long collectionId)
+        {
+            if (collectionId == 0)
+            {
+                errors.Add(new ValidationError
+                {
+                    message = CustomErrorMessage.NullCollectionId,
+                    reference = "highLightId",
+                    parameter = "highLightId",
+                    errorCode = CustomErrorCode.NullCollectionId
+                });
+            }
+            else if (!_dbcontext.Collections.Any(m => m.CollectionId == collectionId && m.IsDeleted != true))
+            {
+                errors.Add(new ValidationError
+                {
+                    message = CustomErrorMessage.ExitCollection,
+                    reference = "highLightId",
+                    parameter = "highLightId",
+                    errorCode = CustomErrorCode.IsNotCollection
+                });
+            }
+            return errors;
+        }
+        public List<ValidationError> ValidateSerachId(long searchId)
+        {
+            if (searchId == 0)
+            {
+                errors.Add(new ValidationError
+                {
+                    message = CustomErrorMessage.NullsearchId,
+                    reference = "highLightId",
+                    parameter = "highLightId",
+                    errorCode = CustomErrorCode.NullSearchId
+                });
+            }
+            else if (!_dbcontext.Searches.Any(m => m.SearchId == searchId && m.IsDeleted != true))
+            {
+                errors.Add(new ValidationError
+                {
+                    message = CustomErrorMessage.ExitSearch,
+                    reference = "highLightId",
+                    parameter = "highLightId",
+                    errorCode = CustomErrorCode.IsNotSearchId
+                });
+            }
+            return errors;
+        }
         public List<ValidationError> ValidateStoryHighLightId(long storyHighLightId)
         {
             if (storyHighLightId == 0)
@@ -338,6 +385,30 @@ namespace InstagramWebAPI.BLL
             return errors;
         }
 
+        public List<ValidationError> validatePostCollectionId(long postCollectionId)
+        {
+            if (postCollectionId == 0)
+            {
+                errors.Add(new ValidationError
+                {
+                    message = CustomErrorMessage.NullPostCollectionId,
+                    reference = "highLightId",
+                    parameter = "highLightId",
+                    errorCode = CustomErrorCode.NullPostCollectionId
+                });
+            }
+            else if (!_dbcontext.PostCollections.Any(m => m.PostCollectionId == postCollectionId && m.IsDeleted != true))
+            {
+                errors.Add(new ValidationError
+                {
+                    message = CustomErrorMessage.ExitPostCollection,
+                    reference = "highLightId",
+                    parameter = "highLightId",
+                    errorCode = CustomErrorCode.IsNotPostCollection
+                });
+            }
+            return errors;
+        }
         /// <summary>
         /// Checks if the given username is unique.
         /// </summary>
@@ -1083,6 +1154,24 @@ namespace InstagramWebAPI.BLL
             }
             return errors;
         }
+        public List<ValidationError> ValidateUpsertCollection(CollectionRequestDTO model)
+        {
+            if (model.CollectionId > 0)
+            {
+                ValidateHighLightId(model.CollectionId);
+            }
+            if (string.IsNullOrWhiteSpace(model.CollectionName))
+            {
+                errors.Add(new ValidationError
+                {
+                    message = CustomErrorMessage.NullcollectionName,
+                    reference = "highLightId",
+                    parameter = "highLightId",
+                    errorCode = CustomErrorCode.NullCollectionName
+                });
+            }
+            return errors;
+        }
         public List<ValidationError> ValidateAddStoryhighlight(long highLightId, long storyId, long userId)
         {
             ValidateHighLightId(highLightId);
@@ -1118,7 +1207,13 @@ namespace InstagramWebAPI.BLL
             }
             return errors;
         }
-
+        public List<ValidationError> ValidateAddPostCollection(long collectionId, long postId, long userId)
+        {
+            ValidateColletionId(collectionId);
+            ValidatePostId(postId);
+           
+            return errors;
+        }
         public List<ValidationError> ValidateNotificationIds(List<long> notificationIds)
         {
             if (notificationIds == null || !notificationIds.Any())
@@ -1151,7 +1246,5 @@ namespace InstagramWebAPI.BLL
 
             return errors;
         }
-
-
     }
 }

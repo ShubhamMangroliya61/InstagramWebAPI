@@ -37,5 +37,10 @@ namespace InstagramWebAPI.Interface
         List<ValidationError> ValidateStoryHighLightId(long storyHighLightId);
         List<ValidationError> ValidatePostById(long postId, string postType);
         List<ValidationError> ValidateNotificationIds(List<long> notificationIds);
+        List<ValidationError> ValidateUpsertCollection(CollectionRequestDTO model);
+        List<ValidationError> ValidateColletionId(long collectionId);
+        List<ValidationError> ValidateAddPostCollection(long collectionId, long postId, long userId);
+        List<ValidationError> validatePostCollectionId(long postCollectionId);
+        List<ValidationError> ValidateSerachId(long searchId);
     }
 }

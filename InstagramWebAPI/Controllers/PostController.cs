@@ -1,4 +1,5 @@
 ﻿using DataAccess.CustomModel;
+using InstagramWebAPI.BLL;
 using InstagramWebAPI.Common;
 using InstagramWebAPI.DTO;
 using InstagramWebAPI.Helpers;
@@ -69,6 +70,17 @@ namespace InstagramWebAPI.Controllers
                 }
             }
         }
+
+        /// <summary>
+        /// Retrieves a post by its ID and type.
+        /// </summary>
+        /// <param name="postId">The ID of the post to retrieve.</param>
+        /// <param name="postType">The type of the post (e.g., "Image", "Video").</param>
+        /// <returns>
+        /// An ActionResult representing the result of the operation.
+        /// If successful, returns HTTP 200 (OK) with the retrieved post details.
+        /// If validation fails or an error occurs, returns HTTP 400 (Bad Request) with an error message.
+        /// </returns>
         [HttpPost("GetPostById")]
         [Authorize]
         public async Task<ActionResult> GetPostByIdAsync([FromBody] long postId,string postType)
@@ -124,6 +136,41 @@ namespace InstagramWebAPI.Controllers
                     return BadRequest(_responseHandler.BadRequest(CustomErrorCode.IsGetLIst, CustomErrorMessage.GetFollowerList, ""));
                 }
                 return Ok(_responseHandler.Success(CustomErrorMessage.GetPostListSucces, data));
+            }
+            catch (Exception ex)
+            {
+                if (ex is ValidationException vx)
+                {
+                    return BadRequest(_responseHandler.BadRequest(vx.ErrorCode, vx.Message, vx.Errors));
+                }
+                else
+                {
+                    return BadRequest(_responseHandler.BadRequest(CustomErrorCode.IsGetLIst, ex.Message, ""));
+                }
+            }
+        }
+
+        /// <summary>
+        /// Retrieves a paginated list of posts created by a specific user.
+        /// </summary>
+        /// <param name="model">Pagination parameters including page number and page size.</param>
+        /// <returns>
+        /// An ActionResult representing the result of the operation.
+        /// If successful, returns HTTP 200 (OK) with the paginated list of posts.
+        /// If validation fails or an error occurs, returns HTTP 400 (Bad Request) with an error message.
+        /// </returns>
+        [HttpPost("GetPostListByUserId")]
+        [Authorize]
+        public async Task<ActionResult> GetPostListByUserIdAsync([FromBody] PaginationRequestDTO model)
+        {
+            try
+            {
+                PaginationResponceModel<PostResponseDTO> data = await _postService.GetPostListByUserIdAsync(model);
+                if (data == null)
+                {
+                    return BadRequest(_responseHandler.BadRequest(CustomErrorCode.IsGetLIst, CustomErrorMessage.GetFollowerList, ""));
+                }
+                return Ok(_responseHandler.Success(CustomErrorMessage.GetFollowerListSucces, data));
             }
             catch (Exception ex)
             {
@@ -287,6 +334,210 @@ namespace InstagramWebAPI.Controllers
                 else
                 {
                     return BadRequest(_responseHandler.BadRequest(CustomErrorCode.IsPostDelete, ex.Message, ""));
+                }
+            }
+        }
+
+        /// <summary>
+        /// Upserts (adds or updates) a collection based on the provided data.
+        /// </summary>
+        /// <param name="model">Data required to create or update a collection.</param>
+        /// <returns>
+        /// An ActionResult representing the result of the operation.
+        /// If successful, returns HTTP 200 (OK) with the created or updated collection data.
+        /// If validation fails or an error occurs, returns HTTP 400 (Bad Request) with an error message.
+        /// </returns>
+        [HttpPost("UpsertCollection")]
+        [Authorize]
+        public async Task<ActionResult> UpsertCollectionAsync([FromForm] CollectionRequestDTO model)
+        {
+            try
+            {
+                List<ValidationError> errors = _validationService.ValidateUpsertCollection(model);
+                if (errors.Any())
+                {
+                    return BadRequest(_responseHandler.BadRequest(CustomErrorCode.IsValid, CustomErrorMessage.ValidationCollection, errors));
+                }
+
+                CollectionDTO response = await _postService.UpsertCollectionAsync(model);
+                if (response == null)
+                {
+                    return BadRequest(_responseHandler.BadRequest(CustomErrorCode.IsCollection, CustomErrorMessage.CollectionError, ""));
+                }
+                return Ok(_responseHandler.Success(CustomErrorMessage.AddCollection, response));
+            }
+            catch (Exception ex)
+            {
+                if (ex is ValidationException vx)
+                {
+                    return BadRequest(_responseHandler.BadRequest(vx.ErrorCode, vx.Message, vx.Errors));
+                }
+                else
+                {
+                    return BadRequest(_responseHandler.BadRequest(CustomErrorCode.IsCollection, ex.Message, ""));
+                }
+            }
+        }
+
+        /// <summary>
+        /// Deletes a collection identified by the given collection ID.
+        /// </summary>
+        /// <param name="collectionId">The ID of the collection to delete.</param>
+        /// <returns>
+        /// An ActionResult representing the result of the operation.
+        /// If successful, returns HTTP 200 (OK) with a success message.
+        /// If validation fails or an error occurs, returns HTTP 400 (Bad Request) with an error message.
+        /// </returns>
+        [HttpPost("DeteleCollection")]
+        [Authorize]
+        public async Task<ActionResult> DeteleCollectionAsync([FromQuery] long collectionId)
+        {
+            try
+            {
+                List<ValidationError> errors = _validationService.ValidateColletionId(collectionId);
+                if (errors.Any())
+                {
+                    return BadRequest(_responseHandler.BadRequest(CustomErrorCode.IsValid, CustomErrorMessage.ValidationCollection, errors)); ;
+                }
+                bool isDeleted = await _postService.DeteleCollectionAsync(collectionId);
+                if (!isDeleted)
+                {
+                    return BadRequest(_responseHandler.BadRequest(CustomErrorCode.IsCollection, CustomErrorMessage.CollectionDeleteError, ""));
+                }
+                return Ok(_responseHandler.Success(CustomErrorMessage.HighlightDelete, collectionId));
+            }
+            catch (Exception ex)
+            {
+                if (ex is ValidationException vx)
+                {
+                    return BadRequest(_responseHandler.BadRequest(vx.ErrorCode, vx.Message, vx.Errors));
+                }
+                else
+                {
+                    return BadRequest(_responseHandler.BadRequest(CustomErrorCode.IsCollection, ex.Message, ""));
+                }
+            }
+        }
+
+
+        /// <summary>
+        /// Adds a post to a specified collection.
+        /// </summary>
+        /// <param name="collectionId">The ID of the collection where the post will be added.</param>
+        /// <param name="postId">The ID of the post to add.</param>
+        /// <returns>
+        /// An ActionResult representing the result of the operation.
+        /// If successful, returns HTTP 200 (OK) with a success message.
+        /// If validation fails or an error occurs, returns HTTP 400 (Bad Request) with an error message.
+        /// </returns>
+        [HttpPost("AddPostCollection")]
+        [Authorize]
+        public async Task<ActionResult> AddPostCollectionAsync([FromQuery] long collectionId, long postId)
+        {
+            try
+            {
+                long userId = _helper.GetUserIdClaim();
+                List<ValidationError> errors = _validationService.ValidateAddPostCollection(collectionId, postId, userId);
+                if (errors.Any())
+                {
+                    return BadRequest(_responseHandler.BadRequest(CustomErrorCode.IsValid, CustomErrorMessage.ValidationCollection, errors));
+                }
+                bool isDeleted = await _postService.AddPostCollectionAsync(collectionId, postId);
+                if (!isDeleted)
+                {
+                    return BadRequest(_responseHandler.BadRequest(CustomErrorCode.IsCollection, CustomErrorMessage.postcollectionAddError, ""));
+                }
+                return Ok(_responseHandler.Success(CustomErrorMessage.PostCollectionAdd, collectionId));
+            }
+            catch (Exception ex)
+            {
+                if (ex is ValidationException vx)
+                {
+                    return BadRequest(_responseHandler.BadRequest(vx.ErrorCode, vx.Message, vx.Errors));
+                }
+                else
+                {
+                    return BadRequest(_responseHandler.BadRequest(CustomErrorCode.IsCollection, ex.Message, ""));
+                }
+            }
+        }
+
+        /// <summary>
+        /// Deletes a post from a collection.
+        /// </summary>
+        /// <param name="postCollectionId">The ID of the post collection entry to delete.</param>
+        /// <returns>
+        /// An ActionResult representing the result of the operation.
+        /// If successful, returns HTTP 200 (OK) with a success message.
+        /// If validation fails or an error occurs, returns HTTP 400 (Bad Request) with an error message.
+        /// </returns>
+        [HttpPost("DeletePostCollection")]
+        [Authorize]
+        public async Task<ActionResult> DeletePostCollectionAsync([FromQuery] long postCollectionId)
+        {
+            try
+            {
+                List<ValidationError> errors = _validationService.validatePostCollectionId(postCollectionId);
+                if (errors.Any())
+                {
+                    return BadRequest(_responseHandler.BadRequest(CustomErrorCode.IsValid, CustomErrorMessage.ValidationCollection, errors));
+                }
+                bool isDeleted = await _postService.DeletePostCollectionAsync(postCollectionId);
+                if (!isDeleted)
+                {
+                    return BadRequest(_responseHandler.BadRequest(CustomErrorCode.IsCollection, CustomErrorMessage.CollectionDeleteError, ""));
+                }
+                return Ok(_responseHandler.Success(CustomErrorMessage.PostColllectionDelete, postCollectionId));
+            }
+            catch (Exception ex)
+            {
+                if (ex is ValidationException vx)
+                {
+                    return BadRequest(_responseHandler.BadRequest(vx.ErrorCode, vx.Message, vx.Errors));
+                }
+                else
+                {
+                    return BadRequest(_responseHandler.BadRequest(CustomErrorCode.IsCollection, ex.Message, ""));
+                }
+            }
+        }
+
+        /// <summary>
+        /// Retrieves a paginated list of collections belonging to a specified user.
+        /// </summary>
+        /// <param name="model">Request data including the user ID for whom to retrieve collections.</param>
+        /// <returns>
+        /// An ActionResult representing the result of the operation.
+        /// If successful, returns HTTP 200 (OK) with a pagination response containing the collection list.
+        /// If validation fails or an error occurs, returns HTTP 400 (Bad Request) with an error message.
+        /// </returns>
+        [HttpPost("CollectionListByUserId")]
+        [Authorize]
+        public async Task<ActionResult> GetCollectionListByUserId([FromBody] RequestDTO<UserIdRequestDTO> model)
+        {
+            try
+            {
+                List<ValidationError> errors = _validationService.ValidateGetUserById(model.Model.UserId);
+                if (errors.Any())
+                {
+                    return BadRequest(_responseHandler.BadRequest(CustomErrorCode.IsValid, CustomErrorMessage.ValidationCollection, errors));
+                }
+                PaginationResponceModel<CollectionDTO> data = await _postService.GetcollectionListByUserId(model);
+                if (data == null)
+                {
+                    return BadRequest(_responseHandler.BadRequest(CustomErrorCode.IsGetLIst, CustomErrorMessage.GetFollowerList, ""));
+                }
+                return Ok(_responseHandler.Success(CustomErrorMessage.GetFollowerListSucces, data));
+            }
+            catch (Exception ex)
+            {
+                if (ex is ValidationException vx)
+                {
+                    return BadRequest(_responseHandler.BadRequest(vx.ErrorCode, vx.Message, vx.Errors));
+                }
+                else
+                {
+                    return BadRequest(_responseHandler.BadRequest(CustomErrorCode.IsGetLIst, ex.Message, ""));
                 }
             }
         }

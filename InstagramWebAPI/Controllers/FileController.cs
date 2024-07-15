@@ -133,7 +133,7 @@ namespace InstagramWebAPI.Controllers
 
             int index = storyName.IndexOf('.') + 1;
             string extension = storyName[index..];
-            string imagePath = Path.Combine(Directory.GetCurrentDirectory(), "wwwroot", "content", "User", userId.ToString(), "Reel", storyName);
+            string imagePath = Path.Combine(Directory.GetCurrentDirectory(), "wwwroot", "content", "User", userId.ToString(), "Story", storyName);
             if (!System.IO.File.Exists(imagePath))
             {
                 return BadRequest(_responseHandler.BadRequest(CustomErrorCode.IsPath, CustomErrorMessage.PathNotExits, storyName));
