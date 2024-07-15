@@ -218,15 +218,15 @@ public partial class ApplicationDbContext : DbContext
 
         modelBuilder.Entity<StoryView>(entity =>
         {
-            entity.HasKey(e => e.StoryViewId).HasName("PK__StoryVie__7604765744933535");
+            entity.HasKey(e => e.StoryViewId).HasName("PK__StoryVie__7604765732134E9F");
 
             entity.HasOne(d => d.Story).WithMany(p => p.StoryViews)
                 .OnDelete(DeleteBehavior.ClientSetNull)
-                .HasConstraintName("FK__StoryView__Story__0B5CAFEA");
+                .HasConstraintName("FK__StoryView__Story__3DE82FB7");
 
             entity.HasOne(d => d.StoryViewUser).WithMany(p => p.StoryViews)
                 .OnDelete(DeleteBehavior.ClientSetNull)
-                .HasConstraintName("FK__StoryView__Story__0C50D423");
+                .HasConstraintName("FK__StoryView__Story__3EDC53F0");
         });
 
         modelBuilder.Entity<User>(entity =>

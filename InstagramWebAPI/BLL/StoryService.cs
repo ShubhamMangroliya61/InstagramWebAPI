@@ -7,6 +7,7 @@ using InstagramWebAPI.Interface;
 using InstagramWebAPI.Utils;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata.Internal;
+using System.ComponentModel;
 using System.Net;
 using static InstagramWebAPI.Utils.Enum;
 using static Microsoft.EntityFrameworkCore.DbLoggerCategory;
@@ -192,9 +193,8 @@ namespace InstagramWebAPI.BLL
             DateTime cutoffDate = DateTime.UtcNow.AddDays(-1);
 
             // Querying stories for the user
-            IQueryable<Story> storiesList =_dbcontext.Stories
-                .Include(s => s.User)
-                .Include(s => s.StoryViews)
+            IQueryable<Story> storiesList =_dbcontext.Stories.Include(m=>m.User)
+                .Include(s => s.StoryViews).ThenInclude(s => s.StoryViewUser)
                 .Where(s => s.UserId == userId && !s.IsDeleted && s.CreatedDate >= cutoffDate)
                 .OrderByDescending(s => s.CreatedDate);
               
@@ -215,9 +215,9 @@ namespace InstagramWebAPI.BLL
                 IsSeen = story.StoryViews.Any(view => view.StoryViewUserId == userId),
                 StoryViewList = story.StoryViews.Select(view => new StoryViewByUserList
                 {
-                    UserId = view.Story.UserId,
-                    UserName = view.Story.User.UserName,
-                    ProfilePictureName = view.Story.User.ProfilePictureName,
+                    UserId = view.StoryViewUserId,
+                    UserName = view.StoryViewUser?.UserName,
+                    ProfilePictureName = view.StoryViewUser?.ProfilePictureName,
                     IsLike = view.IsLike
                 }).ToList()
             }).ToList();
@@ -311,14 +311,22 @@ namespace InstagramWebAPI.BLL
         public async Task<bool> StorySeenByUserIdAsync(long storyId)
         {
             long userId = _helper.GetUserIdClaim();
-            StoryView storyView = new()
+            StoryView? data=await _dbcontext.StoryViews.FirstOrDefaultAsync(m=>m.StoryId == storyId && m.StoryViewUserId == userId);
+            StoryView obj = data ?? new();
+
+            obj.StoryId = storyId;
+            obj.StoryViewUserId = userId;
+            obj.IsLike = false;
+
+            if(data != null)
             {
-                StoryId = storyId,
-                StoryViewUserId = userId,
-                CreatedDate = DateTime.Now,
-                IsLike = false,
-            };
-            await _dbcontext.StoryViews.AddAsync(storyView);
+                _dbcontext.StoryViews.Update(obj);
+            }
+            else
+            {
+                obj.CreatedDate = DateTime.Now;
+                await _dbcontext.StoryViews.AddAsync(obj);
+            }
             await _dbcontext.SaveChangesAsync();
             return true;
         }

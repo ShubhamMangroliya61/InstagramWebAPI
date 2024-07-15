@@ -115,7 +115,7 @@ namespace InstagramWebAPI.Controllers
         /// If validation fails or an error occurs, returns HTTP 400 (Bad Request) with an error message.
         /// </returns>
         [HttpPost("GetStoryListById")]
-        [Authorize]
+        //[Authorize]
         public async Task<ActionResult> GetStoryListByIdAsync([FromBody] PaginationRequestDTO model)
         {
             try
