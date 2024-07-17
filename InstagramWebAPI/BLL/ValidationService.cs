@@ -384,7 +384,6 @@ namespace InstagramWebAPI.BLL
             }
             return errors;
         }
-
         public List<ValidationError> validatePostCollectionId(long postCollectionId)
         {
             if (postCollectionId == 0)
@@ -421,7 +420,6 @@ namespace InstagramWebAPI.BLL
 
             return true;
         }
-
         /// <summary>
         /// Checks if the given username is unique.
         /// </summary>
@@ -435,7 +433,6 @@ namespace InstagramWebAPI.BLL
 
             return true;
         }
-
         /// <summary>
         /// Checks if the given username is unique.
         /// </summary>
@@ -449,7 +446,6 @@ namespace InstagramWebAPI.BLL
 
             return true;
         }
-
         /// <summary>
         /// Validates the registration request DTO.
         /// </summary>
@@ -512,7 +508,6 @@ namespace InstagramWebAPI.BLL
             }
             return errors;
         }
-
         /// <summary>
         /// Validates the login request DTO.
         /// </summary>
@@ -569,7 +564,6 @@ namespace InstagramWebAPI.BLL
 
             return errors;
         }
-
         /// <summary>
         /// Validates the reset password request DTO.
         /// </summary>
@@ -623,7 +617,6 @@ namespace InstagramWebAPI.BLL
             }
             return errors;
         }
-
         /// <summary>
         /// Validates the reset password data including password and confirm password fields.
         /// </summary>
@@ -656,7 +649,6 @@ namespace InstagramWebAPI.BLL
             }
             return errors;
         }
-
         /// <summary>
         /// Validates the profile photo upload data, including user ID presence and allowed file extensions.
         /// </summary>
@@ -953,6 +945,20 @@ namespace InstagramWebAPI.BLL
         {
             ValidateUserId(model.Model.UserId);
             if (!(model.Model.PostType == "Post" || model.Model.PostType == "Reel"))
+            {
+                errors.Add(new ValidationError
+                {
+                    message = CustomErrorMessage.InvalidPostType,
+                    reference = "typepost",
+                    parameter = "typepost",
+                    errorCode = CustomErrorCode.InvalidPostType
+                });
+            }
+            return errors;
+        }
+        public List<ValidationError> ValidatePostListByUserId(RequestDTO<PostRequestDTO> model)
+        {
+            if (!(model.Model.PostType == "Post" || model.Model.PostType == "Reel") && !string.IsNullOrWhiteSpace(model.Model.PostType))
             {
                 errors.Add(new ValidationError
                 {

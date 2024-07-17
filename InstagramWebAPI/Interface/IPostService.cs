@@ -8,7 +8,7 @@ namespace InstagramWebAPI.Interface
     {
         Task<PostResponseDTO> CreatePostAsync(CreatePostDTO model);
         Task<PaginationResponceModel<PostResponseDTO>> GetPostsListByIdAsync(RequestDTO<PostListRequestDTO> model);
-        Task<PaginationResponceModel<PostResponseDTO>> GetPostListByUserIdAsync(PaginationRequestDTO model);
+        Task<PaginationResponceModel<PostResponseDTO>> GetPostListByUserIdAsync(RequestDTO<PostRequestDTO> model);
         Task<bool> DetelePostAsync(long postId);
         Task<bool> LikeAndUnlikePostAsync(LikePostDTO model);
         Task<bool> CommentPostAsync(CommentPostDTO model);

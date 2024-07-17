@@ -26,11 +26,11 @@
         public const string RegistrationError = "Error occurred while registering the user.";
         public const string CountError = "Error occurred while count the Follower and Follwing.";
         public const string MutualError = "Error occurred while get mutual friend.";
-        public const string  SuggestionError = "Error occurred while get Suggestion friend.";
+        public const string SuggestionError = "Error occurred while get Suggestion friend.";
         public const string ModelIsNull = "All fields are required.";
         public const string LoginError = "Error occurred while logging in.";
         public const string ValidationRegistrtion = "Validation failed for registration data.";
-        public const string ValidationLogin = "Validation failed for registration data."; 
+        public const string ValidationLogin = "Validation failed for registration data.";
         public const string RegistrationSucces = "Registration Successfully";
         public const string LoginSucces = "Login Successfully";
         public const string ExitsUser = "User Not Exits";

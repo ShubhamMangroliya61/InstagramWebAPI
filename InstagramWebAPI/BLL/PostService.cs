@@ -426,7 +426,7 @@ namespace InstagramWebAPI.BLL
         /// </summary>
         /// <param name="model">The pagination request details, including page number and page size.</param>
         /// <returns>A task that represents the asynchronous operation. The task result contains a PaginationResponceModel of PostResponseDTO which includes total records, page size, page number, required pages, and a list of post response DTOs.</returns>
-        public async Task<PaginationResponceModel<PostResponseDTO>> GetPostListByUserIdAsync(PaginationRequestDTO model)
+        public async Task<PaginationResponceModel<PostResponseDTO>> GetPostListByUserIdAsync(RequestDTO<PostRequestDTO> model)
         {
             long userId = _helper.GetUserIdClaim();
 
@@ -447,7 +447,7 @@ namespace InstagramWebAPI.BLL
                 .Include(m => m.PostMappings)
                 .Include(m => m.Comments)
                 .Include(m => m.User)
-                .Where(m => !m.IsDeleted && combinedUserIds.Contains(m.UserId))
+                .Where(m => !m.IsDeleted && combinedUserIds.Contains(m.UserId) && (string.IsNullOrWhiteSpace(model.Model.PostType) || model.Model.PostType == "Post" ? m.PostTypeId == 4 : m.PostTypeId == 3 ))
                 .OrderByDescending(p => p.CreatedDate)
                 .Select(post => new PostResponseDTO
                 {

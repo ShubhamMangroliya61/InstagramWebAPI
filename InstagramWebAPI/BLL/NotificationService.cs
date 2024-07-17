@@ -91,12 +91,10 @@ namespace InstagramWebAPI.BLL
             }
             return null;
         }
-
         private string? GetPostPhotoName(long? postId)
         {
             return _dbcontext.PostMappings.FirstOrDefault(p => p.PostId == postId)?.MediaName;
         }
-
         private string? GetStoryPhotoName(long? storyId)
         {
             return _dbcontext.Stories.FirstOrDefault(s => s.StoryId == storyId)?.StoryName;

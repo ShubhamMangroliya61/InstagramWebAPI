@@ -23,6 +23,7 @@ namespace InstagramWebAPI.Interface
         List<ValidationError> ValidateCreatePost(CreatePostDTO model);
         List<ValidationError> ValidateResetPassword(ResetPasswordRequestDTO model);
         List<ValidationError> ValidatePostList(RequestDTO<PostListRequestDTO> model);
+        List<ValidationError> ValidatePostListByUserId(RequestDTO<PostRequestDTO> model);
         List<ValidationError> ValidateDeletePostId(long postId);
         List<ValidationError> ValidateLikePost(long userId, long postId);
         List<ValidationError> ValidateCommentPost(CommentPostDTO model);

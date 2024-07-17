@@ -161,10 +161,15 @@ namespace InstagramWebAPI.Controllers
         /// </returns>
         [HttpPost("GetPostListByUserId")]
         [Authorize]
-        public async Task<ActionResult> GetPostListByUserIdAsync([FromBody] PaginationRequestDTO model)
+        public async Task<ActionResult> GetPostListByUserIdAsync([FromBody] RequestDTO<PostRequestDTO> model)
         {
             try
             {
+                List<ValidationError> errors = _validationService.ValidatePostListByUserId(model);
+                if (errors.Any())
+                {
+                    return BadRequest(_responseHandler.BadRequest(CustomErrorCode.IsValid, CustomErrorMessage.ValidationPost, errors));
+                }
                 PaginationResponceModel<PostResponseDTO> data = await _postService.GetPostListByUserIdAsync(model);
                 if (data == null)
                 {
