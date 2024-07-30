@@ -65,6 +65,12 @@ public partial class User
     [Column(TypeName = "datetime")]
     public DateTime? ModifiedDate { get; set; }
 
+    [InverseProperty("FromUser")]
+    public virtual ICollection<Chat> ChatFromUsers { get; set; } = new List<Chat>();
+
+    [InverseProperty("ToUser")]
+    public virtual ICollection<Chat> ChatToUsers { get; set; } = new List<Chat>();
+
     [InverseProperty("User")]
     public virtual ICollection<Collection> Collections { get; set; } = new List<Collection>();
 
@@ -76,6 +82,12 @@ public partial class User
 
     [InverseProperty("User")]
     public virtual ICollection<Like> Likes { get; set; } = new List<Like>();
+
+    [InverseProperty("FromUser")]
+    public virtual ICollection<Message> MessageFromUsers { get; set; } = new List<Message>();
+
+    [InverseProperty("ToUser")]
+    public virtual ICollection<Message> MessageToUsers { get; set; } = new List<Message>();
 
     [InverseProperty("FromUser")]
     public virtual ICollection<Notification> NotificationFromUsers { get; set; } = new List<Notification>();

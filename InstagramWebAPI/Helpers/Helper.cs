@@ -147,6 +147,7 @@ namespace InstagramWebAPI.Helpers
 
             await _notificationHub.SendNotificationToUser((int)model.ToUserId, notificationResponse);
         }
+
         private string GetMessageForNotification(Notification n)
         {
             return n.NotificationType switch
@@ -160,6 +161,7 @@ namespace InstagramWebAPI.Helpers
                 _ => "You have a new notification."
             };
         }
+
         private string? GetPhotoNameForNotification(Notification n)
         {
             if (n.NotificationType == (int)NotificationType.PostLiked || n.NotificationType == (int)NotificationType.PostCommented)

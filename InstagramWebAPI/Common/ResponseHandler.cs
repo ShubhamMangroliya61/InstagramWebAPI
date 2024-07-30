@@ -28,6 +28,7 @@ namespace InstagramWebAPI.Common
                 ErrorCode = ErrorCode
             };
         }
+
         //Response #404
         public ResponseModel NotFoundRequest(string ErrorCode, string Message, Object Data)
         {

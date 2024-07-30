@@ -19,7 +19,6 @@ namespace InstagramWebAPI.Controllers
         private readonly ResponseHandler _responseHandler;
         private readonly Helper _helper;
 
-
         public PostController(IValidationService validationService, ResponseHandler responseHandler, IPostService postService, Helper helper)
         {
             _validationService = validationService;
@@ -423,7 +422,6 @@ namespace InstagramWebAPI.Controllers
                 }
             }
         }
-
 
         /// <summary>
         /// Adds a post to a specified collection.

@@ -408,6 +408,40 @@ namespace InstagramWebAPI.BLL
             }
             return errors;
         }
+        public List<ValidationError> ValidateChatId(long chatId)
+        {
+            if (chatId == 0)
+            {
+                errors.Add(new ValidationError
+                {
+                    message = CustomErrorMessage.NullChatId,
+                    reference = "chatId",
+                    parameter = "chatId",
+                    errorCode = CustomErrorCode.NullChatId
+                });
+            }
+            else if (chatId < 0)
+            {
+                errors.Add(new ValidationError
+                {
+                    message = CustomErrorMessage.InvalidChatId,
+                    reference = "chatId",
+                    parameter = "chatId",
+                    errorCode = CustomErrorCode.InvalidChatId
+                });
+            }
+            if (!_dbcontext.Chats.Any(m => m.ChatId == chatId && m.IsDeleted != true))
+            {
+                errors.Add(new ValidationError
+                {
+                    message = CustomErrorMessage.ExitsChat,
+                    reference = "chatId",
+                    parameter = "chatId",
+                    errorCode = CustomErrorCode.IsNotExitsChat
+                });
+            }
+            return errors;
+        }
         /// <summary>
         /// Checks if the given username is unique.
         /// </summary>

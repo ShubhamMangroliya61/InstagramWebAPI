@@ -15,6 +15,8 @@ public partial class ApplicationDbContext : DbContext
     {
     }
 
+    public virtual DbSet<Chat> Chats { get; set; }
+
     public virtual DbSet<Collection> Collections { get; set; }
 
     public virtual DbSet<Comment> Comments { get; set; }
@@ -24,6 +26,8 @@ public partial class ApplicationDbContext : DbContext
     public virtual DbSet<Like> Likes { get; set; }
 
     public virtual DbSet<MediaType> MediaTypes { get; set; }
+
+    public virtual DbSet<Message> Messages { get; set; }
 
     public virtual DbSet<Notification> Notifications { get; set; }
 
@@ -51,6 +55,21 @@ public partial class ApplicationDbContext : DbContext
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
+        modelBuilder.Entity<Chat>(entity =>
+        {
+            entity.HasKey(e => e.ChatId).HasName("PK__Chats__A9FBE7C6EEB090F3");
+
+            entity.Property(e => e.CreatedDate).HasDefaultValueSql("(getdate())");
+
+            entity.HasOne(d => d.FromUser).WithMany(p => p.ChatFromUsers)
+                .OnDelete(DeleteBehavior.ClientSetNull)
+                .HasConstraintName("FK__Chats__FromUserI__51EF2864");
+
+            entity.HasOne(d => d.ToUser).WithMany(p => p.ChatToUsers)
+                .OnDelete(DeleteBehavior.ClientSetNull)
+                .HasConstraintName("FK__Chats__ToUserId__52E34C9D");
+        });
+
         modelBuilder.Entity<Collection>(entity =>
         {
             entity.HasKey(e => e.CollectionId).HasName("PK__Collecti__7DE6BC044241DF8B");
@@ -100,6 +119,25 @@ public partial class ApplicationDbContext : DbContext
         modelBuilder.Entity<MediaType>(entity =>
         {
             entity.HasKey(e => e.MediaTypeId).HasName("PK__MediaTyp__0E6FCB72DD952BBD");
+        });
+
+        modelBuilder.Entity<Message>(entity =>
+        {
+            entity.HasKey(e => e.MessageId).HasName("PK__Messages__C87C0C9C0E19304F");
+
+            entity.Property(e => e.CreatedDate).HasDefaultValueSql("(getdate())");
+
+            entity.HasOne(d => d.Chat).WithMany(p => p.Messages)
+                .OnDelete(DeleteBehavior.ClientSetNull)
+                .HasConstraintName("FK__Messages__ChatId__5B78929E");
+
+            entity.HasOne(d => d.FromUser).WithMany(p => p.MessageFromUsers)
+                .OnDelete(DeleteBehavior.ClientSetNull)
+                .HasConstraintName("FK__Messages__FromUs__59904A2C");
+
+            entity.HasOne(d => d.ToUser).WithMany(p => p.MessageToUsers)
+                .OnDelete(DeleteBehavior.ClientSetNull)
+                .HasConstraintName("FK__Messages__ToUser__5A846E65");
         });
 
         modelBuilder.Entity<Notification>(entity =>

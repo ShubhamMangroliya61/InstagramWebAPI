@@ -291,6 +291,7 @@ namespace InstagramWebAPI.BLL
                 Record = records,
             };
         }
+
         /// <summary>
         /// Retrieves a paginated list of requests made to a user.
         /// </summary>
@@ -442,7 +443,6 @@ namespace InstagramWebAPI.BLL
                 .Include(r => r.ToUser)
                 .Where(r => r.ToUserId == userId && r.IsAccepted == true && r.IsDeleted == false)
                 .CountAsync();
-
 
             int followingCount = await _dbcontext.Requests
                 .Include(r => r.ToUser)

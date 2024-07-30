@@ -32,6 +32,7 @@
         public const string NullContactNumber = "NULL_USERNAME";
         public const string NullEmailOrMobileNumberOrUsername = "NULL_EMAIL_OR_MOBILENUMBER_OR_USERNAME";
         public const string IsNotExits = "USER_NOT_EXITS";
+        public const string IsNotExitsChat = "CHAT_NOT_EXITS";
         public const string IsNotComment = "COMMENT_NOT_EXITS";
         public const string IsNotPost = "POST_NOT_EXITS";
         public const string IsNotHighlight = "HIGHLIGHT_NOT_EXITS";
@@ -45,8 +46,10 @@
         public const string MailNotSend = "MAIL_NOT_SEND";
         public const string IsReset = "RESET_ERROR";
         public const string IsPOst = "CREATE_POST_ERROR";
+        public const string IsChat = "CREATE_CHAT_ERROR";
         public const string IsGetPOst = "GET_POST_ERROR";
         public const string InvalidUserId = "INVALID_USERID";
+        public const string InvalidChatId = "INVALID_CHATID";
         public const string InvalidCommentId = "INVALID_COMMENTID";
         public const string InvalidRequestId = "INVALID_REQUESTID";
         public const string InvalidPostId = "INVALID_POSTID";
@@ -54,6 +57,7 @@
         public const string InvalidStoryHighLightId = "INVALID_STORYHIGHLIGHTID";
         public const string InvalidStoryId = "INVALID_STORYID";
         public const string NullUserId = "NULL_USERID";
+        public const string NullChatId = "NULL_CHATID";
         public const string NullCommentId = "NULL_COMMENTID";
         public const string NullProfilePhoto = "NULL_PHOTO";
         public const string InvalidPhotoExtension = "INVALID_PHOTO_EXTENSION";

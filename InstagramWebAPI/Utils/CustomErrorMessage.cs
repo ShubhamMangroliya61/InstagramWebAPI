@@ -34,6 +34,7 @@
         public const string RegistrationSucces = "Registration Successfully";
         public const string LoginSucces = "Login Successfully";
         public const string ExitsUser = "User Not Exits";
+        public const string ExitsChat = "Chat Not Exits";
         public const string ExitsPOstComment = "comment Not Exits";
         public const string ExitsPost = "Post Not Exits";
         public const string ExitsNotification = "Notification Not Exits";
@@ -48,16 +49,20 @@
         public const string MailNotSend = "Email Not Send";
         public const string ReserError = "Error occurred while Reset Password the user.";
         public const string PostError = "Error occurred while Create Post.";
+        public const string ChatError = "Error occurred while Create Chat.";
         public const string PostGetError = "Error occurred while Get Post.";
         public const string ReserPassword = "Reset Password Successfully";
         public const string ForgotPassword = "Forgot Password Successfully";
         public const string CreatePost = "Post Create Successfully";
+        public const string CreateChat = "Chat Create Successfully";
         public const string GetPost = "Post Get Successfully";
         public const string UpdatePost = "Post Update Successfully";
         public const string ValidationReset = "Validation failed for ResetPassword data.";
         public const string InvalidUserId = "Invalid UserId. UserId must be greater than zero.";
+        public const string InvalidChatId = "Invalid ChatId. ChatId must be greater than zero.";
         public const string InvalidCommentId = "Invalid CommentId. CommentId must be greater than zero.";
         public const string NullUserId = "Userid is required";
+        public const string NullChatId = "Chatid is required";
         public const string NullCommentId = "Userid is required";
         public const string MatchUserId = "Please Enter Different UserId";
         public const string NullProfilePhoto = "Profile photo is required.";
@@ -69,6 +74,7 @@
         public const string ValidationCollection = "Validation failed for Collection data.";
         public const string ValidationSearchUser = "Validation failed for Serach User Data.";
         public const string ValidationPost = "Validation failed for Post data.";
+        public const string ValidationChat = "Validation failed for Chat data.";
         public const string ValidationNotification = "Validation failed for Notification data.";
         public const string ValidationStory = "Validation failed for Story data.";
         public const string UploadPhoto = "Profile Upload Successfully";

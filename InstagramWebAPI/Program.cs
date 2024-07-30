@@ -1,3 +1,4 @@
+using ChatApp.Hubs;
 using InstagramWebAPI;
 using InstagramWebAPI.BLL;
 using InstagramWebAPI.Common;
@@ -25,11 +26,13 @@ builder.Services.AddScoped<IAuthService, AuthService>();
 builder.Services.AddScoped<IUserService, UserService>();
 builder.Services.AddScoped<IPostService, PostService>();
 builder.Services.AddScoped<IStoryService ,StoryService>();
+builder.Services.AddScoped<IChatService, ChatService>();
 builder.Services.AddScoped<INotificationService ,NotificationService>();
 builder.Services.AddScoped<IValidationService, ValidationService>();
 builder.Services.AddScoped<ResponseHandler>();
 builder.Services.AddScoped<Helper>();
 builder.Services.AddScoped<NotificationHub>();
+builder.Services.AddScoped<ChatHub>();
 builder.Services.AddScoped<IJWTService, JWTService>();
 builder.Services.AddSingleton<IHttpContextAccessor, HttpContextAccessor>();
 var key = builder.Configuration.GetValue<string>("Jwt:Key");
@@ -130,6 +133,7 @@ app.UseAuthorization();
 
 app.MapControllers();
 app.MapHub<NotificationHub>("/notificationHub");
+app.MapHub<ChatHub>("/chatHub");
 
 
 try

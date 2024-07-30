@@ -1,4 +1,5 @@
-﻿using InstagramWebAPI.Interface;
+﻿using InstagramWebAPI.DTO;
+using InstagramWebAPI.Interface;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.SignalR;
 using System;
@@ -6,20 +7,21 @@ using System.Collections.Concurrent;
 using System.IdentityModel.Tokens.Jwt;
 using System.Threading.Tasks;
 
-namespace NotificationApp.Hubs
+namespace ChatApp.Hubs
 {
-    public class NotificationHub : Hub
+    public class ChatHub : Hub
     {
-        private readonly IHubContext<NotificationHub> _hubContext;
+        private readonly IHubContext<ChatHub> _hubContext;
         private readonly IHttpContextAccessor _httpContextAccessor;
-
+        private readonly IChatService _chatService;
 
         private static readonly ConcurrentDictionary<string, string> ConnectedUsers = new ConcurrentDictionary<string, string>();
 
-        public NotificationHub(IHubContext<NotificationHub> hubContext,IHttpContextAccessor httpContextAccessor)
+        public ChatHub(IHubContext<ChatHub> hubContext, IHttpContextAccessor httpContextAccessor, IChatService chatService)
         {
             _hubContext = hubContext;
             _httpContextAccessor = httpContextAccessor;
+            _chatService = chatService;
         }
 
         public override async Task OnConnectedAsync()
@@ -54,11 +56,16 @@ namespace NotificationApp.Hubs
             return claims.FirstOrDefault(m => m.Type == "UserId").Value;
         }
 
-        public async Task SendNotificationToUser(int toUserId, object notificationData)
+        public async Task SendMessageToUser(long toUserId, string message,long chatId)
         {
             if (ConnectedUsers.TryGetValue(toUserId.ToString(), out var connectionId))
             {
-                await _hubContext.Clients.Client(connectionId).SendAsync("ReceiveNotification", notificationData);
+                MessageDTO messageDTO =await _chatService.SaveMessagesAsync(toUserId, message,chatId);
+                await _hubContext.Clients.Client(connectionId).SendAsync("ReceiveMessage", messageDTO);
+            }
+            else
+            {
+                // Handle scenario where user is not connected
             }
         }
 

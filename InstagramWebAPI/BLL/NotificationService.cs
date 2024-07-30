@@ -32,8 +32,8 @@ namespace InstagramWebAPI.BLL
             IQueryable<Notification> data = _dbcontext.Notifications
                 .Where(m => m.ToUserId == userId && m.IsDeleted == false)
                 .Include(n => n.FromUser)
-        .Include(n => n.Story)
-        .Include(n => n.Post).OrderByDescending(m=>m.CreatedDate); 
+            .Include(n => n.Story)
+            .Include(n => n.Post).OrderByDescending(m=>m.CreatedDate); 
 
             List<Notification> paginatedNotifications = await data
                 .Skip((model.PageNumber - 1) * model.PageSize)
