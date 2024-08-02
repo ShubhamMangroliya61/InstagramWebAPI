@@ -8,6 +8,7 @@
         public long ToUserId { get; set; }
         public string? MessageText { get; set; }
         public bool IsSeen { get; set; }
+        public bool IsDeliverd { get; set; }
         public DateTime? CreatedDate { get; set; }
 
     }

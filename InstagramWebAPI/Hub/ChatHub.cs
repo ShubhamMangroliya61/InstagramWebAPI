@@ -28,7 +28,8 @@ namespace ChatApp.Hubs
         {
             string userId = GetClaimUserId();
             ConnectedUsers[userId] = Context.ConnectionId;
-            await Clients.All.SendAsync("UserConnected", userId);
+            List<long> messId=await _chatService.IsDelivredMessages(Int32.Parse(userId));
+            await Clients.All.SendAsync("UserConnected", userId, messId);
             await base.OnConnectedAsync();
         }
 
@@ -56,20 +57,51 @@ namespace ChatApp.Hubs
             return claims.FirstOrDefault(m => m.Type == "UserId").Value;
         }
 
-        public async Task SendMessageToUser(long toUserId, string message,long chatId)
+        public async Task<MessageDTO> SendMessageToUser(long toUserId, string message,long chatId)
         {
-            if (ConnectedUsers.TryGetValue(toUserId.ToString(), out var connectionId))
+            ConnectedUsers.TryGetValue(toUserId.ToString(), out var connectionId);
+            MessageReqDTO messReq = new ()
             {
-                MessageDTO messageDTO =await _chatService.SaveMessagesAsync(toUserId, message,chatId);
+                ChatId = chatId,
+                ToUserId = toUserId,
+                FromUserId = Int32.Parse(GetClaimUserId()),
+                Messages = message,
+                IsDeliverd = connectionId != null ? true : false
+            };
+
+            MessageDTO messageDTO =await _chatService.SaveMessagesAsync(messReq);
+
+            if (connectionId != null)
+            {
                 await _hubContext.Clients.Client(connectionId).SendAsync("ReceiveMessage", messageDTO);
             }
-            else
+            return messageDTO;
+        }
+
+        public async Task<ChatDTO> CreateChat(long toUserId)
+        {
+            ConnectedUsers.TryGetValue(toUserId.ToString(), out var connectionId);
+
+            ChatDTO chatDTO = await _chatService.CreateChatAsync(Int32.Parse(GetClaimUserId()),toUserId);
+
+            if (connectionId != null)
             {
-                // Handle scenario where user is not connected
+                await _hubContext.Clients.Client(connectionId).SendAsync("ReceiveMessage", chatDTO);
+            }
+
+            return chatDTO;
+        }
+
+        public async Task MarkAsReadMessages(long userId,long chatId)
+        {
+            await _chatService.MarkAsReadMessages(userId, chatId);
+            if (ConnectedUsers.TryGetValue(userId.ToString(), out var connectionId))
+            {
+                await _hubContext.Clients.Client(connectionId).SendAsync("MarkAsRead", userId, chatId);
             }
         }
 
-        public string? GetConnectionId(string userId)
+        public static string? GetConnectionId(string userId)
         {
             ConnectedUsers.TryGetValue(userId, out var connectionId);
             return connectionId;

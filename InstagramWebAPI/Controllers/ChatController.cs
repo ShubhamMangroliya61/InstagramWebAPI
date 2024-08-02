@@ -27,31 +27,31 @@ namespace InstagramWebAPI.Controllers
             _helper = helper;
         }
 
-        [HttpPost("CreateChatAsync")]
-        [Authorize]
-        public async Task<ActionResult> CreatePostAsync([FromQuery]long toUserId)
-        {
-            try
-            {
-                ChatDTO responseDTO = await _chatService.CreateChatAsync(toUserId);
-                if (responseDTO == null)
-                {
-                    return BadRequest(_responseHandler.BadRequest(CustomErrorCode.IsChat, CustomErrorMessage.ChatError, ""));
-                }
-                return Ok(_responseHandler.Success(CustomErrorMessage.CreateChat, responseDTO));
-            }
-            catch (Exception ex)
-            {
-                if (ex is ValidationException vx)
-                {
-                    return BadRequest(_responseHandler.BadRequest(vx.ErrorCode, vx.Message, vx.Errors));
-                }
-                else
-                {
-                    return BadRequest(_responseHandler.BadRequest(CustomErrorCode.IsChat, ex.Message, ""));
-                }
-            }
-        }
+        //[HttpPost("CreateChatAsync")]
+        //[Authorize]
+        //public async Task<ActionResult> CreatePostAsync([FromQuery]long toUserId)
+        //{
+        //    try
+        //    {
+        //        ChatDTO responseDTO = await _chatService.CreateChatAsync(toUserId);
+        //        if (responseDTO == null)
+        //        {
+        //            return BadRequest(_responseHandler.BadRequest(CustomErrorCode.IsChat, CustomErrorMessage.ChatError, ""));
+        //        }
+        //        return Ok(_responseHandler.Success(CustomErrorMessage.CreateChat, responseDTO));
+        //    }
+        //    catch (Exception ex)
+        //    {
+        //        if (ex is ValidationException vx)
+        //        {
+        //            return BadRequest(_responseHandler.BadRequest(vx.ErrorCode, vx.Message, vx.Errors));
+        //        }
+        //        else
+        //        {
+        //            return BadRequest(_responseHandler.BadRequest(CustomErrorCode.IsChat, ex.Message, ""));
+        //        }
+        //    }
+        //}
 
         [HttpPost("GetChatListAsync")]
         [Authorize]
